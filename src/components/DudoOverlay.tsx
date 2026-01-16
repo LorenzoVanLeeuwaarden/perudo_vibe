@@ -168,64 +168,75 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
             </motion.p>
           </motion.div>
 
-          {/* Impact particles */}
-          <svg className="absolute inset-0 pointer-events-none overflow-visible" style={{ width: '100%', height: '100%' }}>
-            <defs>
-              <filter id="glitch">
-                <feColorMatrix
-                  type="matrix"
-                  values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                  result="red"
-                />
-                <feOffset in="red" dx="2" dy="0" result="redShift" />
-                <feColorMatrix
-                  in="SourceGraphic"
-                  type="matrix"
-                  values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                  result="green"
-                />
-                <feColorMatrix
-                  in="SourceGraphic"
-                  type="matrix"
-                  values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
-                  result="blue"
-                />
-                <feOffset in="blue" dx="-2" dy="0" result="blueShift" />
-                <feBlend in="redShift" in2="green" mode="screen" result="blend1" />
-                <feBlend in="blend1" in2="blueShift" mode="screen" />
-              </filter>
-            </defs>
-            {/* Impact sparks */}
-            {[...Array(12)].map((_, i) => {
-              const angle = (i / 12) * Math.PI * 2;
-              const distance = 150 + Math.random() * 100;
+          {/* Impact particles - using divs with transforms for better performance */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {/* SVG filter for glitch effect only */}
+            <svg className="absolute w-0 h-0">
+              <defs>
+                <filter id="glitch">
+                  <feColorMatrix
+                    type="matrix"
+                    values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
+                    result="red"
+                  />
+                  <feOffset in="red" dx="2" dy="0" result="redShift" />
+                  <feColorMatrix
+                    in="SourceGraphic"
+                    type="matrix"
+                    values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
+                    result="green"
+                  />
+                  <feColorMatrix
+                    in="SourceGraphic"
+                    type="matrix"
+                    values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
+                    result="blue"
+                  />
+                  <feOffset in="blue" dx="-2" dy="0" result="blueShift" />
+                  <feBlend in="redShift" in2="green" mode="screen" result="blend1" />
+                  <feBlend in="blend1" in2="blueShift" mode="screen" />
+                </filter>
+              </defs>
+            </svg>
+            {/* Impact sparks using CSS transforms */}
+            {[...Array(8)].map((_, i) => {
+              const angle = (i / 8) * Math.PI * 2;
+              const distance = 150;
+              const endX = Math.cos(angle) * distance;
+              const endY = Math.sin(angle) * distance;
               return (
-                <motion.circle
+                <motion.div
                   key={i}
-                  cx="50%"
-                  cy="50%"
-                  r={4 + Math.random() * 4}
-                  fill={mainColor}
+                  className="absolute left-1/2 top-1/2 rounded-full"
+                  style={{
+                    width: 8,
+                    height: 8,
+                    marginLeft: -4,
+                    marginTop: -4,
+                    backgroundColor: mainColor,
+                    boxShadow: `0 0 8px ${mainColor}`,
+                  }}
                   initial={{
                     opacity: 0,
-                    scale: 0
+                    scale: 0,
+                    x: 0,
+                    y: 0
                   }}
                   animate={{
                     opacity: [0, 1, 0],
-                    scale: [0, 1, 0],
-                    cx: [`50%`, `calc(50% + ${Math.cos(angle) * distance}px)`],
-                    cy: [`50%`, `calc(50% + ${Math.sin(angle) * distance}px)`]
+                    scale: [0, 1.5, 0],
+                    x: [0, endX],
+                    y: [0, endY]
                   }}
                   transition={{
-                    duration: 0.5,
-                    delay: 0.2 + Math.random() * 0.1,
+                    duration: 0.4,
+                    delay: 0.2,
                     ease: 'easeOut'
                   }}
-                  style={{ filter: `blur(${Math.random() * 2}px)` }}
                 />
               );
             })}
-          </svg>
+          </div>
 
           {/* Screen shake container indicator */}
           <style jsx global>{`

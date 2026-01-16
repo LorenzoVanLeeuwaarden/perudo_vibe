@@ -13,6 +13,7 @@ import { VictoryScreen } from '@/components/VictoryScreen';
 import { DefeatScreen } from '@/components/DefeatScreen';
 import { DudoOverlay } from '@/components/DudoOverlay';
 import { DyingDie } from '@/components/DyingDie';
+import { SpawningDie } from '@/components/SpawningDie';
 import {
   rollDice,
   countMatching,
@@ -148,6 +149,10 @@ export default function PerudoGame() {
   // Dice loss animation state - which die index is being destroyed
   const [dyingDieOwner, setDyingDieOwner] = useState<'player' | number | null>(null);
   const [dyingDieIndex, setDyingDieIndex] = useState<number>(-1);
+  // Dice gain animation state - for Calza success
+  const [spawningDieOwner, setSpawningDieOwner] = useState<'player' | number | null>(null);
+  const [calzaSuccess, setCalzaSuccess] = useState(false);
+  const [spawningDieValue, setSpawningDieValue] = useState<number>(1);
 
   // Refs to track latest state for AI turns (avoids stale closures)
   const opponentsRef = useRef(opponents);
@@ -241,15 +246,11 @@ export default function PerudoGame() {
       const lastBidderValue = lastBidderRef.current;
       const palifico = isPalificoRef.current;
 
-      console.log(`[REVEAL] ${isCalza ? 'CALZA' : 'DUDO'} called by ${caller === 'player' ? 'Player' : `AI ${(caller as number) + 1}`}`);
 
       if (!bid) {
-        console.log(`[REVEAL] ERROR: No current bid!`);
         return;
       }
 
-      console.log(`[REVEAL] Current bid was: ${bid.count}x ${bid.value}s`);
-      console.log(`[REVEAL] Last bidder was: ${lastBidderValue === 'player' ? 'Player' : `AI ${(lastBidderValue as number) + 1}`}`);
 
       setGameState('Reveal');
       setHighlightedDiceIndex(-1);
@@ -258,6 +259,8 @@ export default function PerudoGame() {
       setDudoOverlayComplete(false);
       setDyingDieOwner(null);
       setDyingDieIndex(-1);
+      setSpawningDieOwner(null);
+      setCalzaSuccess(false);
 
       // Capture current dice counts BEFORE making changes (to delay visual reveal)
       setRevealPlayerDiceCount(playerDiceCount);
@@ -284,9 +287,6 @@ export default function PerudoGame() {
       const matchingCount = countMatching(allDice, bid.value, palifico);
       setActualCount(matchingCount);
 
-      console.log(`[REVEAL] All dice: [${allDice.join(', ')}]`);
-      console.log(`[REVEAL] Looking for ${bid.value}s${!palifico && bid.value !== 1 ? ' (+ jokers)' : ''}`);
-      console.log(`[REVEAL] Found ${matchingCount} matching, bid was ${bid.count}`);
 
       let playerWins: boolean;
       const isPlayerCaller = caller === 'player';
@@ -296,12 +296,14 @@ export default function PerudoGame() {
       if (isCalza) {
         // Calza: exact match wins
         const exactMatch = matchingCount === bid.count;
-        console.log(`[REVEAL] Calza: exactMatch=${exactMatch}`);
         playerWins = isPlayerCaller ? exactMatch : !exactMatch;
 
         // Calza rewards/penalties
         if (exactMatch) {
           // Caller gains a die (max 5) - no loser
+          setCalzaSuccess(true);
+          setSpawningDieOwner(caller);
+          setSpawningDieValue(Math.floor(Math.random() * 6) + 1);
           if (isPlayerCaller) {
             setPlayerDiceCount((c) => Math.min(c + 1, 5));
           } else {
@@ -327,20 +329,16 @@ export default function PerudoGame() {
       } else {
         // Dudo: bid correct (enough dice) = Dudo caller loses, bid wrong (not enough) = bidder loses
         const bidWasCorrect = matchingCount >= bid.count;
-        console.log(`[REVEAL] Dudo: bidWasCorrect=${bidWasCorrect} (${matchingCount} >= ${bid.count})`);
 
         if (isPlayerCaller) {
           // Player called Dudo on an AI's bid
           playerWins = !bidWasCorrect; // Player wins if the bid was wrong (bluff caught)
-          console.log(`[REVEAL] Player called Dudo. playerWins=${playerWins}`);
           if (bidWasCorrect) {
             // Player loses a die (they called Dudo wrongly - bid was actually correct)
-            console.log(`[REVEAL] Player was wrong to Dudo, loses a die`);
             roundLoser = 'player';
             setPlayerDiceCount((c) => Math.max(c - 1, 0));
           } else {
             // Last bidder loses a die (their bluff was caught)
-            console.log(`[REVEAL] Player caught the bluff, AI ${(lastBidderValue as number) + 1} loses a die`);
             roundLoser = lastBidderValue;
             if (typeof lastBidderValue === 'number') {
               setOpponents(prev => prev.map(o => {
@@ -354,10 +352,8 @@ export default function PerudoGame() {
           }
         } else {
           // Opponent (AI) called Dudo
-          console.log(`[REVEAL] AI ${(caller as number) + 1} called Dudo on ${lastBidderValue === 'player' ? 'Player' : `AI ${(lastBidderValue as number) + 1}`}'s bid`);
           if (bidWasCorrect) {
             // AI was wrong to call Dudo (bid was correct), AI loses
-            console.log(`[REVEAL] AI was wrong to Dudo (bid was correct), AI loses a die`);
             playerWins = lastBidderValue === 'player'; // Player wins if they made the correct bid
             roundLoser = caller;
             setOpponents(prev => prev.map(o => {
@@ -369,16 +365,13 @@ export default function PerudoGame() {
             }));
           } else {
             // AI correctly called Dudo (bid was wrong/bluff), bidder loses
-            console.log(`[REVEAL] AI correctly called Dudo (bid was a bluff)`);
             roundLoser = lastBidderValue;
             if (lastBidderValue === 'player') {
               // Player's bid was caught as a bluff
-              console.log(`[REVEAL] Player's bluff was caught, player loses a die`);
               playerWins = false;
               setPlayerDiceCount((c) => Math.max(c - 1, 0));
             } else if (typeof lastBidderValue === 'number') {
               // Another AI's bid was caught
-              console.log(`[REVEAL] AI ${(lastBidderValue as number) + 1}'s bluff was caught, they lose a die`);
               playerWins = true; // Player wasn't involved, so they "win" (don't lose)
               setOpponents(prev => prev.map(o => {
                 if (o.id === lastBidderValue) {
@@ -394,7 +387,6 @@ export default function PerudoGame() {
         }
       }
 
-      console.log(`[REVEAL] Final result: playerWins=${playerWins}, loser=${roundLoser}`);
       setLoser(roundLoser);
       setRoundResult(playerWins ? 'win' : 'lose');
 
@@ -421,17 +413,14 @@ export default function PerudoGame() {
         if (exactMatch) {
           // Calza success: caller gains a die, NEXT player (to their right) starts
           const nextStarter = getNextPlayer(caller);
-          console.log(`[REVEAL] Calza success! Next player after ${caller === 'player' ? 'Player' : `AI ${(caller as number) + 1}`} is ${nextStarter === 'player' ? 'Player' : `AI ${(nextStarter as number) + 1}`}`);
           setRoundStarter(nextStarter);
         } else {
           // Calza fail: caller loses a die and starts
-          console.log(`[REVEAL] Calza failed! Caller ${caller === 'player' ? 'Player' : `AI ${(caller as number) + 1}`} starts next round`);
           setRoundStarter(caller);
         }
       } else {
         // Dudo: the loser always starts next round
         if (roundLoser !== null) {
-          console.log(`[REVEAL] Dudo! Loser ${roundLoser === 'player' ? 'Player' : `AI ${(roundLoser as number) + 1}`} starts next round`);
           setRoundStarter(roundLoser);
         }
       }
@@ -449,54 +438,41 @@ export default function PerudoGame() {
     const opps = opponentsRef.current;
     const opponent = opps[opponentIdx];
 
-    console.log(`[AI ${opponentIdx + 1}] Starting turn...`);
-    console.log(`[AI ${opponentIdx + 1}] Current bid: ${bidValue.count}x ${bidValue.value}s, Last bidder: ${lastBidderValue === 'player' ? 'Player' : `AI ${(lastBidderValue as number) + 1}`}`);
 
     if (!opponent || opponent.isEliminated || opponent.diceCount === 0) {
-      console.log(`[AI ${opponentIdx + 1}] Skipped - eliminated or no dice`);
       return false;
     }
 
-    console.log(`[AI ${opponentIdx + 1}] Hand: [${opponent.hand.join(', ')}], Dice count: ${opponent.diceCount}`);
 
     const currentTotalDice = playerDiceCount + opps.reduce((sum, o) => sum + o.diceCount, 0);
     const palifico = isPalificoRef.current;
 
-    console.log(`[AI ${opponentIdx + 1}] Total dice in play: ${currentTotalDice}, Palifico: ${palifico}`);
 
     // Check if AI wants to call Calza (only if they didn't make the last bid)
     if (lastBidderValue !== opponentIdx) {
       const wantsCalza = shouldAICallCalza(bidValue, opponent.hand, currentTotalDice, palifico);
-      console.log(`[AI ${opponentIdx + 1}] Calza check: ${wantsCalza ? 'YES - calling Calza!' : 'No'}`);
       if (wantsCalza) {
-        console.log(`[AI ${opponentIdx + 1}] >>> CALLING CALZA <<<`);
         handleReveal(opponent.id, true);
         return true; // Round ended
       }
     } else {
-      console.log(`[AI ${opponentIdx + 1}] Cannot Calza - was last bidder`);
     }
 
     // Check if AI wants to call Dudo
     const wantsDudo = shouldAICallDudo(bidValue, opponent.hand, currentTotalDice, palifico);
-    console.log(`[AI ${opponentIdx + 1}] Dudo check: ${wantsDudo ? 'YES - calling Dudo!' : 'No'}`);
     if (wantsDudo) {
-      console.log(`[AI ${opponentIdx + 1}] >>> CALLING DUDO <<<`);
       handleReveal(opponent.id, false);
       return true; // Round ended
     }
 
     // Generate a bid
     const aiBid = generateAIBid(bidValue, opponent.hand, currentTotalDice, palifico);
-    console.log(`[AI ${opponentIdx + 1}] Generated bid: ${aiBid ? `${aiBid.count}x ${aiBid.value}s` : 'null (forced Dudo)'}`);
     if (aiBid === null) {
-      console.log(`[AI ${opponentIdx + 1}] >>> FORCED DUDO (no valid bid) <<<`);
       handleReveal(opponent.id, false);
       return true; // Round ended
     }
 
     // AI makes a bid
-    console.log(`[AI ${opponentIdx + 1}] >>> BIDDING ${aiBid.count}x ${aiBid.value}s <<<`);
     onContinue(aiBid, opponent.id);
     return false; // Continue to next opponent
   }, [playerDiceCount, handleReveal]);
@@ -521,21 +497,15 @@ export default function PerudoGame() {
     let currentIdx = startFromIdx;
     let delay = 0;
 
-    console.log(`[AI TURNS] Starting AI turn sequence. Bid: ${startBid.count}x ${startBid.value}s`);
-    console.log(`[AI TURNS] Last bidder: ${startLastBidder === 'player' ? 'Player' : `AI ${(startLastBidder as number) + 1}`}`);
-    console.log(`[AI TURNS] Starting from AI ${startFromIdx + 1}, stop at: ${stopAtIdx === -1 ? 'end' : `AI ${stopAtIdx + 1}`}`);
-    console.log(`[AI TURNS] Active opponents: ${opps.filter(o => !o.isEliminated && o.diceCount > 0).map(o => `AI ${o.id + 1}`).join(', ')}`);
 
     const scheduleNextTurn = () => {
       // Find next active opponent
       while (currentIdx < opps.length && (opps[currentIdx].isEliminated || opps[currentIdx].diceCount === 0)) {
-        console.log(`[AI TURNS] Skipping AI ${currentIdx + 1} (eliminated or no dice)`);
         currentIdx++;
       }
 
       // Check if we should stop (for clockwise order when AI started)
       if (stopAtIdx !== -1 && currentIdx >= stopAtIdx) {
-        console.log(`[AI TURNS] Reached stop point (AI ${stopAtIdx + 1}), returning to player`);
         setIsMyTurn(true);
         setCurrentTurnIndex(-1);
         return;
@@ -543,13 +513,11 @@ export default function PerudoGame() {
 
       // No more opponents, return to player
       if (currentIdx >= opps.length) {
-        console.log(`[AI TURNS] All AIs done, returning to player turn`);
         setIsMyTurn(true);
         setCurrentTurnIndex(-1);
         return;
       }
 
-      console.log(`[AI TURNS] Scheduling AI ${currentIdx + 1}'s turn`);
       setCurrentTurnIndex(currentIdx);
       setAiThinkingPrompt(getRandomThinkingPrompt()); // Random thinking prompt
       delay = 1800 + Math.random() * 700; // Longer delay so it's clear it's AI's turn
@@ -572,7 +540,6 @@ export default function PerudoGame() {
         );
 
         if (roundEnded) {
-          console.log(`[AI TURNS] Round ended by AI ${currentIdx + 1}`);
           return;
         }
       }, delay);
@@ -586,23 +553,18 @@ export default function PerudoGame() {
     const opps = opponentsRef.current;
     const starter = opps[starterIdx];
 
-    console.log(`[AI OPENING] AI ${starterIdx + 1} should make opening bid`);
 
     if (!starter || starter.isEliminated || starter.diceCount === 0) {
-      console.log(`[AI OPENING] AI ${starterIdx + 1} is invalid (eliminated or no dice), finding next...`);
       // Find next valid AI or fall back to player (clockwise order)
       // After an AI comes the next AI, after the last AI comes Player
       for (let i = starterIdx + 1; i < opps.length; i++) {
         if (!opps[i].isEliminated && opps[i].diceCount > 0) {
-          console.log(`[AI OPENING] Found AI ${i + 1} as next valid starter`);
           makeAIOpeningBid(i);
           return;
         }
       }
       // After last AI, player is next in clockwise order
-      console.log(`[AI OPENING] No valid AI after starter, checking if player can start`);
       if (playerDiceCount > 0) {
-        console.log(`[AI OPENING] Player starts`);
         setIsMyTurn(true);
         setCurrentTurnIndex(-1);
         return;
@@ -610,19 +572,16 @@ export default function PerudoGame() {
       // Check AIs before the starter (wrap around after player)
       for (let i = 0; i < starterIdx; i++) {
         if (!opps[i].isEliminated && opps[i].diceCount > 0) {
-          console.log(`[AI OPENING] Found AI ${i + 1} as next valid starter (wrapped)`);
           makeAIOpeningBid(i);
           return;
         }
       }
       // No valid AI found, player starts (fallback)
-      console.log(`[AI OPENING] No valid AI found at all, player starts by default`);
       setIsMyTurn(true);
       setCurrentTurnIndex(-1);
       return;
     }
 
-    console.log(`[AI OPENING] AI ${starterIdx + 1} hand: [${starter.hand.join(', ')}]`);
     setCurrentTurnIndex(starterIdx);
     setAiThinkingPrompt(getRandomThinkingPrompt()); // Random thinking prompt
 
@@ -670,7 +629,6 @@ export default function PerudoGame() {
         : bestValue;
 
       const openingBid = { count: Math.max(1, openingCount), value: finalValue };
-      console.log(`[AI OPENING] AI ${starterIdx + 1} >>> OPENING BID: ${openingBid.count}x ${openingBid.value}s (totalDice: ${currentTotalDice}, expected: ${expectedTotal.toFixed(1)}) <<<`);
       setCurrentBid(openingBid);
       currentBidRef.current = openingBid; // Sync update
       setLastBidder(starterIdx);
@@ -682,19 +640,16 @@ export default function PerudoGame() {
       const numAIs = opps.length;
       if (starterIdx >= numAIs - 1) {
         // Starter is the last AI, player is next
-        console.log(`[AI OPENING] AI ${starterIdx + 1} is last AI, player's turn`);
         setIsMyTurn(true);
         setCurrentTurnIndex(-1);
       } else {
         // Run remaining AIs after starter, then player
-        console.log(`[AI OPENING] Running AIs from ${starterIdx + 2} to end, then player`);
         runAITurns(openingBid, starterIdx, starterIdx + 1, -1);
       }
     }, 1500); // Slightly longer delay for opening bid
   }, [runAITurns, getRandomThinkingPrompt, playerDiceCount]);
 
   const handleRollComplete = useCallback(() => {
-    console.log(`[GAME] Roll complete. Round starter: ${roundStarter === 'player' ? 'Player' : `AI ${(roundStarter as number) + 1}`}`);
     setIsRolling(false);
     setTimeout(() => {
       setGameState('Bidding');
@@ -702,21 +657,17 @@ export default function PerudoGame() {
       // Check if an AI should start the round
       if (typeof roundStarter === 'number') {
         const opps = opponentsRef.current;
-        console.log(`[GAME] AI should start. Checking AI ${roundStarter + 1}...`);
         // Check if the starter is still valid
         if (opps[roundStarter] && !opps[roundStarter].isEliminated && opps[roundStarter].diceCount > 0) {
-          console.log(`[GAME] AI ${roundStarter + 1} is valid, they start`);
           setIsMyTurn(false);
           makeAIOpeningBid(roundStarter);
         } else {
-          console.log(`[GAME] AI ${roundStarter + 1} is eliminated, finding next clockwise...`);
           // Starter was eliminated, find next valid player clockwise
           // Order: Starter+1 -> ... -> N-1 -> Player -> 0 -> ... -> Starter-1
 
           // Check AIs after starter
           for (let i = roundStarter + 1; i < opps.length; i++) {
             if (!opps[i].isEliminated && opps[i].diceCount > 0) {
-              console.log(`[GAME] Found AI ${i + 1} as next valid starter`);
               setIsMyTurn(false);
               makeAIOpeningBid(i);
               return;
@@ -725,7 +676,6 @@ export default function PerudoGame() {
 
           // Check player (comes after last AI in turn order)
           if (playerDiceCount > 0) {
-            console.log(`[GAME] Player is next valid starter`);
             setIsMyTurn(true);
             setCurrentTurnIndex(-1);
             return;
@@ -734,7 +684,6 @@ export default function PerudoGame() {
           // Check AIs before starter (wrapped around after player)
           for (let i = 0; i < roundStarter; i++) {
             if (!opps[i].isEliminated && opps[i].diceCount > 0) {
-              console.log(`[GAME] Found AI ${i + 1} as next valid starter (wrapped)`);
               setIsMyTurn(false);
               makeAIOpeningBid(i);
               return;
@@ -742,14 +691,12 @@ export default function PerudoGame() {
           }
 
           // Fallback - this shouldn't happen in a valid game
-          console.log(`[GAME] No valid player found at all!`);
           setIsMyTurn(true);
           setCurrentTurnIndex(-1);
         }
       } else {
         // Player starts
         if (playerDiceCount > 0) {
-          console.log(`[GAME] Player starts the round`);
           setIsMyTurn(true);
           setCurrentTurnIndex(-1);
         } else {
@@ -757,7 +704,6 @@ export default function PerudoGame() {
           const opps = opponentsRef.current;
           for (let i = 0; i < opps.length; i++) {
             if (!opps[i].isEliminated && opps[i].diceCount > 0) {
-              console.log(`[GAME] Player eliminated, AI ${i + 1} starts`);
               setIsMyTurn(false);
               makeAIOpeningBid(i);
               return;
@@ -770,7 +716,6 @@ export default function PerudoGame() {
 
   const handleBid = useCallback(
     (bid: Bid) => {
-      console.log(`[PLAYER] >>> BIDDING ${bid.count}x ${bid.value}s <<<`);
       setCurrentBid(bid);
       currentBidRef.current = bid; // Sync update to avoid stale closure
       setLastBidder('player');
@@ -784,12 +729,10 @@ export default function PerudoGame() {
   );
 
   const handleDudo = useCallback(() => {
-    console.log(`[PLAYER] >>> CALLING DUDO <<<`);
     handleReveal('player', false);
   }, [handleReveal]);
 
   const handleCalza = useCallback(() => {
-    console.log(`[PLAYER] >>> CALLING CALZA <<<`);
     handleReveal('player', true);
   }, [handleReveal]);
 
@@ -1031,6 +974,14 @@ export default function PerudoGame() {
       return () => clearTimeout(timeout);
     }
   }, [countingComplete, loser, dyingDieOwner, playerHand.length, opponents]);
+
+  // Trigger spawning die animation when Calza succeeds and counting completes
+  useEffect(() => {
+    if (countingComplete && calzaSuccess && spawningDieOwner !== null) {
+      // The spawning animation will play automatically via the SpawningDie component
+      // No need to trigger anything else - the state is already set
+    }
+  }, [countingComplete, calzaSuccess, spawningDieOwner]);
 
   // Helper to check if a die should be visible based on reveal progress
   const isDieRevealed = useCallback((globalIdx: number) => {
@@ -1788,6 +1739,16 @@ export default function PerudoGame() {
                               </motion.div>
                             );
                           })}
+                          {/* Spawning die for Calza success */}
+                          {countingComplete && calzaSuccess && spawningDieOwner === 'player' && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.3 }}
+                            >
+                              <SpawningDie value={spawningDieValue} color={playerColor} />
+                            </motion.div>
+                          )}
                         </div>
                       </motion.div>
                     )}
@@ -1843,6 +1804,16 @@ export default function PerudoGame() {
                                   </motion.div>
                                 );
                               })}
+                              {/* Spawning die for Calza success */}
+                              {countingComplete && calzaSuccess && spawningDieOwner === opponent.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.3 }}
+                                >
+                                  <SpawningDie value={spawningDieValue} color={opponent.color} />
+                                </motion.div>
+                              )}
                             </div>
                           </motion.div>
                         )}
