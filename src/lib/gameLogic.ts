@@ -1,0 +1,361 @@
+import { Bid } from './types';
+
+/**
+ * Validates a bid according to Perudo rules:
+ * 1. Normal bid: increase count (with same or higher value) OR increase value (with same or higher count)
+ * 2. You can ONLY decrease value when switching TO aces
+ * 3. Bidding aces from non-aces: minimum count is ceil(previous_count / 2)
+ * 4. Bidding non-aces from aces: minimum count is (ace_count * 2) + 1
+ * 5. Palifico: can only increase count, not value
+ */
+export function isValidBid(
+  newBid: Bid,
+  currentBid: Bid | null,
+  totalDice: number,
+  isPalifico: boolean
+): { valid: boolean; reason?: string } {
+  // Basic validation
+  if (newBid.count < 1 || newBid.count > totalDice) {
+    return { valid: false, reason: 'Invalid count' };
+  }
+  if (newBid.value < 1 || newBid.value > 6) {
+    return { valid: false, reason: 'Invalid value' };
+  }
+
+  // First bid of the round - anything goes (except aces can't be first in some variants)
+  if (!currentBid) {
+    return { valid: true };
+  }
+
+  const biddingAces = newBid.value === 1;
+  const currentIsAces = currentBid.value === 1;
+
+  // Palifico rules: can only increase count, same value
+  if (isPalifico) {
+    if (newBid.value !== currentBid.value) {
+      return { valid: false, reason: 'Palifico: can only increase count' };
+    }
+    if (newBid.count <= currentBid.count) {
+      return { valid: false, reason: `Must bid more than ${currentBid.count}` };
+    }
+    return { valid: true };
+  }
+
+  // Switching TO aces from non-aces (special half-count rule)
+  if (biddingAces && !currentIsAces) {
+    const minAceCount = Math.ceil(currentBid.count / 2);
+    if (newBid.count < minAceCount) {
+      return { valid: false, reason: `Minimum ${minAceCount} aces required` };
+    }
+    return { valid: true };
+  }
+
+  // Switching FROM aces to non-aces (special double+1 rule)
+  if (!biddingAces && currentIsAces) {
+    const minCount = currentBid.count * 2 + 1;
+    if (newBid.count < minCount) {
+      return { valid: false, reason: `Minimum ${minCount}× required after aces` };
+    }
+    return { valid: true };
+  }
+
+  // Normal bidding (both aces or both non-aces)
+  // Rule: You can ONLY decrease value when going to aces (handled above)
+  // So here: must increase count (with same/higher value) OR increase value (with same/higher count)
+
+  if (newBid.value < currentBid.value) {
+    // Trying to decrease value without going to aces - NOT ALLOWED
+    return { valid: false, reason: `Cannot decrease value (only allowed when bidding aces)` };
+  }
+
+  if (newBid.value > currentBid.value) {
+    // Increasing value - count must be same or higher
+    if (newBid.count >= currentBid.count) {
+      return { valid: true };
+    }
+    return { valid: false, reason: `Count must be at least ${currentBid.count} when increasing value` };
+  }
+
+  // Same value - must increase count
+  if (newBid.count > currentBid.count) {
+    return { valid: true };
+  }
+
+  return { valid: false, reason: `Must bid higher than ${currentBid.count}× ${currentBid.value}s` };
+}
+
+/**
+ * Count matching dice according to Perudo rules
+ */
+export function countMatching(dice: number[], value: number, isPalifico: boolean): number {
+  if (isPalifico) {
+    return dice.filter((d) => d === value).length;
+  }
+  if (value === 1) {
+    return dice.filter((d) => d === 1).length;
+  }
+  return dice.filter((d) => d === value || d === 1).length;
+}
+
+/**
+ * AI decision making - should the AI call Dudo?
+ */
+export function shouldAICallDudo(
+  bid: Bid,
+  aiHand: number[],
+  totalDice: number,
+  isPalifico: boolean
+): boolean {
+  // Count how many matching dice the AI has
+  const aiMatching = countMatching(aiHand, bid.value, isPalifico);
+
+  // Estimate expected count from other players
+  // Probability of any die matching: 1/3 for non-aces (value + aces), 1/6 for aces
+  const otherDice = totalDice - aiHand.length;
+  const probability = isPalifico
+    ? 1/6
+    : (bid.value === 1 ? 1/6 : 2/6); // 2/6 because the value OR a 1 matches
+
+  const expectedFromOthers = otherDice * probability;
+  const expectedTotal = aiMatching + expectedFromOthers;
+
+  // Call Dudo if bid seems unlikely
+  // More aggressive when bid is much higher than expected
+  const bidExceedsExpected = bid.count > expectedTotal * 1.3;
+  const veryUnlikely = bid.count > expectedTotal * 1.8;
+
+  // Random factor to not be too predictable
+  const randomFactor = Math.random();
+
+  if (veryUnlikely && randomFactor < 0.8) return true;
+  if (bidExceedsExpected && randomFactor < 0.4) return true;
+  if (bid.count > totalDice * 0.6 && randomFactor < 0.3) return true;
+
+  return false;
+}
+
+/**
+ * AI decision making - should the AI call Calza?
+ * Calza is called when AI believes the bid count is EXACTLY right
+ */
+export function shouldAICallCalza(
+  bid: Bid,
+  aiHand: number[],
+  totalDice: number,
+  isPalifico: boolean
+): boolean {
+  const aiMatching = countMatching(aiHand, bid.value, isPalifico);
+  const otherDice = totalDice - aiHand.length;
+  const probability = isPalifico
+    ? 1/6
+    : (bid.value === 1 ? 1/6 : 2/6);
+
+  const expectedFromOthers = otherDice * probability;
+  const expectedTotal = aiMatching + expectedFromOthers;
+
+  // Calculate how close the bid is to the expected total
+  const difference = Math.abs(bid.count - expectedTotal);
+
+  // Strong Calza: If AI has many of the bid value and the bid seems exactly right
+  // For example: AI has 3 sixes, bid is 5 sixes, there are 10 other dice
+  // Expected from others = 10 * (2/6) = 3.33, total expected = 6.33
+  // If bid is 6, that's very close!
+
+  // If AI has most of what's needed and the bid looks exact
+  if (aiMatching >= bid.count * 0.5 && difference < 0.5) {
+    // Very confident - high chance to Calza
+    if (Math.random() < 0.4) return true;
+  }
+
+  // If AI can account for a large portion of the bid with their own dice
+  if (aiMatching >= bid.count - 2 && difference < 1.0) {
+    // Pretty confident
+    if (Math.random() < 0.25) return true;
+  }
+
+  // General case: bid is close to expected
+  if (difference < 0.8) {
+    if (Math.random() < 0.18) return true;
+  }
+
+  // Slightly wider margin but lower chance
+  if (difference < 1.2 && Math.random() < 0.08) return true;
+
+  // Special case: if bid count equals exactly what AI has + reasonable expectation
+  const perfectMatch = Math.round(expectedTotal) === bid.count;
+  if (perfectMatch && Math.random() < 0.2) return true;
+
+  return false;
+}
+
+/**
+ * Generate a valid AI bid - now with more strategic and risky behavior!
+ */
+export function generateAIBid(
+  currentBid: Bid,
+  aiHand: number[],
+  totalDice: number,
+  isPalifico: boolean
+): Bid | null {
+  // First check if AI should call Dudo
+  if (shouldAICallDudo(currentBid, aiHand, totalDice, isPalifico)) {
+    return null; // Signal to call Dudo
+  }
+
+  if (isPalifico) {
+    return { count: currentBid.count + 1, value: currentBid.value };
+  }
+
+  // Count what AI has (including jokers)
+  const valueCounts: Record<number, number> = {};
+  for (let v = 1; v <= 6; v++) {
+    valueCounts[v] = countMatching(aiHand, v, isPalifico);
+  }
+
+  // Pure counts (without jokers)
+  const pureValueCounts: Record<number, number> = {};
+  for (let v = 1; v <= 6; v++) {
+    pureValueCounts[v] = aiHand.filter(d => d === v).length;
+  }
+  const jokerCount = pureValueCounts[1];
+
+  // Strategy: prefer to bid on values we have
+  const strategies: Bid[] = [];
+
+  const currentIsAces = currentBid.value === 1;
+
+  // Calculate aggression based on game state
+  // More aggressive when: we have good dice, fewer total dice, AI is confident
+  const confidenceBoost = Math.random();
+  const shouldBeAggressive = confidenceBoost > 0.5;
+  const shouldBeSuperAggressive = confidenceBoost > 0.75;
+
+  // Option 1: Conservative - Increase count by 1, same value
+  strategies.push({ count: currentBid.count + 1, value: currentBid.value });
+
+  // Option 2: Same count, higher value (if possible)
+  if (currentBid.value < 6) {
+    strategies.push({ count: currentBid.count, value: currentBid.value + 1 });
+  }
+
+  // Option 3: Bid on our strongest value (if valid)
+  let bestValue = 2;
+  let bestCount = 0;
+  for (let v = 2; v <= 6; v++) {
+    if (valueCounts[v] > bestCount) {
+      bestCount = valueCounts[v];
+      bestValue = v;
+    }
+  }
+
+  if (bestValue > currentBid.value) {
+    strategies.push({ count: currentBid.count, value: bestValue });
+  } else if (bestValue >= currentBid.value) {
+    strategies.push({ count: currentBid.count + 1, value: bestValue });
+  }
+
+  // Option 4: RISKY - Jump up count aggressively (2-3 more)
+  if (shouldBeAggressive) {
+    const riskIncrease = Math.floor(Math.random() * 3) + 2; // 2-4 more
+    strategies.push({ count: currentBid.count + riskIncrease, value: currentBid.value });
+  }
+
+  // Option 5: SUPER RISKY - Jump to high value with same/higher count
+  if (shouldBeSuperAggressive && currentBid.value < 5) {
+    const targetValue = Math.floor(Math.random() * 2) + 5; // 5 or 6
+    strategies.push({ count: currentBid.count, value: targetValue });
+    strategies.push({ count: currentBid.count + 1, value: targetValue });
+  }
+
+  // Option 6: Switch TO aces strategically (if we have aces)
+  if (!currentIsAces && jokerCount >= 1 && Math.random() > 0.6) {
+    const minAceCount = Math.ceil(currentBid.count / 2);
+    strategies.push({ count: minAceCount, value: 1 });
+    // Sometimes bid slightly higher on aces
+    if (jokerCount >= 2) {
+      strategies.push({ count: minAceCount + 1, value: 1 });
+    }
+  }
+
+  // Option 7: Switch FROM aces to numbers (using the 2x+1 rule)
+  // This is important - AI should sometimes switch back from aces!
+  if (currentIsAces && Math.random() > 0.4) {
+    const minCount = currentBid.count * 2 + 1;
+    // Find our best non-ace value
+    let bestNonAceValue = 2;
+    let bestNonAceCount = 0;
+    for (let v = 2; v <= 6; v++) {
+      if (valueCounts[v] > bestNonAceCount) {
+        bestNonAceCount = valueCounts[v];
+        bestNonAceValue = v;
+      }
+    }
+    // Switch to our best value
+    strategies.push({ count: minCount, value: bestNonAceValue });
+    // Or switch to a random high value
+    const randomHigh = Math.floor(Math.random() * 3) + 4; // 4, 5, or 6
+    strategies.push({ count: minCount, value: randomHigh });
+  }
+
+  // Option 8: Bluff - bid on something we have none of!
+  if (shouldBeSuperAggressive && Math.random() > 0.7) {
+    // Find a value we have zero of
+    for (let v = 2; v <= 6; v++) {
+      if (pureValueCounts[v] === 0 && v > currentBid.value) {
+        strategies.push({ count: currentBid.count, value: v });
+        break;
+      }
+    }
+  }
+
+  // Filter to valid bids
+  const validBids = strategies.filter(bid =>
+    isValidBid(bid, currentBid, totalDice, isPalifico).valid
+  );
+
+  if (validBids.length === 0) {
+    // No valid bids, must Dudo
+    return null;
+  }
+
+  // Weight the strategies - prefer ones that match what we have
+  const weightedBids: { bid: Bid; weight: number }[] = validBids.map(bid => {
+    let weight = 1;
+    const ourCount = valueCounts[bid.value] || 0;
+
+    // Prefer values we have dice for
+    weight += ourCount * 2;
+
+    // Slight penalty for very high counts (risky)
+    if (bid.count > totalDice * 0.5) {
+      weight -= 1;
+    }
+
+    // Bonus for switching from aces (adds variety)
+    if (currentIsAces && bid.value !== 1) {
+      weight += 1;
+    }
+
+    // Small random factor
+    weight += Math.random() * 0.5;
+
+    return { bid, weight };
+  });
+
+  // Sort by weight and pick one of the top choices
+  weightedBids.sort((a, b) => b.weight - a.weight);
+
+  // Usually pick the best, but sometimes pick 2nd or 3rd best for variety
+  const pickIndex = Math.random() > 0.7 && weightedBids.length > 1
+    ? Math.min(Math.floor(Math.random() * 3), weightedBids.length - 1)
+    : 0;
+
+  return weightedBids[pickIndex].bid;
+}
+
+/**
+ * Roll dice
+ */
+export function rollDice(count: number): number[] {
+  return Array.from({ length: count }, () => Math.floor(Math.random() * 6) + 1);
+}

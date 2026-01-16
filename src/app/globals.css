@@ -1,0 +1,647 @@
+@import "tailwindcss";
+
+/* Balatro-inspired retro color palette */
+:root {
+  /* Deep Purples */
+  --purple-deep: #1a0a2e;
+  --purple-mid: #2d1b4e;
+  --purple-light: #4a2c7a;
+  --purple-glow: #7b4bb9;
+
+  /* Neon Oranges */
+  --orange-neon: #ff6b35;
+  --orange-bright: #ff8c42;
+  --orange-glow: #ffad60;
+
+  /* CRT Greens */
+  --green-crt: #39ff14;
+  --green-dim: #2eb82e;
+  --green-glow: #7fff00;
+
+  /* Accent colors */
+  --red-danger: #ff3366;
+  --gold-accent: #ffd700;
+  --white-soft: #e8e8e8;
+
+  /* Background */
+  --bg-dark: #0d0416;
+  --bg-card: #1a0a2e;
+
+  /* 3D Shadow colors */
+  --shadow-dark: rgba(0, 0, 0, 0.8);
+  --shadow-mid: rgba(0, 0, 0, 0.5);
+  --shadow-light: rgba(0, 0, 0, 0.3);
+}
+
+@theme {
+  --color-purple-deep: var(--purple-deep);
+  --color-purple-mid: var(--purple-mid);
+  --color-purple-light: var(--purple-light);
+  --color-purple-glow: var(--purple-glow);
+  --color-orange-neon: var(--orange-neon);
+  --color-orange-bright: var(--orange-bright);
+  --color-orange-glow: var(--orange-glow);
+  --color-green-crt: var(--green-crt);
+  --color-green-dim: var(--green-dim);
+  --color-green-glow: var(--green-glow);
+  --color-red-danger: var(--red-danger);
+  --color-gold-accent: var(--gold-accent);
+  --color-white-soft: var(--white-soft);
+  --color-bg-dark: var(--bg-dark);
+  --color-bg-card: var(--bg-card);
+}
+
+/* Base styles */
+body {
+  background: var(--bg-dark);
+  color: var(--white-soft);
+  font-family: 'Courier New', Courier, monospace;
+  perspective: 1000px;
+}
+
+/* Felt table background */
+.felt-table {
+  background:
+    radial-gradient(ellipse at center, var(--purple-mid) 0%, var(--bg-dark) 70%),
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(75, 0, 130, 0.03) 2px,
+      rgba(75, 0, 130, 0.03) 4px
+    );
+}
+
+/* CRT Scanline Overlay */
+.crt-overlay {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.12) 0px,
+    rgba(0, 0, 0, 0.12) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* CRT Screen Curve Effect (subtle vignette) */
+.crt-vignette {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9998;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+}
+
+/* Retro glow effect for text */
+.text-glow-orange {
+  text-shadow:
+    0 0 5px var(--orange-neon),
+    0 0 10px var(--orange-neon),
+    0 0 20px var(--orange-bright);
+}
+
+.text-glow-green {
+  text-shadow:
+    0 0 5px var(--green-crt),
+    0 0 10px var(--green-crt),
+    0 0 20px var(--green-dim);
+}
+
+.text-glow-purple {
+  text-shadow:
+    0 0 5px var(--purple-glow),
+    0 0 10px var(--purple-glow),
+    0 0 20px var(--purple-light);
+}
+
+/* ========== BALATRO-STYLE 3D EFFECTS ========== */
+
+/* Deep 3D shadow for floating elements */
+.shadow-3d {
+  box-shadow:
+    0 4px 0 0 rgba(0, 0, 0, 0.4),
+    0 8px 0 0 rgba(0, 0, 0, 0.2),
+    0 12px 20px 0 rgba(0, 0, 0, 0.5),
+    0 20px 40px 0 rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  transition: all 0.15s ease;
+}
+
+.shadow-3d:hover {
+  box-shadow:
+    0 6px 0 0 rgba(0, 0, 0, 0.4),
+    0 12px 0 0 rgba(0, 0, 0, 0.2),
+    0 16px 25px 0 rgba(0, 0, 0, 0.5),
+    0 25px 50px 0 rgba(0, 0, 0, 0.3);
+  transform: translateY(-4px);
+}
+
+.shadow-3d:active {
+  box-shadow:
+    0 2px 0 0 rgba(0, 0, 0, 0.4),
+    0 4px 0 0 rgba(0, 0, 0, 0.2),
+    0 6px 10px 0 rgba(0, 0, 0, 0.5),
+    0 10px 20px 0 rgba(0, 0, 0, 0.3);
+  transform: translateY(0px);
+}
+
+/* Dice-specific 3D shadow */
+.dice-shadow {
+  box-shadow:
+    0 4px 0 0 #b34700,
+    0 6px 0 0 #8c3800,
+    0 8px 15px 0 rgba(0, 0, 0, 0.6),
+    0 15px 30px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Panel 3D shadow */
+.panel-shadow {
+  box-shadow:
+    0 6px 0 0 rgba(26, 10, 46, 0.8),
+    0 10px 0 0 rgba(13, 4, 22, 0.6),
+    0 15px 30px 0 rgba(0, 0, 0, 0.7),
+    0 25px 50px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Button 3D effect */
+.button-3d {
+  position: relative;
+  transform: translateY(-2px);
+  transition: all 0.1s ease;
+}
+
+.button-3d::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 2px;
+  right: 2px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 0 0 4px 4px;
+  filter: blur(1px);
+}
+
+.button-3d:active {
+  transform: translateY(0px);
+}
+
+.button-3d:active::after {
+  height: 2px;
+  bottom: -2px;
+}
+
+/* Box glow effects with 3D */
+.box-glow-orange {
+  box-shadow:
+    0 0 5px var(--orange-neon),
+    0 0 15px rgba(255, 107, 53, 0.5),
+    inset 0 0 10px rgba(255, 107, 53, 0.1),
+    0 4px 0 0 #b34700,
+    0 8px 15px 0 rgba(0, 0, 0, 0.5);
+}
+
+.box-glow-green {
+  box-shadow:
+    0 0 5px var(--green-crt),
+    0 0 15px rgba(57, 255, 20, 0.5),
+    inset 0 0 10px rgba(57, 255, 20, 0.1);
+}
+
+.box-glow-purple {
+  box-shadow:
+    0 0 5px var(--purple-glow),
+    0 0 15px rgba(123, 75, 185, 0.5),
+    inset 0 0 10px rgba(123, 75, 185, 0.1);
+}
+
+/* ========== RETRO BUTTONS ========== */
+
+.retro-button {
+  background: linear-gradient(180deg, var(--purple-light) 0%, var(--purple-mid) 100%);
+  border: 2px solid var(--purple-glow);
+  border-bottom: 4px solid #2a1545;
+  color: var(--white-soft);
+  padding: 12px 24px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  position: relative;
+  box-shadow:
+    0 4px 0 0 #1a0a2e,
+    0 6px 10px 0 rgba(0, 0, 0, 0.5),
+    0 10px 20px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.retro-button:hover {
+  background: linear-gradient(180deg, var(--purple-glow) 0%, var(--purple-light) 100%);
+  box-shadow:
+    0 6px 0 0 #1a0a2e,
+    0 0 15px var(--purple-glow),
+    0 10px 15px 0 rgba(0, 0, 0, 0.5),
+    0 15px 30px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.retro-button:active {
+  box-shadow:
+    0 2px 0 0 #1a0a2e,
+    0 4px 8px 0 rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.retro-button-orange {
+  background: linear-gradient(180deg, var(--orange-bright) 0%, var(--orange-neon) 100%);
+  border: 2px solid var(--orange-glow);
+  border-bottom: 4px solid #b34700;
+  box-shadow:
+    0 4px 0 0 #8c3800,
+    0 6px 10px 0 rgba(0, 0, 0, 0.5),
+    0 10px 20px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.retro-button-orange:hover {
+  background: linear-gradient(180deg, var(--orange-glow) 0%, var(--orange-bright) 100%);
+  box-shadow:
+    0 6px 0 0 #8c3800,
+    0 0 15px var(--orange-neon),
+    0 10px 15px 0 rgba(0, 0, 0, 0.5),
+    0 15px 30px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+.retro-button-orange:active {
+  box-shadow:
+    0 2px 0 0 #8c3800,
+    0 4px 8px 0 rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.retro-button-danger {
+  background: linear-gradient(180deg, #ff4477 0%, var(--red-danger) 100%);
+  border: 2px solid #ff6699;
+  border-bottom: 4px solid #cc1144;
+  box-shadow:
+    0 4px 0 0 #990033,
+    0 6px 10px 0 rgba(0, 0, 0, 0.5),
+    0 10px 20px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.retro-button-danger:hover {
+  background: linear-gradient(180deg, #ff6699 0%, #ff4477 100%);
+  box-shadow:
+    0 6px 0 0 #990033,
+    0 0 15px var(--red-danger),
+    0 10px 15px 0 rgba(0, 0, 0, 0.5),
+    0 15px 30px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+.retro-button-danger:active {
+  box-shadow:
+    0 2px 0 0 #990033,
+    0 4px 8px 0 rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ========== RETRO PANELS ========== */
+
+.retro-panel {
+  background: linear-gradient(135deg, var(--purple-mid) 0%, var(--purple-deep) 100%);
+  border: 3px solid var(--purple-light);
+  border-radius: 12px;
+  box-shadow:
+    0 8px 0 0 rgba(26, 10, 46, 0.9),
+    0 12px 0 0 rgba(13, 4, 22, 0.7),
+    0 20px 40px 0 rgba(0, 0, 0, 0.6),
+    0 30px 60px 0 rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--purple-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--purple-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--purple-glow);
+}
+
+/* Dice dot styling */
+.dice-dot {
+  background: var(--bg-dark);
+  border-radius: 50%;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Joker/Ace symbol styling */
+.joker-symbol {
+  color: var(--gold-accent);
+  text-shadow:
+    0 0 5px var(--gold-accent),
+    0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Joker dice pulsating glow animation */
+@keyframes jokerGlow {
+  0%, 100% {
+    box-shadow:
+      0 4px 0 0 #b8860b,
+      0 6px 0 0 #8b6914,
+      0 8px 20px 0 rgba(0, 0, 0, 0.6),
+      0 15px 35px 0 rgba(0, 0, 0, 0.4),
+      0 0 15px rgba(255, 215, 0, 0.3),
+      0 0 30px rgba(255, 215, 0, 0.2),
+      inset 0 0 15px rgba(255, 215, 0, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 4px 0 0 #b8860b,
+      0 6px 0 0 #8b6914,
+      0 8px 20px 0 rgba(0, 0, 0, 0.6),
+      0 15px 35px 0 rgba(0, 0, 0, 0.4),
+      0 0 25px rgba(255, 215, 0, 0.5),
+      0 0 50px rgba(255, 215, 0, 0.35),
+      inset 0 0 25px rgba(255, 215, 0, 0.2);
+  }
+}
+
+.joker-glow {
+  animation: jokerGlow 2s ease-in-out infinite;
+}
+
+/* ========== DICE SHINE EFFECT ========== */
+@keyframes diceShine {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  50% {
+    left: 100%;
+    opacity: 0.6;
+  }
+  51% {
+    opacity: 0;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+.dice-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.dice-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: diceShine 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Stagger shine on different dice */
+.dice-shine-delay-1::before { animation-delay: 0.5s; }
+.dice-shine-delay-2::before { animation-delay: 1s; }
+.dice-shine-delay-3::before { animation-delay: 1.5s; }
+.dice-shine-delay-4::before { animation-delay: 2s; }
+
+/* ========== SUBTLE DICE FLOAT ========== */
+@keyframes diceFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(var(--dice-tilt, 0deg));
+  }
+  50% {
+    transform: translateY(-2px) rotate(calc(var(--dice-tilt, 0deg) + 0.5deg));
+  }
+}
+
+.dice-float {
+  animation: diceFloat 3s ease-in-out infinite;
+}
+
+/* ========== CRT EFFECTS ========== */
+.crt-screen {
+  position: relative;
+}
+
+.crt-screen::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1) 0px,
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.4;
+}
+
+/* Subtle screen flicker */
+@keyframes screenFlicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.95; }
+  94% { opacity: 1; }
+  97% { opacity: 0.98; }
+  98% { opacity: 1; }
+}
+
+.crt-flicker {
+  animation: screenFlicker 8s ease-in-out infinite;
+}
+
+/* RGB Chromatic aberration on edges (very subtle) */
+@keyframes rgbShift {
+  0%, 100% {
+    text-shadow:
+      -0.5px 0 rgba(255, 0, 0, 0.1),
+      0.5px 0 rgba(0, 255, 255, 0.1);
+  }
+  50% {
+    text-shadow:
+      -1px 0 rgba(255, 0, 0, 0.15),
+      1px 0 rgba(0, 255, 255, 0.15);
+  }
+}
+
+.crt-text {
+  animation: rgbShift 4s ease-in-out infinite;
+}
+
+/* ========== SCANLINES & VIGNETTE OVERLAY ========== */
+.scanlines-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.scanlines-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  animation: scanlineMove 8s linear infinite;
+}
+
+.scanlines-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 60%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+}
+
+@keyframes scanlineMove {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(4px);
+  }
+}
+
+/* ========== NEON GLOW TEXT UTILITIES ========== */
+.neon-red {
+  color: #ff3366;
+  text-shadow:
+    0 0 5px #ff3366,
+    0 0 10px #ff3366,
+    0 0 20px #ff3366,
+    0 0 40px #ff0044;
+}
+
+.neon-green {
+  color: #22c55e;
+  text-shadow:
+    0 0 5px #22c55e,
+    0 0 10px #22c55e,
+    0 0 20px #22c55e,
+    0 0 40px #16a34a;
+}
+
+.neon-gold {
+  color: #ffd700;
+  text-shadow:
+    0 0 5px #ffd700,
+    0 0 10px #ffd700,
+    0 0 20px #ffd700,
+    0 0 40px #b8860b;
+}
+
+/* ========== DICE DEATH ANIMATION ========== */
+@keyframes dieVibrate {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-2px, -1px) rotate(-2deg); }
+  20% { transform: translate(2px, 1px) rotate(2deg); }
+  30% { transform: translate(-1px, 2px) rotate(-1deg); }
+  40% { transform: translate(1px, -2px) rotate(1deg); }
+  50% { transform: translate(-2px, 1px) rotate(-2deg); }
+  60% { transform: translate(2px, -1px) rotate(2deg); }
+  70% { transform: translate(-1px, -2px) rotate(-1deg); }
+  80% { transform: translate(1px, 2px) rotate(1deg); }
+  90% { transform: translate(-2px, -1px) rotate(-2deg); }
+}
+
+.die-dying {
+  animation: dieVibrate 0.1s linear infinite;
+  filter: saturate(0) brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(6);
+}
+
+/* Pixel dust particle */
+@keyframes pixelDust {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0);
+  }
+}
+
+.pixel-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #ff3366;
+  animation: pixelDust 0.6s ease-out forwards;
+}
