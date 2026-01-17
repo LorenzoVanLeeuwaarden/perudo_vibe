@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useState, useCallback } from 'react';
-import { Trophy, Star, Crown, Sparkles, Target, Dices, Skull } from 'lucide-react';
+import { Trophy, Star, Crown, Sparkles } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 
 interface Particle {
@@ -22,11 +22,6 @@ interface Particle {
 interface VictoryScreenProps {
   playerColor: PlayerColor;
   onPlayAgain: () => void;
-  roundsPlayed: number;
-  successfulDudoCalls: number;
-  successfulCalzaCalls: number;
-  diceRemaining: number;
-  opponentsEliminated: number;
 }
 
 const FIREWORK_COLORS = [
@@ -34,15 +29,7 @@ const FIREWORK_COLORS = [
   '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43',
 ];
 
-export function VictoryScreen({
-  playerColor,
-  onPlayAgain,
-  roundsPlayed,
-  successfulDudoCalls,
-  successfulCalzaCalls,
-  diceRemaining,
-  opponentsEliminated
-}: VictoryScreenProps) {
+export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) {
   const [particles, setParticles] = useState<Particle[]>([]);
   const colorConfig = PLAYER_COLORS[playerColor];
 
@@ -324,85 +311,25 @@ export function VictoryScreen({
             You defeated all opponents!
           </motion.p>
 
-          {/* Stats Grid */}
-          <div className="flex flex-wrap justify-center gap-4 mb-10 max-w-2xl mx-auto px-4">
-            {/* Rounds Played */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 1.4, type: 'spring', stiffness: 200 }}
-              className="flex flex-col items-center gap-2 px-6 py-3 rounded-lg bg-purple-deep/50 border border-gold-accent/30 backdrop-blur-sm min-w-[140px]"
-            >
-              <Target className="w-6 h-6 text-gold-accent" />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gold-accent">{roundsPlayed}</div>
-                <div className="text-xs text-white-soft/70 uppercase tracking-wide">Rounds</div>
-              </div>
-            </motion.div>
-
-            {/* Successful Dudos */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 1.5, type: 'spring', stiffness: 200 }}
-              className="flex flex-col items-center gap-2 px-6 py-3 rounded-lg bg-purple-deep/50 border border-gold-accent/30 backdrop-blur-sm min-w-[140px]"
-            >
-              <Trophy className="w-6 h-6 text-gold-accent" />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gold-accent">{successfulDudoCalls}</div>
-                <div className="text-xs text-white-soft/70 uppercase tracking-wide">Dudos</div>
-              </div>
-            </motion.div>
-
-            {/* Successful Calzas */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 1.6, type: 'spring', stiffness: 200 }}
-              className="flex flex-col items-center gap-2 px-6 py-3 rounded-lg bg-purple-deep/50 border border-gold-accent/30 backdrop-blur-sm min-w-[140px]"
-            >
-              <Sparkles className="w-6 h-6 text-gold-accent" />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gold-accent">{successfulCalzaCalls}</div>
-                <div className="text-xs text-white-soft/70 uppercase tracking-wide">Calzas</div>
-              </div>
-            </motion.div>
-
-            {/* Dice Remaining */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 1.7, type: 'spring', stiffness: 200 }}
-              className="flex flex-col items-center gap-2 px-6 py-3 rounded-lg bg-purple-deep/50 border border-gold-accent/30 backdrop-blur-sm min-w-[140px]"
-            >
-              <Dices className="w-6 h-6 text-gold-accent" />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gold-accent">{diceRemaining}</div>
-                <div className="text-xs text-white-soft/70 uppercase tracking-wide">Dice Left</div>
-              </div>
-            </motion.div>
-
-            {/* Opponents Eliminated */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 1.8, type: 'spring', stiffness: 200 }}
-              className="flex flex-col items-center gap-2 px-6 py-3 rounded-lg bg-purple-deep/50 border border-gold-accent/30 backdrop-blur-sm min-w-[140px]"
-            >
-              <Skull className="w-6 h-6 text-gold-accent" />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gold-accent">{opponentsEliminated}</div>
-                <div className="text-xs text-white-soft/70 uppercase tracking-wide">Eliminated</div>
-              </div>
-            </motion.div>
-          </div>
+          {/* Stats */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1.4 }}
+            className="flex justify-center gap-6 mb-10"
+          >
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-deep/50 border border-gold-accent/30">
+              <Star className="w-5 h-5 text-gold-accent" />
+              <span className="text-gold-accent font-bold">Champion</span>
+            </div>
+          </motion.div>
         </motion.div>
 
         {/* Play again button */}
         <motion.button
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.0 }}
+          transition={{ delay: 1.6 }}
           whileHover={{ scale: 1.05, y: -4 }}
           whileTap={{ scale: 0.98, y: 0 }}
           onClick={onPlayAgain}

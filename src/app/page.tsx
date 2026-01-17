@@ -158,11 +158,6 @@ export default function PerudoGame() {
   const [calzaSuccess, setCalzaSuccess] = useState(false);
   const [spawningDieValue, setSpawningDieValue] = useState<number>(1);
 
-  // Game statistics tracking
-  const [totalRounds, setTotalRounds] = useState(0);
-  const [playerSuccessfulDudos, setPlayerSuccessfulDudos] = useState(0);
-  const [playerSuccessfulCalzas, setPlayerSuccessfulCalzas] = useState(0);
-
   // Refs to track latest state for AI turns (avoids stale closures)
   const opponentsRef = useRef(opponents);
   const currentBidRef = useRef(currentBid);
@@ -244,10 +239,6 @@ export default function PerudoGame() {
     const anyPalifico = palificoEnabled && (playerDiceCount === 1 || newOpponents.some(o => o.diceCount === 1));
     setIsPalifico(anyPalifico);
     isPalificoRef.current = anyPalifico; // Sync update
-    // Reset game statistics
-    setTotalRounds(0);
-    setPlayerSuccessfulDudos(0);
-    setPlayerSuccessfulCalzas(0);
   }, [playerDiceCount, opponentCount, initializeOpponents, palificoEnabled]);
 
   const handleRoll = useCallback(() => {
@@ -332,7 +323,6 @@ export default function PerudoGame() {
           setSpawningDieValue(Math.floor(Math.random() * 6) + 1);
           if (isPlayerCaller) {
             setPlayerDiceCount((c) => Math.min(c + 1, 5));
-            setPlayerSuccessfulCalzas((count) => count + 1);
           } else {
             setOpponents(prev => prev.map(o =>
               o.id === caller ? { ...o, diceCount: Math.min(o.diceCount + 1, 5) } : o
@@ -367,7 +357,6 @@ export default function PerudoGame() {
           } else {
             // Last bidder loses a die (their bluff was caught)
             roundLoser = lastBidderValue;
-            setPlayerSuccessfulDudos((count) => count + 1);
             if (typeof lastBidderValue === 'number') {
               setOpponents(prev => prev.map(o => {
                 if (o.id === lastBidderValue) {
@@ -802,8 +791,6 @@ export default function PerudoGame() {
       const anyPalifico = palificoEnabled && (playerDiceCount === 1 || opponents.some(o => o.diceCount === 1 && !o.isEliminated));
       setIsPalifico(anyPalifico);
       isPalificoRef.current = anyPalifico; // Sync update
-      // Increment round counter
-      setTotalRounds((count) => count + 1);
     }
   }, [playerDiceCount, opponents, palificoEnabled]);
 
@@ -828,10 +815,6 @@ export default function PerudoGame() {
     setIsPalifico(false);
     isPalificoRef.current = false;
     setGameState('Lobby');
-    // Reset game statistics
-    setTotalRounds(0);
-    setPlayerSuccessfulDudos(0);
-    setPlayerSuccessfulCalzas(0);
   }, []);
 
   // Quit to main menu
@@ -850,10 +833,6 @@ export default function PerudoGame() {
     setLoser(null);
     setRoundStarter('player');
     setGameState('Lobby');
-    // Reset game statistics
-    setTotalRounds(0);
-    setPlayerSuccessfulDudos(0);
-    setPlayerSuccessfulCalzas(0);
   }, []);
 
   // Calculate all matching dice for the reveal animation
@@ -1685,30 +1664,14 @@ export default function PerudoGame() {
       {/* Victory Screen */}
       <AnimatePresence>
         {gameState === 'Victory' && (
-          <VictoryScreen
-            playerColor={playerColor}
-            onPlayAgain={resetGame}
-            roundsPlayed={totalRounds}
-            successfulDudoCalls={playerSuccessfulDudos}
-            successfulCalzaCalls={playerSuccessfulCalzas}
-            diceRemaining={playerDiceCount}
-            opponentsEliminated={opponents.filter(o => o.isEliminated || o.diceCount === 0).length}
-          />
+          <VictoryScreen playerColor={playerColor} onPlayAgain={resetGame} />
         )}
       </AnimatePresence>
 
       {/* Defeat Screen */}
       <AnimatePresence>
         {gameState === 'Defeat' && (
-          <DefeatScreen
-            playerColor={playerColor}
-            onPlayAgain={resetGame}
-            roundsPlayed={totalRounds}
-            successfulDudoCalls={playerSuccessfulDudos}
-            successfulCalzaCalls={playerSuccessfulCalzas}
-            diceRemaining={playerDiceCount}
-            opponentsEliminated={opponents.filter(o => o.isEliminated || o.diceCount === 0).length}
-          />
+          <DefeatScreen playerColor={playerColor} onPlayAgain={resetGame} />
         )}
       </AnimatePresence>
 
