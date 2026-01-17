@@ -14,6 +14,8 @@ interface SettingsPanelProps {
   setPlayerColor: (color: PlayerColor) => void;
   palificoEnabled: boolean;
   setPalificoEnabled: (enabled: boolean) => void;
+  playerName: string;
+  setPlayerName: (name: string) => void;
 }
 
 export function SettingsPanel({
@@ -23,6 +25,8 @@ export function SettingsPanel({
   setPlayerColor,
   palificoEnabled,
   setPalificoEnabled,
+  playerName,
+  setPlayerName,
 }: SettingsPanelProps) {
   return (
     <AnimatePresence>
@@ -52,6 +56,18 @@ export function SettingsPanel({
               >
                 <X className="w-5 h-5 text-white-soft" />
               </motion.button>
+            </div>
+
+            {/* Player Name */}
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-white-soft/80 uppercase tracking-wider mb-3">Player Name</h3>
+              <input
+                type="text"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                placeholder="Enter your name..."
+                className="w-full px-4 py-3 rounded-lg bg-purple-deep/50 border-2 border-purple-mid text-white-soft placeholder:text-white-soft/40 focus:border-purple-glow focus:outline-none transition-colors"
+              />
             </div>
 
             {/* Color Selection */}
