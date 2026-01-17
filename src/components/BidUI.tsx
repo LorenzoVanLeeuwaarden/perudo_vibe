@@ -95,14 +95,22 @@ export function BidUI({
       )}
 
       {currentBid && (
-        <div className="mb-6 text-center">
-          <p className="text-sm text-white-soft/60 uppercase tracking-wider mb-2">
-            Current Bid
-            {lastBidderName && (
-              <span className="ml-2 opacity-70">by {lastBidderName}</span>
-            )}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-1 max-w-[280px] mx-auto">
+        <div className="mb-6 relative">
+          {/* Player chip badge - tucked into top border */}
+          {lastBidderName && (
+            <div
+              className="absolute -top-3 left-3 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-[0.15em] z-10"
+              style={{
+                background: `linear-gradient(135deg, ${lastBidderColor ? `var(--${lastBidderColor === 'orange' ? 'marigold' : lastBidderColor === 'blue' ? 'turquoise' : 'purple-light'})` : 'var(--purple-light)'} 0%, var(--purple-mid) 100%)`,
+                border: '1px solid var(--turquoise-dark)',
+                color: 'var(--bone-white)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+              }}
+            >
+              {lastBidderName}
+            </div>
+          )}
+          <div className="flex flex-wrap items-center justify-center gap-1 max-w-[280px] mx-auto pt-2">
             {Array.from({ length: currentBid.count }).map((_, i) => (
               <motion.div
                 key={i}
@@ -120,7 +128,7 @@ export function BidUI({
               </motion.div>
             ))}
           </div>
-          <p className="text-lg font-bold text-white-soft/80 mt-2">
+          <p className="text-lg font-bold text-white-soft/80 mt-2 text-center">
             {currentBid.count}×
           </p>
         </div>
@@ -128,26 +136,30 @@ export function BidUI({
 
       {isMyTurn && (
         <>
-          <div className="flex items-center justify-center gap-8 mb-6">
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-white-soft/60 uppercase mb-2">Count</span>
-              <div className="flex flex-col items-center gap-1">
+          <div className="flex items-center justify-center gap-6 mb-6">
+            {/* COUNT selector */}
+            <div className="flex flex-col items-center relative">
+              {/* Micro-label tucked into top */}
+              <span className="text-[10px] font-mono text-white-soft/40 uppercase tracking-[0.2em] absolute -top-1 left-1/2 -translate-x-1/2 bg-purple-deep px-1">
+                cnt
+              </span>
+              <div className="flex flex-col items-center gap-1 pt-2">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={incrementCount}
-                  className="w-10 h-8 flex items-center justify-center bg-purple-mid hover:bg-purple-light rounded border border-purple-glow transition-colors"
+                  className="w-12 h-8 flex items-center justify-center bg-purple-mid hover:bg-purple-light rounded border border-turquoise-dark transition-colors"
                 >
                   <ChevronUp className="w-5 h-5 text-white-soft" />
                 </motion.button>
                 <div
-                  className="w-16 h-16 flex items-center justify-center rounded-lg border-2 border-purple-glow"
+                  className="w-20 h-20 flex items-center justify-center rounded-lg border-2 border-turquoise-dark"
                   style={{
                     background: 'linear-gradient(135deg, var(--purple-mid) 0%, var(--bg-dark) 100%)',
-                    boxShadow: '0 4px 0 0 #1a0a2e, 0 6px 10px 0 rgba(0, 0, 0, 0.5)',
+                    boxShadow: '0 4px 0 0 #061212, 0 6px 10px 0 rgba(0, 0, 0, 0.5)',
                   }}
                 >
-                  <span className="text-3xl font-bold text-orange-neon text-glow-orange">
+                  <span className="text-5xl font-black text-marigold-glow" style={{ textShadow: '0 0 20px var(--marigold), 0 2px 0 var(--marigold)' }}>
                     {count}
                   </span>
                 </div>
@@ -155,34 +167,37 @@ export function BidUI({
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={decrementCount}
-                  className="w-10 h-8 flex items-center justify-center bg-purple-mid hover:bg-purple-light rounded border border-purple-glow transition-colors"
+                  className="w-12 h-8 flex items-center justify-center bg-purple-mid hover:bg-purple-light rounded border border-turquoise-dark transition-colors"
                 >
                   <ChevronDown className="w-5 h-5 text-white-soft" />
                 </motion.button>
               </div>
             </div>
 
-            <span className="text-3xl font-bold text-white-soft/60 mt-6">×</span>
+            {/* Large multiplication sign */}
+            <span className="text-5xl font-black text-white-soft/30 mt-4">×</span>
 
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-white-soft/60 uppercase mb-2">
-                {isValueLocked ? 'Locked' : 'Value'}
+            {/* VALUE selector */}
+            <div className="flex flex-col items-center relative">
+              {/* Micro-label tucked into top */}
+              <span className="text-[10px] font-mono text-white-soft/40 uppercase tracking-[0.2em] absolute -top-1 left-1/2 -translate-x-1/2 bg-purple-deep px-1">
+                {isValueLocked ? 'lock' : 'val'}
               </span>
-              <div className="flex flex-col items-center gap-1">
+              <div className="flex flex-col items-center gap-1 pt-2">
                 <motion.button
                   whileHover={!isValueLocked ? { scale: 1.1 } : {}}
                   whileTap={!isValueLocked ? { scale: 0.95 } : {}}
                   onClick={incrementValue}
                   disabled={isValueLocked}
-                  className={`w-10 h-8 flex items-center justify-center rounded border transition-colors ${
+                  className={`w-12 h-8 flex items-center justify-center rounded border transition-colors ${
                     isValueLocked
-                      ? 'bg-purple-deep border-purple-mid opacity-50 cursor-not-allowed'
-                      : 'bg-purple-mid hover:bg-purple-light border-purple-glow'
+                      ? 'bg-purple-deep border-purple-mid opacity-30 cursor-not-allowed'
+                      : 'bg-purple-mid hover:bg-purple-light border-turquoise-dark'
                   }`}
                 >
                   <ChevronUp className="w-5 h-5 text-white-soft" />
                 </motion.button>
-                <div className="w-16 h-16 flex items-center justify-center">
+                <div className="w-20 h-20 flex items-center justify-center">
                   <Dice value={value} size="lg" isPalifico={isPalifico} color={playerColor} />
                 </div>
                 <motion.button
@@ -190,10 +205,10 @@ export function BidUI({
                   whileTap={!isValueLocked ? { scale: 0.95 } : {}}
                   onClick={decrementValue}
                   disabled={isValueLocked}
-                  className={`w-10 h-8 flex items-center justify-center rounded border transition-colors ${
+                  className={`w-12 h-8 flex items-center justify-center rounded border transition-colors ${
                     isValueLocked
-                      ? 'bg-purple-deep border-purple-mid opacity-50 cursor-not-allowed'
-                      : 'bg-purple-mid hover:bg-purple-light border-purple-glow'
+                      ? 'bg-purple-deep border-purple-mid opacity-30 cursor-not-allowed'
+                      : 'bg-purple-mid hover:bg-purple-light border-turquoise-dark'
                   }`}
                 >
                   <ChevronDown className="w-5 h-5 text-white-soft" />

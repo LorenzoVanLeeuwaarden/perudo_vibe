@@ -52,8 +52,10 @@ export function SortedDiceDisplay({
     setIsSorted(false);
 
     // Then animate to sorted after a delay
+    // Sort order: 2, 3, 4, 5, 6, 1 (Jokers at end, next to 6)
     const sortTimeout = setTimeout(() => {
-      const sorted = [...diceWithIds].sort((a, b) => a.value - b.value);
+      const getSortValue = (v: number) => v === 1 ? 7 : v;
+      const sorted = [...diceWithIds].sort((a, b) => getSortValue(a.value) - getSortValue(b.value));
       setDisplayDice(sorted);
       setIsSorted(true);
     }, 800); // Delay before sorting animation starts

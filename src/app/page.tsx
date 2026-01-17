@@ -1422,8 +1422,18 @@ export default function PerudoGame() {
               exit={{ opacity: 0 }}
               className="flex flex-col items-center gap-6"
             >
-              <div className="retro-panel p-4">
-                <p className="text-xs text-white-soft/60 uppercase text-center mb-3">Your Dice</p>
+              <motion.div
+                className="retro-panel p-4 relative"
+                animate={{
+                  boxShadow: [
+                    `inset 0 0 20px ${PLAYER_COLORS[playerColor].glow}, 0 8px 0 0 rgba(3, 15, 15, 0.9), 0 12px 0 0 rgba(0, 10, 10, 0.7)`,
+                    `inset 0 0 35px ${PLAYER_COLORS[playerColor].glow}, 0 8px 0 0 rgba(3, 15, 15, 0.9), 0 12px 0 0 rgba(0, 10, 10, 0.7)`,
+                    `inset 0 0 20px ${PLAYER_COLORS[playerColor].glow}, 0 8px 0 0 rgba(3, 15, 15, 0.9), 0 12px 0 0 rgba(0, 10, 10, 0.7)`,
+                  ],
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ borderColor: PLAYER_COLORS[playerColor].shadow }}
+              >
                 <SortedDiceDisplay
                   dice={playerHand}
                   color={playerColor}
@@ -1431,7 +1441,7 @@ export default function PerudoGame() {
                   size="md"
                   animateSort={true}
                 />
-              </div>
+              </motion.div>
 
               <BidUI
                 currentBid={currentBid}
