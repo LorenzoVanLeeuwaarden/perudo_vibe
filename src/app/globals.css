@@ -251,13 +251,14 @@ body {
 .retro-button {
   background: linear-gradient(180deg, var(--purple-light) 0%, var(--purple-mid) 100%);
   border: 2px solid var(--turquoise);
-  border-bottom: 4px solid var(--turquoise-dark);
+  border-bottom: 3px solid var(--turquoise-dark);
   color: var(--bone-white);
-  padding: 12px 24px;
+  padding: 8px 20px;
   font-family: 'Courier New', Courier, monospace;
   font-weight: bold;
+  font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 0.2em;
   cursor: pointer;
   transition: all 0.1s ease;
   position: relative;
@@ -293,7 +294,7 @@ body {
 .retro-button-orange {
   background: linear-gradient(180deg, var(--marigold-glow) 0%, var(--marigold) 100%);
   border: 2px solid var(--orange-glow);
-  border-bottom: 4px solid #b45309;
+  border-bottom: 3px solid #b45309;
   color: #1f2937;
   box-shadow:
     0 4px 0 0 #92400e,
@@ -323,7 +324,7 @@ body {
 .retro-button-danger {
   background: linear-gradient(180deg, var(--magenta-glow) 0%, var(--magenta-bright) 100%);
   border: 2px solid #f9a8d4;
-  border-bottom: 4px solid #be185d;
+  border-bottom: 3px solid #be185d;
   box-shadow:
     0 4px 0 0 #9d174d,
     0 6px 10px 0 rgba(0, 0, 0, 0.5),

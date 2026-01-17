@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, RotateCcw, Trophy, Skull, Dices, Target, Check, Users, Minus, Plus, Home, X, AlertTriangle, Settings } from 'lucide-react';
 import { GameState, Bid, PlayerColor, PLAYER_COLORS } from '@/lib/types';
-import { DiceRoller3D } from '@/components/DiceRoller3D';
+import { DiceCup } from '@/components/DiceCup';
 import { BidUI } from '@/components/BidUI';
 import { Dice } from '@/components/Dice';
 import { ShaderBackground } from '@/components/ShaderBackground';
@@ -133,7 +133,7 @@ export default function PerudoGame() {
   const [actualCount, setActualCount] = useState<number>(0);
   const [playerColor, setPlayerColor] = useState<PlayerColor>('blue');
   const [showSettings, setShowSettings] = useState(false);
-  const [palificoEnabled, setPalificoEnabled] = useState(true);
+  const [palificoEnabled, setPalificoEnabled] = useState(false);
   const [lastBidder, setLastBidder] = useState<'player' | number | null>(null);
   const [highlightedDiceIndex, setHighlightedDiceIndex] = useState<number>(-1);
   const [countingComplete, setCountingComplete] = useState(false);
@@ -1193,8 +1193,8 @@ export default function PerudoGame() {
   }, [gameState, countingComplete, revealOpponentDiceCounts, opponents]);
 
   return (
-    <main className={`min-h-screen flex flex-col items-center justify-center relative overflow-hidden crt-screen crt-flicker ${
-      gameState === 'Lobby' ? 'p-8' : 'p-4 pt-12'
+    <main className={`h-screen overflow-hidden flex flex-col items-center justify-center relative crt-screen crt-flicker ${
+      gameState === 'Lobby' ? 'p-8' : 'p-0'
     }`}>
       {/* Animated shader background */}
       <ShaderBackground />
@@ -1253,12 +1253,15 @@ export default function PerudoGame() {
         </motion.header>
       )}
 
-      {/* Dice count display */}
-      {gameState !== 'Lobby' && (
+      {/* Dice count display - fixed at top (only for non-Bidding game states) */}
+      {gameState !== 'Lobby' && gameState !== 'Bidding' && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-wrap justify-center gap-4 mb-6 relative z-10 max-w-2xl"
+          className="fixed top-0 left-0 right-0 flex flex-wrap justify-center gap-4 pt-4 pb-2 z-20 max-w-2xl mx-auto"
+          style={{
+            background: 'linear-gradient(180deg, rgba(3, 15, 15, 0.95) 0%, rgba(3, 15, 15, 0.8) 70%, transparent 100%)',
+          }}
         >
           {/* Player dice */}
           <PlayerDiceBadge
@@ -1266,7 +1269,7 @@ export default function PerudoGame() {
             diceCount={getDisplayPlayerDiceCount()}
             color={playerColor}
             isActive={isMyTurn}
-            hasPalifico={getDisplayPlayerDiceCount() === 1}
+            hasPalifico={palificoEnabled && getDisplayPlayerDiceCount() === 1}
             isEliminated={false}
             showThinking={false}
             thinkingPrompt=""
@@ -1274,9 +1277,9 @@ export default function PerudoGame() {
 
           {/* Opponent dice */}
           {opponents.map((opponent) => {
-            const isThinking = currentTurnIndex === opponent.id && gameState === 'Bidding';
+            const isThinking = currentTurnIndex === opponent.id;
             const displayCount = getDisplayOpponentDiceCount(opponent.id);
-            const hasPalifico = displayCount === 1 && !opponent.isEliminated;
+            const hasPalifico = palificoEnabled && displayCount === 1 && !opponent.isEliminated;
             return (
               <PlayerDiceBadge
                 key={opponent.id}
@@ -1286,8 +1289,8 @@ export default function PerudoGame() {
                 isActive={isThinking}
                 hasPalifico={hasPalifico}
                 isEliminated={opponent.isEliminated}
-                showThinking={isThinking}
-                thinkingPrompt={aiThinkingPrompt}
+                showThinking={false}
+                thinkingPrompt=""
               />
             );
           })}
@@ -1403,59 +1406,237 @@ export default function PerudoGame() {
               exit={{ opacity: 0, scale: 0.9 }}
               className="flex flex-col items-center"
             >
-              <DiceRoller3D
+              <DiceCup
                 dice={playerHand}
-                isRolling={isRolling}
                 onRoll={handleRoll}
                 onComplete={handleRollComplete}
                 playerColor={playerColor}
+                diceCount={playerDiceCount}
               />
             </motion.div>
           )}
 
-          {/* BIDDING */}
+          {/* BIDDING - Three-Zone Grid Layout */}
           {gameState === 'Bidding' && (
             <motion.div
               key="bidding"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center gap-6"
+              className="h-screen w-screen flex flex-col justify-between overflow-hidden p-6"
             >
-              <motion.div
-                className="retro-panel p-4 relative"
-                animate={{
-                  boxShadow: [
-                    `inset 0 0 20px ${PLAYER_COLORS[playerColor].glow}, 0 8px 0 0 rgba(3, 15, 15, 0.9), 0 12px 0 0 rgba(0, 10, 10, 0.7)`,
-                    `inset 0 0 35px ${PLAYER_COLORS[playerColor].glow}, 0 8px 0 0 rgba(3, 15, 15, 0.9), 0 12px 0 0 rgba(0, 10, 10, 0.7)`,
-                    `inset 0 0 20px ${PLAYER_COLORS[playerColor].glow}, 0 8px 0 0 rgba(3, 15, 15, 0.9), 0 12px 0 0 rgba(0, 10, 10, 0.7)`,
-                  ],
-                }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                style={{ borderColor: PLAYER_COLORS[playerColor].shadow }}
-              >
-                <SortedDiceDisplay
-                  dice={playerHand}
+              {/* ZONE A: Player Chips Row (Top) */}
+              <div className="flex-none flex flex-wrap justify-center gap-3 pt-2">
+                <PlayerDiceBadge
+                  playerName="You"
+                  diceCount={getDisplayPlayerDiceCount()}
                   color={playerColor}
-                  isPalifico={isPalifico}
-                  size="md"
-                  animateSort={true}
+                  isActive={isMyTurn}
+                  hasPalifico={palificoEnabled && getDisplayPlayerDiceCount() === 1}
+                  isEliminated={false}
+                  showThinking={false}
+                  thinkingPrompt=""
                 />
-              </motion.div>
+                {opponents.map((opponent) => {
+                  const isThinking = currentTurnIndex === opponent.id && gameState === 'Bidding';
+                  const displayCount = getDisplayOpponentDiceCount(opponent.id);
+                  const hasPalifico = palificoEnabled && displayCount === 1 && !opponent.isEliminated;
+                  return (
+                    <PlayerDiceBadge
+                      key={opponent.id}
+                      playerName={opponent.name}
+                      diceCount={displayCount}
+                      color={opponent.color}
+                      isActive={isThinking}
+                      hasPalifico={hasPalifico}
+                      isEliminated={opponent.isEliminated}
+                      showThinking={isThinking}
+                      thinkingPrompt={aiThinkingPrompt}
+                    />
+                  );
+                })}
+              </div>
 
-              <BidUI
-                currentBid={currentBid}
-                onBid={handleBid}
-                onDudo={handleDudo}
-                onCalza={handleCalza}
-                isMyTurn={isMyTurn}
-                totalDice={totalDice}
-                isPalifico={isPalifico}
-                canCalza={canCalza}
-                playerColor={playerColor}
-                lastBidderColor={getLastBidderColor()}
-                lastBidderName={lastBidder === 'player' ? 'You' : lastBidder !== null ? opponents.find(o => o.id === lastBidder)?.name : undefined}
-              />
+              {/* ZONE B: Game Table (Middle) */}
+              <div className="flex-1 flex flex-col gap-6 items-center justify-center max-w-2xl mx-auto w-full">
+                {/* Current Bid Display */}
+                <div className="w-full max-w-md">
+                  {currentBid && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="relative"
+                      style={{ perspective: '800px' }}
+                    >
+                      {/* Circular Player Token - absolute positioned */}
+                      {(lastBidder === 'player' ? 'You' : lastBidder !== null ? opponents.find(o => o.id === lastBidder)?.name : null) && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                          className="absolute -top-3 -left-3 z-20"
+                        >
+                          <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-[9px] font-mono font-bold uppercase tracking-wider"
+                            style={{
+                              background: `linear-gradient(135deg, ${getLastBidderColor() ? PLAYER_COLORS[getLastBidderColor()!].bg : 'var(--purple-light)'} 0%, ${getLastBidderColor() ? PLAYER_COLORS[getLastBidderColor()!].shadow : 'var(--purple-mid)'} 100%)`,
+                              color: '#fff',
+                              boxShadow: `0 3px 10px rgba(0,0,0,0.5), 0 0 15px ${getLastBidderColor() ? PLAYER_COLORS[getLastBidderColor()!].glow : 'rgba(45, 212, 191, 0.3)'}`,
+                              border: `2px solid ${getLastBidderColor() ? PLAYER_COLORS[getLastBidderColor()!].border : 'var(--turquoise-dark)'}`,
+                            }}
+                          >
+                            {(lastBidder === 'player' ? 'You' : opponents.find(o => o.id === lastBidder)?.name || '').slice(0, 3)}
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Recessed table surface with subtle floating animation */}
+                      <motion.div
+                        className="rounded-xl p-5 relative"
+                        style={{
+                          background: 'linear-gradient(180deg, rgba(3, 15, 15, 0.95) 0%, rgba(10, 31, 31, 0.9) 100%)',
+                          boxShadow: `
+                            inset 0 4px 20px rgba(0, 0, 0, 0.8),
+                            inset 0 2px 4px rgba(0, 0, 0, 0.5),
+                            inset 0 -2px 10px rgba(45, 212, 191, 0.05),
+                            0 4px 20px rgba(0, 0, 0, 0.4)
+                          `,
+                          border: '2px solid rgba(45, 212, 191, 0.15)',
+                          transformOrigin: 'center bottom',
+                        }}
+                        animate={{
+                          y: [0, -3, 0, 3, 0],
+                          rotateX: [5, 5.3, 5, 4.7, 5],
+                        }}
+                        transition={{
+                          duration: 6,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }}
+                      >
+                        {/* Inner carved edge */}
+                        <div
+                          className="absolute inset-2 rounded-lg pointer-events-none"
+                          style={{
+                            border: '1px solid rgba(0, 0, 0, 0.3)',
+                            boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.4)',
+                          }}
+                        />
+
+                        {/* Bid dice display */}
+                        <div className="flex flex-wrap items-center justify-center gap-2 py-1">
+                          {Array.from({ length: currentBid.count }).map((_, i) => (
+                            <motion.div
+                              key={i}
+                              initial={{ scale: 0, rotate: -90 }}
+                              animate={{ scale: 1, rotate: 0 }}
+                              transition={{ delay: i * 0.03, type: 'spring', stiffness: 400 }}
+                            >
+                              <Dice
+                                value={currentBid.value}
+                                index={i}
+                                size="sm"
+                                isPalifico={isPalifico}
+                                color={getLastBidderColor() || playerColor}
+                              />
+                            </motion.div>
+                          ))}
+                        </div>
+
+                        {/* Bid count indicator */}
+                        <p className="text-center text-lg font-bold text-white-soft/60 mt-1">
+                          {currentBid.count}× {currentBid.value === 1 ? 'Jokers' : `${currentBid.value}s`}
+                        </p>
+                      </motion.div>
+                    </motion.div>
+                  )}
+
+                  {/* No bid yet message */}
+                  {!currentBid && isMyTurn && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center py-8"
+                    >
+                      <p className="text-turquoise/60 text-sm uppercase tracking-wider font-mono">
+                        Make the opening bid
+                      </p>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Action/Input Menu - scaled down slightly */}
+                <div className="transform scale-90">
+                  <BidUI
+                    currentBid={currentBid}
+                    onBid={handleBid}
+                    onDudo={handleDudo}
+                    onCalza={handleCalza}
+                    isMyTurn={isMyTurn}
+                    totalDice={totalDice}
+                    isPalifico={isPalifico}
+                    canCalza={canCalza}
+                    playerColor={playerColor}
+                    lastBidderColor={getLastBidderColor()}
+                    lastBidderName={lastBidder === 'player' ? 'You' : lastBidder !== null ? opponents.find(o => o.id === lastBidder)?.name : undefined}
+                    hideBidDisplay={true}
+                  />
+                </div>
+              </div>
+
+              {/* ZONE C: Player Shelf (Bottom) */}
+              <motion.div
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="flex-none pb-4 relative"
+              >
+                {/* Radial glow from bottom */}
+                <div
+                  className="absolute inset-x-0 bottom-0 h-32 pointer-events-none"
+                  style={{
+                    background: `radial-gradient(ellipse 70% 100% at 50% 100%, ${PLAYER_COLORS[playerColor].glow} 0%, transparent 70%)`,
+                    opacity: 0.35,
+                  }}
+                />
+
+                {/* Dice container */}
+                <motion.div
+                  className="relative flex justify-center items-end"
+                  animate={{
+                    filter: [
+                      `drop-shadow(0 0 12px ${PLAYER_COLORS[playerColor].glow})`,
+                      `drop-shadow(0 0 25px ${PLAYER_COLORS[playerColor].glow})`,
+                      `drop-shadow(0 0 12px ${PLAYER_COLORS[playerColor].glow})`,
+                    ],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  <div className="flex gap-3" style={{ transform: 'scale(1.2)' }}>
+                    {playerHand.map((value, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ y: 30, opacity: 0, rotate: -15 }}
+                        animate={{ y: 0, opacity: 1, rotate: 0 }}
+                        transition={{
+                          type: 'spring',
+                          stiffness: 400,
+                          damping: 20,
+                          delay: i * 0.06,
+                        }}
+                      >
+                        <Dice
+                          value={value}
+                          index={i}
+                          size="lg"
+                          isPalifico={isPalifico}
+                          color={playerColor}
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              </motion.div>
             </motion.div>
           )}
 

@@ -19,6 +19,7 @@ interface BidUIProps {
   playerColor: PlayerColor;
   lastBidderColor?: PlayerColor;
   lastBidderName?: string;
+  hideBidDisplay?: boolean;
 }
 
 export function BidUI({
@@ -32,7 +33,8 @@ export function BidUI({
   canCalza = false,
   playerColor,
   lastBidderColor,
-  lastBidderName
+  lastBidderName,
+  hideBidDisplay = false,
 }: BidUIProps) {
   const getInitialCount = () => {
     if (!currentBid) return 1;
@@ -94,7 +96,7 @@ export function BidUI({
         </motion.div>
       )}
 
-      {currentBid && (
+      {currentBid && !hideBidDisplay && (
         <div className="mb-6 relative">
           {/* Player chip badge - tucked into top border */}
           {lastBidderName && (
@@ -254,13 +256,14 @@ export function BidUI({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onCalza}
-                className="w-full py-3 px-4 rounded-lg font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-2"
+                className="w-full py-2 px-4 rounded-lg font-bold uppercase text-[13px] flex items-center justify-center gap-2"
                 style={{
                   background: 'linear-gradient(180deg, #22c55e 0%, #16a34a 100%)',
                   border: '2px solid #4ade80',
-                  borderBottom: '4px solid #15803d',
+                  borderBottom: '3px solid #15803d',
                   color: '#fff',
-                  boxShadow: '0 4px 0 0 #166534, 0 6px 10px 0 rgba(0, 0, 0, 0.5)',
+                  letterSpacing: '0.2em',
+                  boxShadow: '0 3px 0 0 #166534, 0 5px 10px 0 rgba(0, 0, 0, 0.5)',
                 }}
               >
                 <Target className="w-5 h-5" />
