@@ -1710,7 +1710,15 @@ export default function PerudoGame() {
       {/* Victory Screen */}
       <AnimatePresence>
         {gameState === 'Victory' && (
-          <VictoryScreen playerColor={playerColor} onPlayAgain={resetGame} />
+          <VictoryScreen
+            playerColor={playerColor}
+            onPlayAgain={resetGame}
+            roundsPlayed={totalRounds}
+            successfulDudoCalls={playerSuccessfulDudos}
+            successfulCalzaCalls={playerSuccessfulCalzas}
+            diceRemaining={playerDiceCount}
+            opponentsEliminated={opponents.filter(o => o.isEliminated || o.diceCount === 0).length}
+          />
         )}
       </AnimatePresence>
 
