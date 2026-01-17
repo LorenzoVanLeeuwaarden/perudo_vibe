@@ -16,6 +16,7 @@ import { DyingDie } from '@/components/DyingDie';
 import { SpawningDie } from '@/components/SpawningDie';
 import { PlayerDiceBadge } from '@/components/PlayerDiceBadge';
 import { PlayerRevealCard } from '@/components/PlayerRevealCard';
+import { SortedDiceDisplay } from '@/components/SortedDiceDisplay';
 import {
   rollDice,
   countMatching,
@@ -612,17 +613,26 @@ export default function PerudoGame() {
       // (because both the value AND jokers count)
       const expectedTotal = currentTotalDice / 3;
 
-      // Opening bid should be ~25-40% of expected total, plus what AI actually has
-      const baseFromExpected = Math.floor(expectedTotal * (0.25 + Math.random() * 0.15));
-      const bonusFromHand = Math.floor(bestCount * 0.5); // Bonus if AI has good dice
+      // Opening bid should be more aggressive for larger games
+      // Base: 30-50% of expected total
+      const baseFromExpected = Math.floor(expectedTotal * (0.3 + Math.random() * 0.2));
 
-      // Final count: at least 1, at most ~50% of expected
+      // Bonus from having good dice in hand
+      const bonusFromHand = Math.floor(bestCount * 0.7);
+
+      // Minimum bid scales with total dice count:
+      // - For 10 dice: min ~2
+      // - For 20 dice: min ~4
+      // - For 30 dice: min ~6
+      const minimumBid = Math.max(2, Math.floor(currentTotalDice * 0.2));
+
+      // Maximum: 60% of expected (leaves room for game progression)
+      const maximumBid = Math.floor(expectedTotal * 0.6);
+
+      // Final count calculation
       const openingCount = Math.max(
-        Math.floor(currentTotalDice * 0.15), // Minimum: 15% of total dice
-        Math.min(
-          baseFromExpected + bonusFromHand,
-          Math.floor(expectedTotal * 0.5) // Maximum: 50% of expected
-        )
+        minimumBid,
+        Math.min(baseFromExpected + bonusFromHand, maximumBid)
       );
 
       // Sometimes pick a random high value for variety
@@ -630,7 +640,7 @@ export default function PerudoGame() {
         ? Math.floor(Math.random() * 3) + 4 // Random 4, 5, or 6
         : bestValue;
 
-      const openingBid = { count: Math.max(1, openingCount), value: finalValue };
+      const openingBid = { count: openingCount, value: finalValue };
       setCurrentBid(openingBid);
       currentBidRef.current = openingBid; // Sync update
       setLastBidder(starterIdx);
@@ -1414,11 +1424,13 @@ export default function PerudoGame() {
             >
               <div className="retro-panel p-4">
                 <p className="text-xs text-white-soft/60 uppercase text-center mb-3">Your Dice</p>
-                <div className="flex gap-3">
-                  {playerHand.map((value, i) => (
-                    <Dice key={i} value={value} index={i} size="md" isPalifico={isPalifico} color={playerColor} />
-                  ))}
-                </div>
+                <SortedDiceDisplay
+                  dice={playerHand}
+                  color={playerColor}
+                  isPalifico={isPalifico}
+                  size="md"
+                  animateSort={true}
+                />
               </div>
 
               <BidUI
@@ -1630,15 +1642,43 @@ export default function PerudoGame() {
                   })}
                 </div>
 
-                {/* Action button */}
+                {/* Action button - Día de los Muertos style */}
                 <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileHover={{ scale: 1.05, y: -3 }}
                   whileTap={{ scale: 0.98, y: 0 }}
                   onClick={startNewRound}
-                  className="retro-button flex items-center gap-2 mx-auto"
+                  className="group relative flex items-center gap-3 mx-auto px-8 py-4 rounded-xl font-bold uppercase tracking-wider overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
+                    border: '3px solid #fcd34d',
+                    borderBottom: '5px solid #92400e',
+                    color: '#1f2937',
+                    boxShadow: '0 6px 0 0 #78350f, 0 8px 20px 0 rgba(0,0,0,0.4), 0 0 30px rgba(245, 158, 11, 0.3)',
+                  }}
                 >
-                  <RotateCcw className="w-5 h-5" />
-                  {playerDiceCount === 0 || opponents.every(o => o.isEliminated || o.diceCount === 0) ? 'SEE RESULTS' : 'NEXT ROUND'}
+                  {/* Animated shine effect */}
+                  <motion.div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100"
+                    style={{
+                      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                      transform: 'skewX(-20deg)',
+                    }}
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                  />
+                  {/* Icon */}
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                  >
+                    {playerDiceCount === 0 || opponents.every(o => o.isEliminated || o.diceCount === 0)
+                      ? <Trophy className="w-6 h-6" />
+                      : <Dices className="w-6 h-6" />
+                    }
+                  </motion.div>
+                  <span className="text-lg relative z-10">
+                    {playerDiceCount === 0 || opponents.every(o => o.isEliminated || o.diceCount === 0) ? 'SEE RESULTS' : 'CONTINUE'}
+                  </span>
                 </motion.button>
               </div>
             </motion.div>

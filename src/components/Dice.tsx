@@ -124,21 +124,24 @@ export function Dice({
 
   const tilt = ((index * 17 + value * 7) % 13) - 6;
 
-  // Highlighted glow color
-  const highlightGlow = 'rgba(34, 197, 94, 0.8)'; // Green glow
+  // Highlighted glow color - use player's color instead of hardcoded green
+  const highlightGlow = colorConfig.glow.replace('0.5)', '0.8)'); // Increase opacity for highlight
+  const highlightBorder = colorConfig.bg;
+  const highlightShadow = colorConfig.shadow;
+  const highlightShadowDark = colorConfig.shadowDark;
 
   // Joker styling (special golden skull)
   const jokerStyle = {
     background: 'linear-gradient(135deg, #1a1a2e 0%, #0d0416 50%, #1a1a2e 100%)',
-    border: highlighted ? '3px solid #22c55e' : '2px solid #ffd700',
+    border: highlighted ? `3px solid ${highlightBorder}` : '2px solid #ffd700',
     boxShadow: highlighted
       ? `
-        0 4px 0 0 #15803d,
-        0 6px 0 0 #166534,
+        0 4px 0 0 ${highlightShadow},
+        0 6px 0 0 ${highlightShadowDark},
         0 8px 20px 0 rgba(0, 0, 0, 0.6),
         0 0 30px ${highlightGlow},
         0 0 60px ${highlightGlow},
-        inset 0 0 20px rgba(34, 197, 94, 0.3)
+        inset 0 0 20px ${colorConfig.glow}
       `
       : `
         0 4px 0 0 #b8860b,
@@ -152,11 +155,11 @@ export function Dice({
 
   const regularStyle = {
     background: colorConfig.bgGradient,
-    border: highlighted ? '3px solid #22c55e' : `2px solid ${colorConfig.border}`,
+    border: highlighted ? `3px solid ${highlightBorder}` : `2px solid ${colorConfig.border}`,
     boxShadow: highlighted
       ? `
-        0 4px 0 0 #15803d,
-        0 6px 0 0 #166534,
+        0 4px 0 0 ${highlightShadow},
+        0 6px 0 0 ${highlightShadowDark},
         0 8px 20px 0 rgba(0, 0, 0, 0.6),
         0 0 30px ${highlightGlow},
         0 0 60px ${highlightGlow},

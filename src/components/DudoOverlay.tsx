@@ -50,6 +50,18 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
           transition={{ duration: 0.1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
         >
+          {/* Backdrop blur and darken layer */}
+          <motion.div
+            className="absolute inset-0"
+            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            animate={{ opacity: 1, backdropFilter: 'blur(8px)' }}
+            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            transition={{ duration: 0.2 }}
+            style={{
+              background: 'rgba(0, 0, 0, 0.6)',
+            }}
+          />
+
           {/* Glitch/Impact flash */}
           <motion.div
             className="absolute inset-0"

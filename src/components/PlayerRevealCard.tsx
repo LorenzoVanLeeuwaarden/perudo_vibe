@@ -21,13 +21,13 @@ interface PlayerRevealCardProps {
   isDieMatching: (value: number) => boolean;
 
   // Dying die state
-  dyingDieOwner: string | null;
+  dyingDieOwner: 'player' | number | null;
   dyingDieIndex: number | null;
 
   // Spawning die state (for Calza success)
   countingComplete: boolean;
   calzaSuccess: boolean;
-  spawningDieOwner: string | null;
+  spawningDieOwner: 'player' | number | null;
   spawningDieValue: number;
 
   // Player identifier (for matching dying/spawning die owner)
@@ -55,6 +55,16 @@ export function PlayerRevealCard({
 }: PlayerRevealCardProps) {
   const colorConfig = PLAYER_COLORS[color];
 
+  // Helper to check if this player is the owner
+  const isOwner = (owner: 'player' | number | null): boolean => {
+    if (owner === null) return false;
+    if (playerId === 'player' && owner === 'player') return true;
+    if (playerId !== 'player' && typeof owner === 'number') {
+      return owner.toString() === playerId;
+    }
+    return false;
+  };
+
   return (
     <AnimatePresence>
       {isRevealed && (
@@ -76,7 +86,7 @@ export function PlayerRevealCard({
               const isHighlighted = isDieHighlighted(globalIdx);
               const isMatching = isDieMatching(value);
               const isRevealed = isDieRevealed(globalIdx);
-              const isDying = dyingDieOwner === playerId && dyingDieIndex === i;
+              const isDying = isOwner(dyingDieOwner) && dyingDieIndex === i;
               return (
                 <motion.div
                   key={i}
@@ -101,7 +111,7 @@ export function PlayerRevealCard({
               );
             })}
             {/* Spawning die for Calza success */}
-            {countingComplete && calzaSuccess && spawningDieOwner === playerId && (
+            {countingComplete && calzaSuccess && isOwner(spawningDieOwner) && (
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}

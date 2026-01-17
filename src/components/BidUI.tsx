@@ -70,10 +70,10 @@ export function BidUI({
   // In palifico, value is only locked AFTER first bid is made
   const isValueLocked = isPalifico && currentBid !== null;
   const incrementValue = () => {
-    if (!isValueLocked) setValue((v) => Math.min(v + 1, 6));
+    if (!isValueLocked) setValue((v) => v === 6 ? 1 : v + 1);
   };
   const decrementValue = () => {
-    if (!isValueLocked) setValue((v) => Math.max(v - 1, 1));
+    if (!isValueLocked) setValue((v) => v === 1 ? 6 : v - 1);
   };
 
   return (
@@ -125,19 +125,6 @@ export function BidUI({
           </p>
         </div>
       )}
-
-      <div className="mb-4 text-center">
-        <motion.span
-          animate={{ opacity: isMyTurn ? [1, 0.5, 1] : 0.5 }}
-          transition={{ duration: 1.5, repeat: isMyTurn ? Infinity : 0 }}
-          className={`
-            text-sm uppercase tracking-widest font-bold
-            ${isMyTurn ? 'text-green-crt text-glow-green' : 'text-white-soft/40'}
-          `}
-        >
-          {isMyTurn ? '>>> YOUR TURN <<<' : 'Waiting...'}
-        </motion.span>
-      </div>
 
       {isMyTurn && (
         <>
@@ -266,16 +253,6 @@ export function BidUI({
               </motion.button>
             )}
           </div>
-
-          {!validation.valid && validation.reason && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-3 text-xs text-red-danger text-center"
-            >
-              {validation.reason}
-            </motion.p>
-          )}
 
           {value === 1 && !isPalifico && (
             <motion.p

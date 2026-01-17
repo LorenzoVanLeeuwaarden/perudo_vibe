@@ -1,31 +1,40 @@
 @import "tailwindcss";
 
-/* Balatro-inspired retro color palette */
+/* Día de los Muertos inspired color palette */
 :root {
-  /* Deep Purples */
-  --purple-deep: #1a0a2e;
-  --purple-mid: #2d1b4e;
-  --purple-light: #4a2c7a;
-  --purple-glow: #7b4bb9;
+  /* Deep Teals - UI Base (replacing purple) */
+  --purple-deep: #0a1f1f;
+  --purple-mid: #0f2e2e;
+  --purple-light: #1a4a4a;
+  --purple-glow: #2dd4bf;
 
-  /* Neon Oranges */
-  --orange-neon: #ff6b35;
-  --orange-bright: #ff8c42;
-  --orange-glow: #ffad60;
+  /* Marigold/Neon Oranges - Action/Energy */
+  --orange-neon: #f59e0b;
+  --orange-bright: #fbbf24;
+  --orange-glow: #fcd34d;
 
-  /* CRT Greens */
-  --green-crt: #39ff14;
-  --green-dim: #2eb82e;
-  --green-glow: #7fff00;
+  /* Vibrant Teal/Turquoise - Success */
+  --green-crt: #2dd4bf;
+  --green-dim: #14b8a6;
+  --green-glow: #5eead4;
 
-  /* Accent colors */
-  --red-danger: #ff3366;
-  --gold-accent: #ffd700;
-  --white-soft: #e8e8e8;
+  /* Hot Pink - Danger/DUDO */
+  --red-danger: #ec4899;
+  --gold-accent: #fcd34d;
+  --white-soft: #faf5ff;
 
-  /* Background */
-  --bg-dark: #0d0416;
-  --bg-card: #1a0a2e;
+  /* Background - Deep teal-black */
+  --bg-dark: #030f0f;
+  --bg-card: #0a1f1f;
+
+  /* Día de los Muertos accent colors */
+  --magenta-bright: #ec4899;
+  --magenta-glow: #f472b6;
+  --marigold: #f59e0b;
+  --marigold-glow: #fbbf24;
+  --turquoise: #2dd4bf;
+  --turquoise-dark: #0d9488;
+  --bone-white: #fef3c7;
 
   /* 3D Shadow colors */
   --shadow-dark: rgba(0, 0, 0, 0.8);
@@ -49,6 +58,13 @@
   --color-white-soft: var(--white-soft);
   --color-bg-dark: var(--bg-dark);
   --color-bg-card: var(--bg-card);
+  --color-magenta-bright: var(--magenta-bright);
+  --color-magenta-glow: var(--magenta-glow);
+  --color-marigold: var(--marigold);
+  --color-marigold-glow: var(--marigold-glow);
+  --color-turquoise: var(--turquoise);
+  --color-turquoise-dark: var(--turquoise-dark);
+  --color-bone-white: var(--bone-white);
 }
 
 /* Base styles */
@@ -59,7 +75,7 @@ body {
   perspective: 1000px;
 }
 
-/* Felt table background */
+/* Felt table background - Día de los Muertos style */
 .felt-table {
   background:
     radial-gradient(ellipse at center, var(--purple-mid) 0%, var(--bg-dark) 70%),
@@ -67,8 +83,8 @@ body {
       45deg,
       transparent,
       transparent 2px,
-      rgba(75, 0, 130, 0.03) 2px,
-      rgba(75, 0, 130, 0.03) 4px
+      rgba(45, 212, 191, 0.02) 2px,
+      rgba(45, 212, 191, 0.02) 4px
     );
 }
 
@@ -230,13 +246,13 @@ body {
     inset 0 0 10px rgba(123, 75, 185, 0.1);
 }
 
-/* ========== RETRO BUTTONS ========== */
+/* ========== RETRO BUTTONS - Día de los Muertos Style ========== */
 
 .retro-button {
   background: linear-gradient(180deg, var(--purple-light) 0%, var(--purple-mid) 100%);
-  border: 2px solid var(--purple-glow);
-  border-bottom: 4px solid #2a1545;
-  color: var(--white-soft);
+  border: 2px solid var(--turquoise);
+  border-bottom: 4px solid var(--turquoise-dark);
+  color: var(--bone-white);
   padding: 12px 24px;
   font-family: 'Courier New', Courier, monospace;
   font-weight: bold;
@@ -245,18 +261,19 @@ body {
   cursor: pointer;
   transition: all 0.1s ease;
   position: relative;
+  border-radius: 8px;
   box-shadow:
-    0 4px 0 0 #1a0a2e,
+    0 4px 0 0 #061212,
     0 6px 10px 0 rgba(0, 0, 0, 0.5),
     0 10px 20px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
 
 .retro-button:hover {
-  background: linear-gradient(180deg, var(--purple-glow) 0%, var(--purple-light) 100%);
+  background: linear-gradient(180deg, #1f5555 0%, var(--purple-light) 100%);
   box-shadow:
-    0 6px 0 0 #1a0a2e,
-    0 0 15px var(--purple-glow),
+    0 6px 0 0 #061212,
+    0 0 15px var(--turquoise),
     0 10px 15px 0 rgba(0, 0, 0, 0.5),
     0 15px 30px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
@@ -265,57 +282,60 @@ body {
 
 .retro-button:active {
   box-shadow:
-    0 2px 0 0 #1a0a2e,
+    0 2px 0 0 #061212,
     0 4px 8px 0 rgba(0, 0, 0, 0.5),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   transform: translateY(2px);
   border-bottom-width: 2px;
 }
 
+/* Marigold button - BID action */
 .retro-button-orange {
-  background: linear-gradient(180deg, var(--orange-bright) 0%, var(--orange-neon) 100%);
+  background: linear-gradient(180deg, var(--marigold-glow) 0%, var(--marigold) 100%);
   border: 2px solid var(--orange-glow);
-  border-bottom: 4px solid #b34700;
+  border-bottom: 4px solid #b45309;
+  color: #1f2937;
   box-shadow:
-    0 4px 0 0 #8c3800,
+    0 4px 0 0 #92400e,
     0 6px 10px 0 rgba(0, 0, 0, 0.5),
     0 10px 20px 0 rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
 }
 
 .retro-button-orange:hover {
-  background: linear-gradient(180deg, var(--orange-glow) 0%, var(--orange-bright) 100%);
+  background: linear-gradient(180deg, #fde68a 0%, var(--marigold-glow) 100%);
   box-shadow:
-    0 6px 0 0 #8c3800,
-    0 0 15px var(--orange-neon),
+    0 6px 0 0 #92400e,
+    0 0 20px var(--marigold),
     0 10px 15px 0 rgba(0, 0, 0, 0.5),
     0 15px 30px 0 rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
 }
 
 .retro-button-orange:active {
   box-shadow:
-    0 2px 0 0 #8c3800,
+    0 2px 0 0 #92400e,
     0 4px 8px 0 rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
 }
 
+/* Hot Pink button - DUDO/danger */
 .retro-button-danger {
-  background: linear-gradient(180deg, #ff4477 0%, var(--red-danger) 100%);
-  border: 2px solid #ff6699;
-  border-bottom: 4px solid #cc1144;
+  background: linear-gradient(180deg, var(--magenta-glow) 0%, var(--magenta-bright) 100%);
+  border: 2px solid #f9a8d4;
+  border-bottom: 4px solid #be185d;
   box-shadow:
-    0 4px 0 0 #990033,
+    0 4px 0 0 #9d174d,
     0 6px 10px 0 rgba(0, 0, 0, 0.5),
     0 10px 20px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
 }
 
 .retro-button-danger:hover {
-  background: linear-gradient(180deg, #ff6699 0%, #ff4477 100%);
+  background: linear-gradient(180deg, #fbcfe8 0%, var(--magenta-glow) 100%);
   box-shadow:
-    0 6px 0 0 #990033,
-    0 0 15px var(--red-danger),
+    0 6px 0 0 #9d174d,
+    0 0 20px var(--magenta-bright),
     0 10px 15px 0 rgba(0, 0, 0, 0.5),
     0 15px 30px 0 rgba(0, 0, 0, 0.3),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
@@ -323,23 +343,24 @@ body {
 
 .retro-button-danger:active {
   box-shadow:
-    0 2px 0 0 #990033,
+    0 2px 0 0 #9d174d,
     0 4px 8px 0 rgba(0, 0, 0, 0.5),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
 
-/* ========== RETRO PANELS ========== */
+/* ========== RETRO PANELS - Día de los Muertos Style ========== */
 
 .retro-panel {
   background: linear-gradient(135deg, var(--purple-mid) 0%, var(--purple-deep) 100%);
-  border: 3px solid var(--purple-light);
+  border: 3px solid var(--turquoise-dark);
   border-radius: 12px;
   box-shadow:
-    0 8px 0 0 rgba(26, 10, 46, 0.9),
-    0 12px 0 0 rgba(13, 4, 22, 0.7),
+    0 8px 0 0 rgba(3, 15, 15, 0.9),
+    0 12px 0 0 rgba(0, 10, 10, 0.7),
     0 20px 40px 0 rgba(0, 0, 0, 0.6),
     0 30px 60px 0 rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    inset 0 1px 0 0 rgba(45, 212, 191, 0.1),
+    0 0 30px rgba(45, 212, 191, 0.05);
 }
 
 /* Custom scrollbar */
@@ -352,12 +373,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--purple-light);
+  background: var(--turquoise-dark);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--purple-glow);
+  background: var(--turquoise);
 }
 
 /* Dice dot styling */
@@ -579,32 +600,32 @@ body {
   }
 }
 
-/* ========== NEON GLOW TEXT UTILITIES ========== */
+/* ========== NEON GLOW TEXT UTILITIES - Día de los Muertos ========== */
 .neon-red {
-  color: #ff3366;
+  color: var(--magenta-bright);
   text-shadow:
-    0 0 5px #ff3366,
-    0 0 10px #ff3366,
-    0 0 20px #ff3366,
-    0 0 40px #ff0044;
+    0 0 5px var(--magenta-bright),
+    0 0 10px var(--magenta-bright),
+    0 0 20px var(--magenta-bright),
+    0 0 40px #be185d;
 }
 
 .neon-green {
-  color: #22c55e;
+  color: var(--turquoise);
   text-shadow:
-    0 0 5px #22c55e,
-    0 0 10px #22c55e,
-    0 0 20px #22c55e,
-    0 0 40px #16a34a;
+    0 0 5px var(--turquoise),
+    0 0 10px var(--turquoise),
+    0 0 20px var(--turquoise),
+    0 0 40px var(--turquoise-dark);
 }
 
 .neon-gold {
-  color: #ffd700;
+  color: var(--marigold-glow);
   text-shadow:
-    0 0 5px #ffd700,
-    0 0 10px #ffd700,
-    0 0 20px #ffd700,
-    0 0 40px #b8860b;
+    0 0 5px var(--marigold-glow),
+    0 0 10px var(--marigold-glow),
+    0 0 20px var(--marigold),
+    0 0 40px #b45309;
 }
 
 /* ========== DICE DEATH ANIMATION ========== */

@@ -47,36 +47,46 @@ export function ShaderBackground() {
         Math.max(width, height)
       );
 
-      // Balatro-style deep purple palette with movement
+      // Día de los Muertos deep teal palette with movement
       const hueShift = Math.sin(time * 0.2) * 10;
-      gradient.addColorStop(0, `hsl(${280 + hueShift}, 60%, 15%)`);
-      gradient.addColorStop(0.3, `hsl(${270 + hueShift}, 50%, 10%)`);
-      gradient.addColorStop(0.6, `hsl(${260 + hueShift}, 40%, 6%)`);
-      gradient.addColorStop(1, `hsl(${250 + hueShift}, 30%, 3%)`);
+      gradient.addColorStop(0, `hsl(${175 + hueShift}, 50%, 12%)`);
+      gradient.addColorStop(0.3, `hsl(${175 + hueShift}, 45%, 8%)`);
+      gradient.addColorStop(0.6, `hsl(${175 + hueShift}, 40%, 5%)`);
+      gradient.addColorStop(1, `hsl(${175 + hueShift}, 35%, 2%)`);
 
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
 
-      // Draw flowing blob shapes
-      const blobCount = 5;
+      // Draw flowing blob shapes - Día de los Muertos colors
+      const blobCount = 6;
+      const blobColors = [
+        { r: 45, g: 212, b: 191 },   // Turquoise
+        { r: 236, g: 72, b: 153 },   // Hot pink
+        { r: 245, g: 158, b: 11 },   // Marigold
+        { r: 20, g: 184, b: 166 },   // Teal
+        { r: 244, g: 114, b: 182 },  // Light pink
+        { r: 251, g: 191, b: 36 },   // Gold
+      ];
+
       for (let i = 0; i < blobCount; i++) {
         const phase = (i / blobCount) * Math.PI * 2;
         const cx = width / 2 + Math.sin(time * 0.3 + phase) * width * 0.3;
         const cy = height / 2 + Math.cos(time * 0.2 + phase) * height * 0.3;
-        const radius = 150 + Math.sin(time * 0.5 + i) * 50;
+        const radius = 180 + Math.sin(time * 0.5 + i) * 60;
 
         const blobGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-        const alpha = 0.03 + Math.sin(time + i) * 0.015;
-        blobGradient.addColorStop(0, `rgba(123, 75, 185, ${alpha})`);
-        blobGradient.addColorStop(0.5, `rgba(75, 0, 130, ${alpha * 0.5})`);
-        blobGradient.addColorStop(1, 'rgba(75, 0, 130, 0)');
+        const alpha = 0.025 + Math.sin(time + i) * 0.012;
+        const color = blobColors[i % blobColors.length];
+        blobGradient.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`);
+        blobGradient.addColorStop(0.5, `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha * 0.4})`);
+        blobGradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, 0)`);
 
         ctx.fillStyle = blobGradient;
         ctx.fillRect(0, 0, width, height);
       }
 
-      // Draw flowing lines/waves
-      ctx.strokeStyle = 'rgba(123, 75, 185, 0.03)';
+      // Draw flowing lines/waves - turquoise accent
+      ctx.strokeStyle = 'rgba(45, 212, 191, 0.025)';
       ctx.lineWidth = 2;
 
       for (let i = 0; i < 8; i++) {
@@ -94,8 +104,8 @@ export function ShaderBackground() {
         ctx.stroke();
       }
 
-      // Add some floating particles/stars
-      ctx.fillStyle = 'rgba(255, 215, 0, 0.1)';
+      // Add some floating particles/stars - marigold color
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.15)';
       for (let i = 0; i < 20; i++) {
         const px = (Math.sin(time * 0.1 + i * 0.5) * 0.5 + 0.5) * width;
         const py = (Math.cos(time * 0.15 + i * 0.7) * 0.5 + 0.5) * height;
