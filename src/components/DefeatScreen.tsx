@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { Skull, X, Frown, AlertTriangle } from 'lucide-react';
+import { Skull, X, Frown, AlertTriangle, Target, Trophy, Sparkles, Dices } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 
 interface Ember {
@@ -19,9 +19,22 @@ interface Ember {
 interface DefeatScreenProps {
   playerColor: PlayerColor;
   onPlayAgain: () => void;
+  roundsPlayed: number;
+  successfulDudoCalls: number;
+  successfulCalzaCalls: number;
+  diceRemaining: number;
+  opponentsEliminated: number;
 }
 
-export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
+export function DefeatScreen({
+  playerColor,
+  onPlayAgain,
+  roundsPlayed,
+  successfulDudoCalls,
+  successfulCalzaCalls,
+  diceRemaining,
+  opponentsEliminated
+}: DefeatScreenProps) {
   const [embers, setEmbers] = useState<Ember[]>([]);
   const [shakeIntensity, setShakeIntensity] = useState(20);
   const colorConfig = PLAYER_COLORS[playerColor];
@@ -266,18 +279,78 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
             You ran out of dice...
           </motion.p>
 
-          {/* Dramatic message */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.2 }}
-            className="flex justify-center gap-4 mb-10"
-          >
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-900/30 border border-red-500/30">
-              <Skull className="w-5 h-5 text-red-400" />
-              <span className="text-red-400 font-bold">Eliminated</span>
-            </div>
-          </motion.div>
+          {/* Stats Grid */}
+          <div className="flex flex-wrap justify-center gap-4 mb-10 max-w-2xl mx-auto px-4">
+            {/* Rounds Played */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 1.4, type: 'spring', stiffness: 200 }}
+              className="flex flex-col items-center gap-2 px-6 py-3 rounded-lg bg-red-900/30 border border-red-500/30 backdrop-blur-sm min-w-[140px]"
+            >
+              <Target className="w-6 h-6 text-red-400" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-400">{roundsPlayed}</div>
+                <div className="text-xs text-red-300/70 uppercase tracking-wide">Rounds</div>
+              </div>
+            </motion.div>
+
+            {/* Successful Dudos */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 1.5, type: 'spring', stiffness: 200 }}
+              className="flex flex-col items-center gap-2 px-6 py-3 rounded-lg bg-red-900/30 border border-red-500/30 backdrop-blur-sm min-w-[140px]"
+            >
+              <Trophy className="w-6 h-6 text-red-400" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-400">{successfulDudoCalls}</div>
+                <div className="text-xs text-red-300/70 uppercase tracking-wide">Dudos</div>
+              </div>
+            </motion.div>
+
+            {/* Successful Calzas */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 1.6, type: 'spring', stiffness: 200 }}
+              className="flex flex-col items-center gap-2 px-6 py-3 rounded-lg bg-red-900/30 border border-red-500/30 backdrop-blur-sm min-w-[140px]"
+            >
+              <Sparkles className="w-6 h-6 text-red-400" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-400">{successfulCalzaCalls}</div>
+                <div className="text-xs text-red-300/70 uppercase tracking-wide">Calzas</div>
+              </div>
+            </motion.div>
+
+            {/* Dice Remaining */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 1.7, type: 'spring', stiffness: 200 }}
+              className="flex flex-col items-center gap-2 px-6 py-3 rounded-lg bg-red-900/30 border border-red-500/30 backdrop-blur-sm min-w-[140px]"
+            >
+              <Dices className="w-6 h-6 text-red-400" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-400">{diceRemaining}</div>
+                <div className="text-xs text-red-300/70 uppercase tracking-wide">Dice Left</div>
+              </div>
+            </motion.div>
+
+            {/* Opponents Eliminated */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 1.8, type: 'spring', stiffness: 200 }}
+              className="flex flex-col items-center gap-2 px-6 py-3 rounded-lg bg-red-900/30 border border-red-500/30 backdrop-blur-sm min-w-[140px]"
+            >
+              <Skull className="w-6 h-6 text-red-400" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-400">{opponentsEliminated}</div>
+                <div className="text-xs text-red-300/70 uppercase tracking-wide">Eliminated</div>
+              </div>
+            </motion.div>
+          </div>
 
           {/* Falling dice animation */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">

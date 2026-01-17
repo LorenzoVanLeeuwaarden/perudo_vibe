@@ -1725,7 +1725,15 @@ export default function PerudoGame() {
       {/* Defeat Screen */}
       <AnimatePresence>
         {gameState === 'Defeat' && (
-          <DefeatScreen playerColor={playerColor} onPlayAgain={resetGame} />
+          <DefeatScreen
+            playerColor={playerColor}
+            onPlayAgain={resetGame}
+            roundsPlayed={totalRounds}
+            successfulDudoCalls={playerSuccessfulDudos}
+            successfulCalzaCalls={playerSuccessfulCalzas}
+            diceRemaining={playerDiceCount}
+            opponentsEliminated={opponents.filter(o => o.isEliminated || o.diceCount === 0).length}
+          />
         )}
       </AnimatePresence>
 
