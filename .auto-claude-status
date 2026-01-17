@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "002-implement-code-splitting-for-victory-defeat-screen",
+  "spec": "001-extract-duplicated-player-opponent-rendering-logic",
   "state": "building",
   "subtasks": {
-    "completed": 6,
-    "total": 7,
+    "completed": 5,
+    "total": 6,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Bundle Size Verification",
+    "current": "Verification & Cleanup",
     "id": null,
-    "total": 2
+    "total": 1
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 8,
-    "started_at": "2026-01-17T13:06:07.161295"
+    "number": 7,
+    "started_at": "2026-01-17T13:06:07.161264"
   },
-  "last_update": "2026-01-17T13:27:45.478929"
+  "last_update": "2026-01-17T13:20:41.888372"
 }

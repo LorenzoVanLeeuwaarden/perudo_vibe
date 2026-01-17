@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import dynamic from 'next/dynamic';
 import { Play, RotateCcw, Trophy, Skull, Dices, Target, Check, Users, Minus, Plus, Home, X, AlertTriangle, Settings } from 'lucide-react';
 import { GameState, Bid, PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { DiceRoller3D } from '@/components/DiceRoller3D';
@@ -10,8 +9,13 @@ import { BidUI } from '@/components/BidUI';
 import { Dice } from '@/components/Dice';
 import { ShaderBackground } from '@/components/ShaderBackground';
 import { CasinoLogo } from '@/components/CasinoLogo';
+import { VictoryScreen } from '@/components/VictoryScreen';
+import { DefeatScreen } from '@/components/DefeatScreen';
+import { DudoOverlay } from '@/components/DudoOverlay';
 import { DyingDie } from '@/components/DyingDie';
 import { SpawningDie } from '@/components/SpawningDie';
+import { PlayerDiceBadge } from '@/components/PlayerDiceBadge';
+import { PlayerRevealCard } from '@/components/PlayerRevealCard';
 import {
   rollDice,
   countMatching,
@@ -19,12 +23,6 @@ import {
   shouldAICallDudo,
   shouldAICallCalza
 } from '@/lib/gameLogic';
-
-// Dynamic imports for code splitting
-const VictoryScreen = dynamic(() => import('@/components/VictoryScreen').then(mod => ({ default: mod.VictoryScreen })), { ssr: false });
-const DefeatScreen = dynamic(() => import('@/components/DefeatScreen').then(mod => ({ default: mod.DefeatScreen })), { ssr: false });
-const DudoOverlay = dynamic(() => import('@/components/DudoOverlay').then(mod => ({ default: mod.DudoOverlay })), { ssr: false });
-const SettingsPanel = dynamic(() => import('@/components/SettingsPanel').then(mod => ({ default: mod.SettingsPanel })), { ssr: false });
 
 // Game name
 const GAME_NAME = 'PERUDO';
@@ -1253,154 +1251,34 @@ export default function PerudoGame() {
           className="flex flex-wrap justify-center gap-4 mb-6 relative z-10 max-w-2xl"
         >
           {/* Player dice */}
-          {(() => {
-            const displayCount = getDisplayPlayerDiceCount();
-            return (
-              <motion.div
-                className="retro-panel px-4 py-2 relative"
-                animate={{
-                  boxShadow: isMyTurn
-                    ? `0 0 20px ${colorConfig.glow}, 0 0 40px ${colorConfig.glow}`
-                    : displayCount === 1
-                    ? '0 0 15px rgba(255, 51, 102, 0.5), 0 8px 0 0 rgba(26, 10, 46, 0.9)'
-                    : '0 8px 0 0 rgba(26, 10, 46, 0.9)',
-                  borderColor: isMyTurn ? colorConfig.bg : displayCount === 1 ? '#ff3366' : 'var(--purple-light)',
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                {/* Palifico badge */}
-                {displayCount === 1 && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1, opacity: [0.7, 1, 0.7] }}
-                    transition={{ opacity: { duration: 1.5, repeat: Infinity } }}
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-red-danger rounded text-[10px] font-bold text-white uppercase tracking-wider z-10"
-                    style={{ boxShadow: '0 0 10px rgba(255, 51, 102, 0.5)' }}
-                  >
-                    Palifico!
-                  </motion.div>
-                )}
-                <span className="text-xs uppercase block text-center mb-1 font-bold" style={{ color: colorConfig.bg }}>You</span>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="w-3 h-3 rounded-sm"
-                      style={{
-                        background: i < displayCount ? colorConfig.bg : 'var(--purple-deep)',
-                        border: i < displayCount ? 'none' : '1px solid var(--purple-mid)',
-                        boxShadow: i < displayCount ? `0 0 5px ${colorConfig.glow}` : 'none',
-                      }}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-            );
-          })()}
+          <PlayerDiceBadge
+            playerName="You"
+            diceCount={getDisplayPlayerDiceCount()}
+            color={playerColor}
+            isActive={isMyTurn}
+            hasPalifico={getDisplayPlayerDiceCount() === 1}
+            isEliminated={false}
+            showThinking={false}
+            thinkingPrompt=""
+          />
 
           {/* Opponent dice */}
           {opponents.map((opponent) => {
-            const oppConfig = PLAYER_COLORS[opponent.color];
             const isThinking = currentTurnIndex === opponent.id && gameState === 'Bidding';
             const displayCount = getDisplayOpponentDiceCount(opponent.id);
             const hasPalifico = displayCount === 1 && !opponent.isEliminated;
             return (
-              <motion.div
+              <PlayerDiceBadge
                 key={opponent.id}
-                className={`retro-panel px-4 py-2 relative ${opponent.isEliminated ? 'opacity-40' : ''}`}
-                animate={{
-                  boxShadow: isThinking
-                    ? `0 0 25px ${oppConfig.glow}, 0 0 50px ${oppConfig.glow}`
-                    : hasPalifico
-                    ? '0 0 15px rgba(255, 51, 102, 0.5), 0 8px 0 0 rgba(26, 10, 46, 0.9)'
-                    : '0 8px 0 0 rgba(26, 10, 46, 0.9)',
-                  borderColor: isThinking ? oppConfig.bg : hasPalifico ? '#ff3366' : 'var(--purple-light)',
-                  scale: isThinking ? 1.05 : 1,
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                {/* Palifico badge */}
-                {hasPalifico && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1, opacity: [0.7, 1, 0.7] }}
-                    transition={{ opacity: { duration: 1.5, repeat: Infinity } }}
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-red-danger rounded text-[10px] font-bold text-white uppercase tracking-wider z-10"
-                    style={{ boxShadow: '0 0 10px rgba(255, 51, 102, 0.5)' }}
-                  >
-                    Palifico!
-                  </motion.div>
-                )}
-                {/* Thinking bubble */}
-                <AnimatePresence>
-                  {isThinking && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0, y: 10 }}
-                      className="absolute -top-12 left-1/2 -translate-x-1/2 z-20"
-                    >
-                      <div
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap"
-                        style={{
-                          background: oppConfig.bgGradient,
-                          border: `2px solid ${oppConfig.border}`,
-                          boxShadow: `0 4px 0 ${oppConfig.shadow}, 0 0 15px ${oppConfig.glow}`,
-                        }}
-                      >
-                        <motion.span
-                          animate={{ opacity: [1, 0.5, 1] }}
-                          transition={{ duration: 1, repeat: Infinity }}
-                        >
-                          {aiThinkingPrompt}
-                        </motion.span>
-                        <motion.span
-                          animate={{ opacity: [0, 1, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
-                        >
-                          ...
-                        </motion.span>
-                      </div>
-                      {/* Speech bubble tail */}
-                      <div
-                        className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-0 h-0"
-                        style={{
-                          borderLeft: '8px solid transparent',
-                          borderRight: '8px solid transparent',
-                          borderTop: `8px solid ${oppConfig.border}`,
-                        }}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <span className="text-xs uppercase block text-center mb-1 font-bold" style={{ color: oppConfig.bg }}>
-                  {opponent.name}
-                </span>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ scale: 0 }}
-                      animate={{
-                        scale: 1,
-                        boxShadow: isThinking && i < displayCount
-                          ? `0 0 10px ${oppConfig.glow}`
-                          : i < displayCount ? `0 0 5px ${oppConfig.glow}` : 'none',
-                      }}
-                      transition={{ delay: i * 0.05 }}
-                      className="w-3 h-3 rounded-sm"
-                      style={{
-                        background: i < displayCount ? oppConfig.bg : 'var(--purple-deep)',
-                        border: i < displayCount ? 'none' : '1px solid var(--purple-mid)',
-                      }}
-                    />
-                  ))}
-                </div>
-              </motion.div>
+                playerName={opponent.name}
+                diceCount={displayCount}
+                color={opponent.color}
+                isActive={isThinking}
+                hasPalifico={hasPalifico}
+                isEliminated={opponent.isEliminated}
+                showThinking={isThinking}
+                thinkingPrompt={aiThinkingPrompt}
+              />
             );
           })}
         </motion.div>
@@ -1704,124 +1582,50 @@ export default function PerudoGame() {
                 {/* Horizontal dice reveal grid */}
                 <div className="flex flex-wrap justify-center gap-4 mb-6 max-w-4xl">
                   {/* Player's dice */}
-                  <AnimatePresence>
-                    {isPlayerSectionRevealed(0) && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                        className="flex flex-col items-center p-3 rounded-lg bg-purple-deep/50 border border-purple-mid"
-                      >
-                        <p className="text-xs text-white-soft/60 uppercase mb-2 font-semibold">You</p>
-                        <div className="flex gap-1">
-                          {playerHand.map((value, i) => {
-                            const globalIdx = i;
-                            const isHighlighted = isDieHighlighted(globalIdx);
-                            const isMatching = isDieMatching(value);
-                            const isRevealed = isDieRevealed(globalIdx);
-                            const isDying = dyingDieOwner === 'player' && dyingDieIndex === i;
-                            return (
-                              <motion.div
-                                key={i}
-                                initial={{ opacity: 0, scale: 0, rotate: -180 }}
-                                animate={isRevealed ? { opacity: 1, scale: 1, rotate: 0 } : { opacity: 0, scale: 0, rotate: -180 }}
-                                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                              >
-                                {isDying ? (
-                                  <DyingDie value={value} color={playerColor} />
-                                ) : (
-                                  <Dice
-                                    value={value}
-                                    index={i}
-                                    size="sm"
-                                    isPalifico={isPalifico}
-                                    color={playerColor}
-                                    highlighted={isHighlighted}
-                                    dimmed={countingComplete && !isMatching}
-                                  />
-                                )}
-                              </motion.div>
-                            );
-                          })}
-                          {/* Spawning die for Calza success */}
-                          {countingComplete && calzaSuccess && spawningDieOwner === 'player' && (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.3 }}
-                            >
-                              <SpawningDie value={spawningDieValue} color={playerColor} />
-                            </motion.div>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <PlayerRevealCard
+                    playerName="You"
+                    hand={playerHand}
+                    color={playerColor}
+                    isEliminated={playerDiceCount === 0}
+                    baseIdx={0}
+                    isRevealed={isPlayerSectionRevealed(0)}
+                    isPalifico={isPalifico}
+                    isDieRevealed={isDieRevealed}
+                    isDieHighlighted={isDieHighlighted}
+                    isDieMatching={isDieMatching}
+                    dyingDieOwner={dyingDieOwner}
+                    dyingDieIndex={dyingDieIndex}
+                    countingComplete={countingComplete}
+                    calzaSuccess={calzaSuccess}
+                    spawningDieOwner={spawningDieOwner}
+                    spawningDieValue={spawningDieValue}
+                    playerId="player"
+                  />
 
                   {/* AI dice - each in their own card */}
                   {opponents.map((opponent, oppIdx) => {
-                    const oppConfig = PLAYER_COLORS[opponent.color];
                     const baseIdx = playerHand.length + opponents.slice(0, oppIdx).reduce((sum, o) => sum + o.hand.length, 0);
-                    const sectionRevealed = isPlayerSectionRevealed(baseIdx);
                     return (
-                      <AnimatePresence key={opponent.id}>
-                        {sectionRevealed && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                            className={`flex flex-col items-center p-3 rounded-lg bg-purple-deep/50 border ${
-                              opponent.isEliminated ? 'border-red-danger/50 opacity-50' : 'border-purple-mid'
-                            }`}
-                          >
-                            <p className="text-xs text-white-soft/60 uppercase mb-2 font-semibold">
-                              <span style={{ color: oppConfig.bg }}>{opponent.name}</span>
-                              {opponent.isEliminated && <span className="ml-1 text-red-danger">✗</span>}
-                            </p>
-                            <div className="flex gap-1">
-                              {opponent.hand.map((value, i) => {
-                                const globalIdx = baseIdx + i;
-                                const isHighlighted = isDieHighlighted(globalIdx);
-                                const isMatching = isDieMatching(value);
-                                const isRevealed = isDieRevealed(globalIdx);
-                                const isDying = dyingDieOwner === opponent.id && dyingDieIndex === i;
-                                return (
-                                  <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, scale: 0, rotate: -180 }}
-                                    animate={isRevealed ? { opacity: 1, scale: 1, rotate: 0 } : { opacity: 0, scale: 0, rotate: -180 }}
-                                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                                  >
-                                    {isDying ? (
-                                      <DyingDie value={value} color={opponent.color} />
-                                    ) : (
-                                      <Dice
-                                        value={value}
-                                        index={i + (oppIdx + 1) * 5}
-                                        size="sm"
-                                        isPalifico={isPalifico}
-                                        color={opponent.color}
-                                        highlighted={isHighlighted}
-                                        dimmed={countingComplete && !isMatching}
-                                      />
-                                    )}
-                                  </motion.div>
-                                );
-                              })}
-                              {/* Spawning die for Calza success */}
-                              {countingComplete && calzaSuccess && spawningDieOwner === opponent.id && (
-                                <motion.div
-                                  initial={{ opacity: 0, scale: 0 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.3 }}
-                                >
-                                  <SpawningDie value={spawningDieValue} color={opponent.color} />
-                                </motion.div>
-                              )}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      <PlayerRevealCard
+                        key={opponent.id}
+                        playerName={opponent.name}
+                        hand={opponent.hand}
+                        color={opponent.color}
+                        isEliminated={opponent.isEliminated}
+                        baseIdx={baseIdx}
+                        isRevealed={isPlayerSectionRevealed(baseIdx)}
+                        isPalifico={isPalifico}
+                        isDieRevealed={isDieRevealed}
+                        isDieHighlighted={isDieHighlighted}
+                        isDieMatching={isDieMatching}
+                        dyingDieOwner={dyingDieOwner}
+                        dyingDieIndex={dyingDieIndex}
+                        countingComplete={countingComplete}
+                        calzaSuccess={calzaSuccess}
+                        spawningDieOwner={spawningDieOwner}
+                        spawningDieValue={spawningDieValue}
+                        playerId={opponent.id.toString()}
+                      />
                     );
                   })}
                 </div>
@@ -1877,14 +1681,115 @@ export default function PerudoGame() {
       />
 
       {/* Settings Panel */}
-      <SettingsPanel
-        showSettings={showSettings}
-        onClose={() => setShowSettings(false)}
-        playerColor={playerColor}
-        setPlayerColor={setPlayerColor}
-        palificoEnabled={palificoEnabled}
-        setPalificoEnabled={setPalificoEnabled}
-      />
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            onClick={() => setShowSettings(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="retro-panel p-6 max-w-md w-full mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-white-soft">Settings</h2>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowSettings(false)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-mid hover:bg-purple-light border border-purple-glow"
+                >
+                  <X className="w-5 h-5 text-white-soft" />
+                </motion.button>
+              </div>
+
+              {/* Color Selection */}
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-white-soft/80 uppercase tracking-wider mb-3">Dice Color</h3>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {COLOR_OPTIONS.map((color) => {
+                    const config = PLAYER_COLORS[color];
+                    const isSelected = color === playerColor;
+                    return (
+                      <motion.button
+                        key={color}
+                        whileHover={{ scale: 1.1, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setPlayerColor(color)}
+                        className="relative w-12 h-12 rounded-lg flex items-center justify-center"
+                        style={{
+                          background: config.bgGradient,
+                          border: `3px solid ${isSelected ? '#fff' : config.border}`,
+                          boxShadow: isSelected
+                            ? `0 0 20px ${config.glow}, 0 4px 0 0 ${config.shadow}`
+                            : `0 4px 0 0 ${config.shadow}`,
+                        }}
+                      >
+                        {isSelected && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: 'spring', stiffness: 500 }}
+                          >
+                            <Check className="w-5 h-5 text-white drop-shadow-lg" />
+                          </motion.div>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Palifico Toggle */}
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-white-soft/80 uppercase tracking-wider mb-3">Rules</h3>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setPalificoEnabled(!palificoEnabled)}
+                  className={`w-full p-4 rounded-lg border-2 flex items-center justify-between transition-colors ${
+                    palificoEnabled
+                      ? 'bg-purple-mid/50 border-purple-glow'
+                      : 'bg-purple-deep/50 border-purple-mid'
+                  }`}
+                >
+                  <div className="text-left">
+                    <p className="font-bold text-white-soft">Palifico Mode</p>
+                    <p className="text-xs text-white-soft/60">
+                      When a player has 1 die: no wilds, value locked
+                    </p>
+                  </div>
+                  <div
+                    className={`w-12 h-7 rounded-full p-1 transition-colors ${
+                      palificoEnabled ? 'bg-green-crt' : 'bg-purple-deep'
+                    }`}
+                  >
+                    <motion.div
+                      className="w-5 h-5 rounded-full bg-white shadow-md"
+                      animate={{ x: palificoEnabled ? 20 : 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    />
+                  </div>
+                </motion.button>
+              </div>
+
+              {/* Preview */}
+              <div className="flex justify-center gap-2">
+                {[3, 5, 1, 2, 6].map((val, i) => (
+                  <Dice key={i} value={val} index={i} size="sm" color={playerColor} />
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
