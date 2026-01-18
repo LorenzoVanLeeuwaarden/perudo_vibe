@@ -55,7 +55,6 @@ export default function RoomPage() {
 
       case 'ROOM_STATE':
         // Joined or returning user
-        console.log('[ROOM_STATE] Received, players:', message.state.players.length);
         setJoinState({
           status: 'joined',
           roomState: message.state,
@@ -67,24 +66,19 @@ export default function RoomPage() {
       case 'PLAYER_JOINED': {
         // Another player joined - update state first, then toast
         const newPlayer = message.player;
-        console.log('[PLAYER_JOINED] Received:', newPlayer.name, newPlayer);
         setJoinState(prev => {
-          console.log('[PLAYER_JOINED] prev.status:', prev.status);
           if (prev.status === 'joined') {
             // Add new player to the players array
-            const updatedPlayers = [...prev.roomState.players, newPlayer];
-            console.log('[PLAYER_JOINED] Updating players:', prev.roomState.players.length, '->', updatedPlayers.length);
             return {
               ...prev,
               roomState: {
                 ...prev.roomState,
-                players: updatedPlayers,
+                players: [...prev.roomState.players, newPlayer],
               },
             };
           }
           // If not yet joined, update room-info player count
           if (prev.status === 'room-info') {
-            console.log('[PLAYER_JOINED] Updating room-info playerCount');
             return {
               ...prev,
               info: {
@@ -93,7 +87,6 @@ export default function RoomPage() {
               },
             };
           }
-          console.log('[PLAYER_JOINED] No update, status:', prev.status);
           return prev;
         });
         toast.success(`${newPlayer.name} joined`);
@@ -101,26 +94,55 @@ export default function RoomPage() {
       }
 
       case 'PLAYER_LEFT':
-        // Player left
+        // Player left or disconnected
         setJoinState(prev => {
           if (prev.status === 'joined') {
             const player = prev.roomState.players.find(p => p.id === message.playerId);
-            if (player && message.reason !== 'disconnected') {
-              toast.info(`${player.name} left`);
+            if (message.reason === 'disconnected') {
+              // Just mark as disconnected, don't remove - they might reconnect
+              return {
+                ...prev,
+                roomState: {
+                  ...prev.roomState,
+                  players: prev.roomState.players.map(p =>
+                    p.id === message.playerId ? { ...p, isConnected: false } : p
+                  ),
+                },
+              };
+            } else {
+              // Actually left (kicked, voluntarily left) - remove from list
+              if (player) {
+                toast.info(`${player.name} left`);
+              }
+              return {
+                ...prev,
+                roomState: {
+                  ...prev.roomState,
+                  players: prev.roomState.players.filter(p => p.id !== message.playerId),
+                },
+              };
             }
-            return {
-              ...prev,
-              roomState: {
-                ...prev.roomState,
-                players: prev.roomState.players.filter(p => p.id !== message.playerId),
-              },
-            };
           }
           return prev;
         });
         break;
 
       case 'PLAYER_RECONNECTED':
+        // Update player's connection status
+        setJoinState(prev => {
+          if (prev.status === 'joined') {
+            return {
+              ...prev,
+              roomState: {
+                ...prev.roomState,
+                players: prev.roomState.players.map(p =>
+                  p.id === message.playerId ? { ...p, isConnected: true } : p
+                ),
+              },
+            };
+          }
+          return prev;
+        });
         toast.success(`${message.playerName} reconnected`);
         break;
 
@@ -156,15 +178,6 @@ export default function RoomPage() {
     }
   }, [ws]);
 
-  // Debug: Log state changes
-  useEffect(() => {
-    if (joinState.status === 'joined') {
-      console.log('[STATE] Joined with', joinState.roomState.players.length, 'players:',
-        joinState.roomState.players.map(p => p.name));
-    } else {
-      console.log('[STATE] Status:', joinState.status);
-    }
-  }, [joinState]);
 
   const handleJoinSubmit = useCallback((nickname: string) => {
     if (!wsRef) return;
@@ -234,7 +247,6 @@ export default function RoomPage() {
 
   // Joined state - show lobby
   if (joinState.status === 'joined') {
-    console.log('[RENDER] Rendering RoomLobby with', joinState.roomState.players.length, 'players');
     return (
       <RoomLobby
         roomCode={roomCode}

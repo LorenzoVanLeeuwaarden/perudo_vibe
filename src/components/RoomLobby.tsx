@@ -29,7 +29,6 @@ export function RoomLobby({ roomCode, roomState, myPlayerId, connectionStatus }:
   };
 
   const connectedPlayers = roomState.players.filter(p => p.isConnected);
-  console.log('[LOBBY] Rendering with connectedPlayers:', connectedPlayers.length, connectedPlayers.map(p => p.name));
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8 relative">
