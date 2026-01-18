@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, RotateCcw, Trophy, Skull, Dices, Target, Check, Users, Minus, Plus, Home, X, AlertTriangle, Settings } from 'lucide-react';
+import { Play, RotateCcw, Trophy, Skull, Dices, Target, Check, Users, Minus, Plus, Home, X, AlertTriangle, Settings, ArrowLeft } from 'lucide-react';
 import { GameState, Bid, PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { DiceCup } from '@/components/DiceCup';
 import { BidUI } from '@/components/BidUI';
@@ -119,7 +119,7 @@ const COLOR_OPTIONS: PlayerColor[] = ['blue', 'green', 'orange', 'yellow', 'blac
 
 export default function PerudoGame() {
   // UI store for preferences
-  const { preferredMode, setPreferredMode, playerColor: storedPlayerColor } = useUIStore();
+  const { preferredMode, setPreferredMode, clearPreferredMode, playerColor: storedPlayerColor } = useUIStore();
 
   // Game state
   const [gameState, setGameState] = useState<GameState>('ModeSelection');
@@ -854,8 +854,12 @@ export default function PerudoGame() {
     setLastBidder(null);
     setLoser(null);
     setRoundStarter('player');
+    setIsPalifico(false);
+    isPalificoRef.current = false;
+    // Clear preferred mode so user sees mode selection again
+    clearPreferredMode();
     setGameState('ModeSelection');
-  }, []);
+  }, [clearPreferredMode]);
 
   // Calculate all matching dice for the reveal animation
   const getAllMatchingDiceIndices = useCallback(() => {
@@ -1353,7 +1357,20 @@ export default function PerudoGame() {
               exit={{ opacity: 0, scale: 0.9 }}
               className="text-center"
             >
-              <div className="retro-panel p-8 mb-6">
+              <div className="retro-panel p-8 mb-6 relative">
+                {/* Back button */}
+                <motion.button
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  whileHover={{ scale: 1.05, x: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={quitGame}
+                  className="absolute top-4 left-4 px-3 py-2 rounded-lg bg-purple-deep/80 border border-purple-mid text-white-soft/70 text-sm flex items-center gap-2 hover:bg-purple-mid/50 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back
+                </motion.button>
+
                 <Dices className="w-16 h-16 mx-auto mb-4" style={{ color: colorConfig.bg }} />
 
                 {/* Opponent count selection */}

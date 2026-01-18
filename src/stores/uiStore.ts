@@ -34,6 +34,7 @@ interface UIStore {
   setPlayerColor: (color: PlayerColor) => void;
   setPlayerName: (name: string) => void;
   setPreferredMode: (mode: 'ai' | 'multiplayer') => void;
+  clearPreferredMode: () => void;
   resetAnimationState: () => void;
 }
 
@@ -75,6 +76,7 @@ export const useUIStore = create<UIStore>()(
       setPlayerColor: (color) => set({ playerColor: color }),
       setPlayerName: (name) => set({ playerName: name }),
       setPreferredMode: (mode) => set({ preferredMode: mode }),
+      clearPreferredMode: () => set({ preferredMode: null }),
       resetAnimationState: () => set({
         isRolling: false,
         showDudoOverlay: false,
