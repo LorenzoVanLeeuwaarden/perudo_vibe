@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Room Creation** - Create multiplayer rooms with shareable links
 - [x] **Phase 4: Join Flow** - Join rooms via link with guest nickname
 - [x] **Phase 5: Lobby Experience** - Player list, host controls, and game configuration
-- [ ] **Phase 6: Game State Sync** - Real-time game state synchronization across players
+- [x] **Phase 6: Game State Sync** - Real-time game state synchronization across players
 - [ ] **Phase 7: Turn Timers** - Turn countdown timers with AI timeout handling
 - [ ] **Phase 8: Disconnect and Reconnection** - Graceful disconnect handling with AI takeover and reconnection
 - [ ] **Phase 9: Social and Polish** - Emotes, rematch flow, and end-game statistics
@@ -114,9 +114,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Server-side game handlers (ROLL_DICE, PLACE_BID, CALL_DUDO, CALL_CALZA, CONTINUE_ROUND)
-- [ ] 06-02-PLAN.md — Client message handling and GameBoard component
-- [ ] 06-03-PLAN.md — Reveal animation sequence and full game loop verification
+- [x] 06-01-PLAN.md — Server-side game handlers (ROLL_DICE, PLACE_BID, CALL_DUDO, CALL_CALZA, CONTINUE_ROUND)
+- [x] 06-02-PLAN.md — Client message handling and GameBoard component
+- [x] 06-03-PLAN.md — Reveal animation sequence and full game loop verification
 
 ### Phase 7: Turn Timers
 **Goal**: Each turn has a visible timer and AI takes over if player times out
@@ -175,7 +175,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 3. Room Creation | 2/2 | ✓ Complete | 2026-01-18 |
 | 4. Join Flow | 2/2 | ✓ Complete | 2026-01-18 |
 | 5. Lobby Experience | 2/2 | ✓ Complete | 2026-01-18 |
-| 6. Game State Sync | 0/3 | Not started | - |
+| 6. Game State Sync | 3/3 | ✓ Complete | 2026-01-18 |
 | 7. Turn Timers | 0/TBD | Not started | - |
 | 8. Disconnect and Reconnection | 0/TBD | Not started | - |
 | 9. Social and Polish | 0/TBD | Not started | - |

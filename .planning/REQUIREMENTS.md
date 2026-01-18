@@ -21,16 +21,16 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Game State Synchronization
 
-- [ ] **SYNC-01**: All players see same game state in real-time (sub-200ms latency)
-- [ ] **SYNC-02**: Current player's turn is clearly indicated to all players
-- [ ] **SYNC-03**: Players receive visual confirmation when their action is received
+- [x] **SYNC-01**: All players see same game state in real-time (sub-200ms latency)
+- [x] **SYNC-02**: Current player's turn is clearly indicated to all players
+- [x] **SYNC-03**: Players receive visual confirmation when their action is received
 - [ ] **SYNC-04**: Player can rejoin game after page refresh with state intact
 
 ### Turn Management
 
 - [ ] **TURN-01**: Each turn has a timer visible to all players
 - [ ] **TURN-02**: AI takes turn automatically if player times out
-- [ ] **TURN-03**: Turn order and current player clearly displayed
+- [x] **TURN-03**: Turn order and current player clearly displayed
 
 ### Disconnect Handling
 
@@ -100,13 +100,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ROOM-03 | Phase 5 | Complete |
 | ROOM-04 | Phase 5 | Complete |
 | ROOM-05 | Phase 5 | Complete |
-| SYNC-01 | Phase 6 | Pending |
-| SYNC-02 | Phase 6 | Pending |
-| SYNC-03 | Phase 6 | Pending |
+| SYNC-01 | Phase 6 | Complete |
+| SYNC-02 | Phase 6 | Complete |
+| SYNC-03 | Phase 6 | Complete |
 | SYNC-04 | Phase 8 | Pending |
 | TURN-01 | Phase 7 | Pending |
 | TURN-02 | Phase 7 | Pending |
-| TURN-03 | Phase 6 | Pending |
+| TURN-03 | Phase 6 | Complete |
 | DISC-01 | Phase 8 | Pending |
 | DISC-02 | Phase 8 | Pending |
 | DISC-03 | Phase 8 | Pending |
@@ -122,4 +122,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-18*
-*Last updated: 2026-01-18 after Phase 5 completion*
+*Last updated: 2026-01-18 after Phase 6 completion*
