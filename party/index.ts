@@ -336,6 +336,8 @@ export default class GameServer implements Party.Server {
     // Find first connected player for turn order
     const firstPlayer = connectedPlayers[0];
 
+    console.log(`[GAME_START] Starting game with ${connectedPlayers.length} players: ${connectedPlayers.map(p => p.name).join(', ')}`);
+
     // Set game state to initial rolling phase
     this.roomState.gameState = {
       phase: 'rolling',
@@ -559,8 +561,10 @@ export default class GameServer implements Party.Server {
     const loser = gameState.players.find(p => p.id === loserId);
     if (loser) {
       loser.diceCount -= 1;
+      console.log(`[DUDO] ${loser.name} lost a die, now has ${loser.diceCount} dice`);
       if (loser.diceCount <= 0) {
         loser.isEliminated = true;
+        console.log(`[DUDO] ${loser.name} has been ELIMINATED`);
       }
     }
 
@@ -588,15 +592,20 @@ export default class GameServer implements Party.Server {
       timestamp: Date.now(),
     });
 
-    // Check for game end
-    const remainingPlayers = gameState.players.filter(p => !p.isEliminated);
+    // Check for game end - only end when exactly 1 player with dice remains
+    const remainingPlayers = gameState.players.filter(p => !p.isEliminated && p.diceCount > 0);
+    console.log(`[DUDO] Remaining players after round: ${remainingPlayers.length} (${remainingPlayers.map(p => p.name).join(', ')})`);
     if (remainingPlayers.length === 1) {
       gameState.phase = 'ended';
+      await this.persistState();
       this.broadcast({
         type: 'GAME_ENDED',
         winnerId: remainingPlayers[0].id,
         timestamp: Date.now(),
       });
+    } else if (remainingPlayers.length === 0) {
+      // Edge case: somehow no players left (shouldn't happen)
+      console.error('[DUDO] ERROR: No remaining players after round!');
     }
   }
 
@@ -666,8 +675,10 @@ export default class GameServer implements Party.Server {
       loserId = sender.id;
       if (caller) {
         caller.diceCount -= 1;
+        console.log(`[CALZA] ${caller.name} lost a die, now has ${caller.diceCount} dice`);
         if (caller.diceCount <= 0) {
           caller.isEliminated = true;
+          console.log(`[CALZA] ${caller.name} has been ELIMINATED`);
         }
       }
       // Track loser for next round starter
@@ -695,15 +706,20 @@ export default class GameServer implements Party.Server {
       timestamp: Date.now(),
     });
 
-    // Check for game end
-    const remainingPlayers = gameState.players.filter(p => !p.isEliminated);
+    // Check for game end - only end when exactly 1 player with dice remains
+    const remainingPlayers = gameState.players.filter(p => !p.isEliminated && p.diceCount > 0);
+    console.log(`[CALZA] Remaining players after round: ${remainingPlayers.length} (${remainingPlayers.map(p => p.name).join(', ')})`);
     if (remainingPlayers.length === 1) {
       gameState.phase = 'ended';
+      await this.persistState();
       this.broadcast({
         type: 'GAME_ENDED',
         winnerId: remainingPlayers[0].id,
         timestamp: Date.now(),
       });
+    } else if (remainingPlayers.length === 0) {
+      // Edge case: somehow no players left (shouldn't happen)
+      console.error('[CALZA] ERROR: No remaining players after round!');
     }
   }
 
