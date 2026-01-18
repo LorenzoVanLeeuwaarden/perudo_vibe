@@ -41,7 +41,8 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
   const myColor = (myPlayer?.color ?? 'blue') as PlayerColor;
   const isMyTurn = gameState.currentTurnPlayerId === myPlayerId;
   const totalDice = activePlayers.reduce((sum, p) => sum + p.diceCount, 0);
-  const canCalza = !!gameState.currentBid && !isMyTurn && myPlayer && !myPlayer.isEliminated;
+  // Calza can only be called on YOUR turn (it's an alternative to Bid or Dudo)
+  const canCalza = !!gameState.currentBid && isMyTurn && myPlayer && !myPlayer.isEliminated;
   const lastBidder = players.find(p => p.id === gameState.lastBidderId);
   const lastBidderColor = lastBidder?.color as PlayerColor | undefined;
   const lastBidderName = lastBidder?.name;

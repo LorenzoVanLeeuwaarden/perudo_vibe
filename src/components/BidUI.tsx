@@ -249,7 +249,29 @@ export function BidUI({
               )}
             </div>
 
-            </div>
+            {/* Calza button - only shown when there's a current bid to call Calza on */}
+            {currentBid && canCalza && (
+              <motion.button
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onCalza}
+                className="w-full py-3 px-4 rounded-lg font-bold uppercase text-[13px] flex items-center justify-center gap-2"
+                style={{
+                  background: 'linear-gradient(180deg, #22c55e 0%, #16a34a 100%)',
+                  border: '2px solid #4ade80',
+                  borderBottom: '3px solid #15803d',
+                  color: '#fff',
+                  letterSpacing: '0.2em',
+                  boxShadow: '0 3px 0 0 #166534, 0 5px 10px 0 rgba(0, 0, 0, 0.5)',
+                }}
+              >
+                <Target className="w-5 h-5" />
+                CALZA!
+              </motion.button>
+            )}
+          </div>
 
           {value === 1 && !isPalifico && (
             <motion.p
@@ -263,28 +285,6 @@ export function BidUI({
         </>
       )}
 
-      {/* Calza button - shown when NOT your turn but there's a bid you can challenge */}
-      {currentBid && canCalza && !isMyTurn && (
-        <motion.button
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={onCalza}
-          className="w-full py-3 px-4 rounded-lg font-bold uppercase text-[13px] flex items-center justify-center gap-2 mt-4"
-          style={{
-            background: 'linear-gradient(180deg, #22c55e 0%, #16a34a 100%)',
-            border: '2px solid #4ade80',
-            borderBottom: '3px solid #15803d',
-            color: '#fff',
-            letterSpacing: '0.2em',
-            boxShadow: '0 3px 0 0 #166534, 0 5px 10px 0 rgba(0, 0, 0, 0.5)',
-          }}
-        >
-          <Target className="w-5 h-5" />
-          CALZA!
-        </motion.button>
-      )}
     </motion.div>
   );
 }
