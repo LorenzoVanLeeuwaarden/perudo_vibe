@@ -14,7 +14,8 @@ import { RoomLobby } from '@/components/RoomLobby';
 import { GameBoard } from '@/components/GameBoard';
 import { CasinoLogo } from '@/components/CasinoLogo';
 import { ShaderBackground } from '@/components/ShaderBackground';
-import type { ServerMessage, ServerRoomState, ClientMessage, GameSettings } from '@/shared';
+import type { ServerMessage, ServerRoomState, ClientMessage, GameSettings, GameStats } from '@/shared';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 type JoinState =
   | { status: 'connecting' }
@@ -30,11 +31,17 @@ export default function RoomPage() {
   const roomCode = normalizeRoomCode(code || '');
 
   const clientId = useClientIdentity();
-  const { playerColor, clearPreferredMode } = useUIStore();
+  const { playerColor, clearPreferredMode, addEmote } = useUIStore();
+  const { playPop } = useSoundEffects();
 
   const [joinState, setJoinState] = useState<JoinState>({ status: 'connecting' });
   const [joinError, setJoinError] = useState<string | null>(null);
   const [wsRef, setWsRef] = useState<{ send: (data: string) => void } | null>(null);
+
+  // Celebration and results flow state
+  const [gameStats, setGameStats] = useState<GameStats | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   const handleMessage = useCallback((message: ServerMessage) => {
     switch (message.type) {
@@ -63,6 +70,10 @@ export default function RoomPage() {
           myHand: message.yourHand ?? [],
         });
         setJoinError(null);
+        // Clear celebration/results state when returning to lobby
+        setShowCelebration(false);
+        setShowResults(false);
+        setGameStats(null);
         break;
 
       case 'PLAYER_JOINED': {
@@ -430,6 +441,23 @@ export default function RoomPage() {
           }
           return prev;
         });
+        // Store stats for results screen
+        if (message.stats) {
+          setGameStats(message.stats as GameStats);
+        }
+        // Show celebration first
+        setShowCelebration(true);
+        // After 8 seconds (per CONTEXT.md), show results
+        setTimeout(() => {
+          setShowCelebration(false);
+          setShowResults(true);
+        }, 8000);
+        break;
+
+      case 'EMOTE_RECEIVED':
+        // Add emote to UI store for bubble display and play sound
+        addEmote(message.playerId, message.emote);
+        playPop();
         break;
 
       case 'GAME_STATE':
@@ -481,7 +509,7 @@ export default function RoomPage() {
         }
         break;
     }
-  }, [router, wsRef]);
+  }, [router, wsRef, addEmote, playPop]);
 
   // Connection hook - only connect when we have clientId
   const { ws, status } = useRoomConnection({
@@ -520,6 +548,14 @@ export default function RoomPage() {
     clearPreferredMode();
     router.push('/');
   }, [clearPreferredMode, router]);
+
+  const handleReturnToLobby = useCallback(() => {
+    sendMessage({ type: 'RETURN_TO_LOBBY', timestamp: Date.now() });
+  }, [sendMessage]);
+
+  const handleLeaveGame = useCallback(() => {
+    window.location.href = '/';
+  }, []);
 
   // Loading state while client ID initializes
   if (!clientId) {
