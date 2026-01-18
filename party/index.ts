@@ -6,6 +6,7 @@ import {
   type ServerRoomState,
   type ServerPlayer,
   type GameSettings,
+  type PlayerStats,
   STARTING_DICE,
   DEFAULT_TURN_TIMEOUT_MS,
   MIN_PLAYERS,
@@ -281,6 +282,11 @@ export default class GameServer implements Party.Server {
       // AI places a bid
       console.log(`[TIMEOUT] AI bids ${aiMove.bid.count}x ${aiMove.bid.value}s`);
 
+      // Track stats: increment bidsPlaced for AI bid
+      if (gameState.stats[player.id]) {
+        gameState.stats[player.id].bidsPlaced++;
+      }
+
       gameState.currentBid = aiMove.bid;
       gameState.lastBidderId = player.id;
 
@@ -315,6 +321,11 @@ export default class GameServer implements Party.Server {
     } else {
       // AI calls dudo
       console.log(`[TIMEOUT] AI calls DUDO`);
+
+      // Track stats: increment dudosCalled for AI dudo
+      if (gameState.stats[player.id]) {
+        gameState.stats[player.id].dudosCalled++;
+      }
 
       // Transition to reveal phase
       gameState.phase = 'reveal';
@@ -357,12 +368,20 @@ export default class GameServer implements Party.Server {
       } else {
         // Bid was wrong - last bidder loses
         loserId = gameState.lastBidderId!;
+        // Track stats: successful dudo for AI
+        if (gameState.stats[player.id]) {
+          gameState.stats[player.id].dudosSuccessful++;
+        }
       }
 
       // Apply die loss
       const loser = gameState.players.find(p => p.id === loserId);
       if (loser) {
         loser.diceCount -= 1;
+        // Track stats: increment diceLost for loser
+        if (gameState.stats[loserId]) {
+          gameState.stats[loserId].diceLost++;
+        }
         console.log(`[TIMEOUT DUDO] ${loser.name} lost a die, now has ${loser.diceCount} dice`);
         if (loser.diceCount <= 0) {
           loser.isEliminated = true;
@@ -401,6 +420,12 @@ export default class GameServer implements Party.Server {
         this.broadcast({
           type: 'GAME_ENDED',
           winnerId: remainingPlayers[0].id,
+          stats: {
+            roundsPlayed: gameState.roundNumber,
+            totalBids: Object.values(gameState.stats).reduce((sum, s) => sum + s.bidsPlaced, 0),
+            winnerId: remainingPlayers[0].id,
+            playerStats: gameState.stats,
+          },
           timestamp: Date.now(),
         });
       }
@@ -465,9 +490,16 @@ export default class GameServer implements Party.Server {
       if (remainingPlayers.length === 1) {
         this.roomState.gameState.phase = 'ended';
         await this.persistState();
+        const gameState = this.roomState.gameState;
         this.broadcast({
           type: 'GAME_ENDED',
           winnerId: remainingPlayers[0].id,
+          stats: {
+            roundsPlayed: gameState.roundNumber,
+            totalBids: Object.values(gameState.stats).reduce((sum, s) => sum + s.bidsPlaced, 0),
+            winnerId: remainingPlayers[0].id,
+            playerStats: gameState.stats,
+          },
           timestamp: Date.now(),
         });
       } else if (remainingPlayers.length === 0) {
@@ -888,6 +920,20 @@ export default class GameServer implements Party.Server {
       player.diceCount = startingDice;
     }
 
+    // Initialize per-player stats
+    const initialStats: Record<string, PlayerStats> = {};
+    for (const player of connectedPlayers) {
+      initialStats[player.id] = {
+        bidsPlaced: 0,
+        dudosCalled: 0,
+        dudosSuccessful: 0,
+        calzasCalled: 0,
+        calzasSuccessful: 0,
+        diceLost: 0,
+        diceGained: 0,
+      };
+    }
+
     // Set game state to initial rolling phase
     this.roomState.gameState = {
       phase: 'rolling',
@@ -901,6 +947,7 @@ export default class GameServer implements Party.Server {
       roundNumber: 1,
       turnStartedAt: Date.now(),
       lastActionWasTimeout: false,
+      stats: initialStats,
     };
 
     await this.persistState();
@@ -1035,6 +1082,11 @@ export default class GameServer implements Party.Server {
       return;
     }
 
+    // Track stats: increment bidsPlaced
+    if (gameState.stats[sender.id]) {
+      gameState.stats[sender.id].bidsPlaced++;
+    }
+
     // Update game state
     gameState.currentBid = msg.bid;
     gameState.lastBidderId = sender.id;
@@ -1086,6 +1138,11 @@ export default class GameServer implements Party.Server {
       return;
     }
 
+    // Track stats: increment dudosCalled
+    if (gameState.stats[sender.id]) {
+      gameState.stats[sender.id].dudosCalled++;
+    }
+
     // Transition to reveal phase (alarm is naturally ignored since phase changes)
     gameState.phase = 'reveal';
 
@@ -1118,12 +1175,20 @@ export default class GameServer implements Party.Server {
     } else {
       // Bid was wrong - last bidder loses
       loserId = gameState.lastBidderId!;
+      // Track stats: successful dudo for sender
+      if (gameState.stats[sender.id]) {
+        gameState.stats[sender.id].dudosSuccessful++;
+      }
     }
 
     // Apply die loss to loser
     const loser = gameState.players.find(p => p.id === loserId);
     if (loser) {
       loser.diceCount -= 1;
+      // Track stats: increment diceLost for loser
+      if (gameState.stats[loserId]) {
+        gameState.stats[loserId].diceLost++;
+      }
       console.log(`[DUDO] ${loser.name} lost a die, now has ${loser.diceCount} dice`);
       if (loser.diceCount <= 0) {
         loser.isEliminated = true;
@@ -1164,6 +1229,12 @@ export default class GameServer implements Party.Server {
       this.broadcast({
         type: 'GAME_ENDED',
         winnerId: remainingPlayers[0].id,
+        stats: {
+          roundsPlayed: gameState.roundNumber,
+          totalBids: Object.values(gameState.stats).reduce((sum, s) => sum + s.bidsPlaced, 0),
+          winnerId: remainingPlayers[0].id,
+          playerStats: gameState.stats,
+        },
         timestamp: Date.now(),
       });
     } else if (remainingPlayers.length === 0) {
@@ -1197,6 +1268,11 @@ export default class GameServer implements Party.Server {
     if (!gameState.currentBid) {
       this.sendError(sender, 'INVALID_ACTION', 'No bid to calza');
       return;
+    }
+
+    // Track stats: increment calzasCalled
+    if (gameState.stats[sender.id]) {
+      gameState.stats[sender.id].calzasCalled++;
     }
 
     // Transition to reveal phase (alarm is naturally ignored since phase changes)
@@ -1233,6 +1309,11 @@ export default class GameServer implements Party.Server {
       if (caller) {
         caller.diceCount = Math.min(caller.diceCount + 1, 5);
       }
+      // Track stats: calzasSuccessful and diceGained
+      if (gameState.stats[sender.id]) {
+        gameState.stats[sender.id].calzasSuccessful++;
+        gameState.stats[sender.id].diceGained++;
+      }
       // On calza success, the last bidder starts next round (convention varies)
       // Using caller as the next starter since they "won" the round
       gameState.lastRoundLoserId = null; // No loser on success
@@ -1241,6 +1322,10 @@ export default class GameServer implements Party.Server {
       loserId = sender.id;
       if (caller) {
         caller.diceCount -= 1;
+        // Track stats: diceLost for failed calza
+        if (gameState.stats[sender.id]) {
+          gameState.stats[sender.id].diceLost++;
+        }
         console.log(`[CALZA] ${caller.name} lost a die, now has ${caller.diceCount} dice`);
         if (caller.diceCount <= 0) {
           caller.isEliminated = true;
@@ -1280,6 +1365,12 @@ export default class GameServer implements Party.Server {
       this.broadcast({
         type: 'GAME_ENDED',
         winnerId: remainingPlayers[0].id,
+        stats: {
+          roundsPlayed: gameState.roundNumber,
+          totalBids: Object.values(gameState.stats).reduce((sum, s) => sum + s.bidsPlaced, 0),
+          winnerId: remainingPlayers[0].id,
+          playerStats: gameState.stats,
+        },
         timestamp: Date.now(),
       });
     } else if (remainingPlayers.length === 0) {
@@ -1519,6 +1610,67 @@ export default class GameServer implements Party.Server {
     });
 
     console.log(`[EMOTE] ${player.name} sent emote: ${msg.emote}`);
+  }
+
+  private async handleReturnToLobby(
+    msg: Extract<ClientMessage, { type: 'RETURN_TO_LOBBY' }>,
+    sender: Party.Connection
+  ): Promise<void> {
+    if (!this.roomState) {
+      this.sendError(sender, 'INVALID_ACTION', 'Room does not exist');
+      return;
+    }
+
+    // Only host can initiate return to lobby
+    if (this.roomState.hostId !== sender.id) {
+      this.sendError(sender, 'NOT_HOST', 'Only host can return to lobby');
+      return;
+    }
+
+    // Only valid from ended game state
+    if (!this.roomState.gameState || this.roomState.gameState.phase !== 'ended') {
+      this.sendError(sender, 'INVALID_ACTION', 'Game must be ended to return to lobby');
+      return;
+    }
+
+    // Remove disconnected players from room
+    this.roomState.players = this.roomState.players.filter(p => p.isConnected);
+
+    // Reset player state for potential rematch
+    for (const player of this.roomState.players) {
+      player.diceCount = this.roomState.settings.startingDice;
+      player.isEliminated = false;
+      player.hand = [];
+    }
+
+    // Clear game state (back to lobby)
+    this.roomState.gameState = null;
+
+    // Clear any pending alarms/timers
+    await this.room.storage.delete('turnTimer');
+    const allKeys = await this.room.storage.list();
+    for (const [key] of allKeys) {
+      if (key.startsWith('disconnect_') || key.startsWith('aitakeover_')) {
+        await this.room.storage.delete(key);
+      }
+    }
+
+    await this.persistState();
+
+    console.log(`[RETURN_TO_LOBBY] Host ${sender.id} returning ${this.roomState.players.length} players to lobby`);
+
+    // Send ROOM_STATE to each connected player
+    for (const conn of this.room.getConnections()) {
+      const player = this.roomState.players.find(p => p.id === conn.id);
+      if (player) {
+        this.sendToConnection(conn, {
+          type: 'ROOM_STATE',
+          state: this.getPublicRoomState(),
+          yourPlayerId: conn.id,
+          timestamp: Date.now(),
+        });
+      }
+    }
   }
 
   // ========== Helper Methods ==========
