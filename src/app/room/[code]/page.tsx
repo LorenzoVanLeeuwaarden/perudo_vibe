@@ -247,6 +247,8 @@ export default function RoomPage() {
                   currentBid: message.bid,
                   lastBidderId: message.playerId,
                   currentTurnPlayerId: nextPlayer?.id ?? null,
+                  // Reset turn timer for next player
+                  turnStartedAt: Date.now(),
                 },
               },
             };
