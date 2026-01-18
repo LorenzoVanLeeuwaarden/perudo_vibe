@@ -6,8 +6,8 @@ import { PlayerDiceBadge } from './PlayerDiceBadge';
 import { BidUI } from './BidUI';
 import { SortedDiceDisplay } from './SortedDiceDisplay';
 import { DudoOverlay } from './DudoOverlay';
+import { RevealPhase } from './RevealPhase';
 import { ShaderBackground } from './ShaderBackground';
-import { PLAYER_COLORS } from '@/lib/types';
 import type { ServerRoomState, ClientMessage } from '@/shared';
 import type { PlayerColor } from '@/lib/types';
 
@@ -19,7 +19,17 @@ interface GameBoardProps {
 }
 
 export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBoardProps) {
-  const { showDudoOverlay, dudoCallerName, dudoType, revealedHands, roundResult } = useUIStore();
+  const {
+    showDudoOverlay,
+    dudoCallerName,
+    dudoType,
+    revealedHands,
+    roundResult,
+    setRevealedHands,
+    setRoundResult,
+    setDudoOverlay,
+    setDudoCaller,
+  } = useUIStore();
 
   const gameState = roomState.gameState;
   if (!gameState) return null;
@@ -54,6 +64,12 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
   };
 
   const handleContinueRound = () => {
+    // Clear reveal UI state
+    setRevealedHands(null);
+    setRoundResult(null);
+    setDudoOverlay(false);
+    setDudoCaller(null, null, null);
+    // Send continue message to server
     sendMessage({ type: 'CONTINUE_ROUND', timestamp: Date.now() });
   };
 
@@ -95,59 +111,10 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
           animate={{ opacity: 1, scale: 1 }}
           className="flex-1 flex flex-col items-center justify-center"
         >
-          {/* Show reveal overlay during reveal phase */}
-          {isRevealPhase && revealedHands && roundResult && (
-            <div className="retro-panel p-6 w-full max-w-md">
-              <h2 className="text-xl font-bold text-gold-accent text-center mb-4">
-                {roundResult.isCalza ? 'Calza!' : 'Dudo!'} - {roundResult.actualCount}x{roundResult.bid.value}s
-              </h2>
-              <p className="text-white-soft/80 text-center mb-4">
-                Bid was {roundResult.bid.count}x{roundResult.bid.value}s
-              </p>
-              {roundResult.loserId && (
-                <p className="text-red-danger text-center mb-4">
-                  {players.find(p => p.id === roundResult.loserId)?.name} loses a die!
-                </p>
-              )}
-              {roundResult.winnerId && roundResult.isCalza && (
-                <p className="text-green-500 text-center mb-4">
-                  {players.find(p => p.id === roundResult.winnerId)?.name} gains a die!
-                </p>
-              )}
-
-              {/* Show all revealed hands */}
-              <div className="space-y-3 mb-6">
-                {Object.entries(revealedHands).map(([playerId, hand]) => {
-                  const player = players.find(p => p.id === playerId);
-                  if (!player) return null;
-                  return (
-                    <div key={playerId} className="flex items-center gap-3">
-                      <span
-                        className="text-sm font-bold min-w-[80px]"
-                        style={{ color: PLAYER_COLORS[player.color as PlayerColor].bg }}
-                      >
-                        {player.name}:
-                      </span>
-                      <SortedDiceDisplay
-                        dice={hand}
-                        color={player.color as PlayerColor}
-                        size="sm"
-                        animateSort={false}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Continue button */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleContinueRound}
-                className="w-full py-3 bg-gold-accent text-purple-deep font-bold rounded-lg uppercase tracking-wider"
-              >
-                Continue
-              </motion.button>
+          {/* Placeholder during reveal phase - actual reveal is in RevealPhase overlay */}
+          {isRevealPhase && (
+            <div className="retro-panel p-8 text-center">
+              <p className="text-white-soft/60 text-lg">Revealing dice...</p>
             </div>
           )}
 
@@ -228,6 +195,17 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
         callerName={dudoCallerName ?? 'Unknown'}
         callerColor={dudoCallerColor}
       />
+
+      {/* Reveal phase overlay */}
+      {isRevealPhase && revealedHands && roundResult && (
+        <RevealPhase
+          players={players}
+          revealedHands={revealedHands}
+          roundResult={roundResult}
+          onContinue={handleContinueRound}
+          showOverlay={showDudoOverlay}
+        />
+      )}
     </main>
   );
 }
