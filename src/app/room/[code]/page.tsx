@@ -264,6 +264,30 @@ export default function RoomPage() {
         });
         break;
 
+      case 'TURN_CHANGED':
+        // Turn advanced (e.g., after player eliminated due to disconnect)
+        setJoinState(prev => {
+          if (prev.status === 'joined' && prev.roomState.gameState) {
+            const nextPlayerName = prev.roomState.players.find(p => p.id === message.currentPlayerId)?.name;
+            if (nextPlayerName) {
+              toast.info(`Turn passed to ${nextPlayerName}`);
+            }
+            return {
+              ...prev,
+              roomState: {
+                ...prev.roomState,
+                gameState: {
+                  ...prev.roomState.gameState,
+                  currentTurnPlayerId: message.currentPlayerId,
+                  turnStartedAt: message.turnStartedAt,
+                },
+              },
+            };
+          }
+          return prev;
+        });
+        break;
+
       case 'BID_PLACED':
         // Update current bid and last bidder
         setJoinState(prev => {

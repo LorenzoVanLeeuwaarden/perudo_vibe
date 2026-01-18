@@ -242,6 +242,12 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
 
   // Turn management
   z.object({
+    type: z.literal('TURN_CHANGED'),
+    currentPlayerId: z.string(),
+    turnStartedAt: z.number(),
+    timestamp: TimestampSchema,
+  }),
+  z.object({
     type: z.literal('TURN_TIMEOUT'),
     playerId: z.string(),
     aiAction: z.enum(['bid', 'dudo']),

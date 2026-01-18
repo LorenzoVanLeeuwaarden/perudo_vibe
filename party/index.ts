@@ -397,6 +397,52 @@ export default class GameServer implements Party.Server {
         });
       } else if (remainingPlayers.length === 0) {
         console.error('[DISCONNECT] ERROR: No remaining players after elimination!');
+      } else {
+        // Game continues - check if eliminated player was current turn player
+        const gameState = this.roomState.gameState;
+        if (gameState.phase === 'bidding' && gameState.currentTurnPlayerId === entry.playerId) {
+          console.log(`[DISCONNECT] Eliminated player was current turn - advancing to next player`);
+
+          // Find next active player
+          const activePlayers = gameState.players.filter(p => !p.isEliminated);
+          const currentIndex = activePlayers.findIndex(p => p.id === entry.playerId);
+          // Since eliminated player is no longer in activePlayers after re-filtering, find next
+          const stillActivePlayers = gameState.players.filter(p => !p.isEliminated && p.diceCount > 0);
+          if (stillActivePlayers.length > 0) {
+            // Get next player in turn order
+            const eliminatedPlayerOrder = gameState.players.findIndex(p => p.id === entry.playerId);
+            let nextPlayer: typeof stillActivePlayers[0] | null = null;
+
+            // Search forward from eliminated player's position
+            for (let i = 1; i < gameState.players.length; i++) {
+              const checkIndex = (eliminatedPlayerOrder + i) % gameState.players.length;
+              const candidate = gameState.players[checkIndex];
+              if (!candidate.isEliminated && candidate.diceCount > 0) {
+                nextPlayer = candidate;
+                break;
+              }
+            }
+
+            if (nextPlayer) {
+              gameState.currentTurnPlayerId = nextPlayer.id;
+              gameState.turnStartedAt = Date.now();
+              await this.persistState();
+
+              // Broadcast turn change
+              this.broadcast({
+                type: 'TURN_CHANGED',
+                currentPlayerId: nextPlayer.id,
+                turnStartedAt: gameState.turnStartedAt,
+                timestamp: Date.now(),
+              });
+
+              // Set turn timer for next player
+              await this.setTurnTimer();
+
+              console.log(`[DISCONNECT] Turn advanced to ${nextPlayer.name}`);
+            }
+          }
+        }
       }
     }
   }
