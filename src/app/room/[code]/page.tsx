@@ -19,7 +19,7 @@ type JoinState =
   | { status: 'connecting' }
   | { status: 'room-info'; info: { playerCount: number; maxPlayers: number; gameInProgress: boolean } }
   | { status: 'joining' }
-  | { status: 'joined'; roomState: ServerRoomState; playerId: string }
+  | { status: 'joined'; roomState: ServerRoomState; playerId: string; myHand: number[] }
   | { status: 'error'; message: string };
 
 export default function RoomPage() {
@@ -59,6 +59,7 @@ export default function RoomPage() {
           status: 'joined',
           roomState: message.state,
           playerId: message.yourPlayerId,
+          myHand: message.yourHand ?? [],
         });
         setJoinError(null);
         break;
@@ -190,8 +191,179 @@ export default function RoomPage() {
         break;
 
       case 'GAME_STARTED':
-        // Stub for Phase 6 - game state transition will be handled in game phase
-        console.log('Game started - transition will be implemented in Phase 6');
+        // Update game state phase to rolling and trigger roll
+        setJoinState(prev => {
+          if (prev.status === 'joined' && prev.roomState.gameState) {
+            return {
+              ...prev,
+              roomState: {
+                ...prev.roomState,
+                gameState: {
+                  ...prev.roomState.gameState,
+                  phase: 'rolling',
+                },
+              },
+            };
+          }
+          return prev;
+        });
+        // Auto-send ROLL_DICE to trigger server roll
+        if (wsRef) {
+          wsRef.send(JSON.stringify({ type: 'ROLL_DICE', timestamp: Date.now() }));
+        }
+        break;
+
+      case 'DICE_ROLLED':
+        // Update my hand with rolled dice and transition to bidding
+        setJoinState(prev => {
+          if (prev.status === 'joined') {
+            return {
+              ...prev,
+              myHand: message.yourHand,
+              roomState: {
+                ...prev.roomState,
+                gameState: prev.roomState.gameState ? {
+                  ...prev.roomState.gameState,
+                  phase: 'bidding',
+                } : null,
+              },
+            };
+          }
+          return prev;
+        });
+        break;
+
+      case 'BID_PLACED':
+        // Update current bid and last bidder
+        setJoinState(prev => {
+          if (prev.status === 'joined' && prev.roomState.gameState) {
+            const playerName = prev.roomState.players.find(p => p.id === message.playerId)?.name;
+            if (playerName) {
+              toast(`${playerName} bid ${message.bid.count}x${message.bid.value}s`);
+            }
+            // Find next player in turn order
+            const activePlayers = prev.roomState.gameState.players.filter(p => !p.isEliminated);
+            const currentIndex = activePlayers.findIndex(p => p.id === message.playerId);
+            const nextPlayer = activePlayers[(currentIndex + 1) % activePlayers.length];
+            return {
+              ...prev,
+              roomState: {
+                ...prev.roomState,
+                gameState: {
+                  ...prev.roomState.gameState,
+                  currentBid: message.bid,
+                  lastBidderId: message.playerId,
+                  currentTurnPlayerId: nextPlayer?.id ?? null,
+                },
+              },
+            };
+          }
+          return prev;
+        });
+        break;
+
+      case 'DUDO_CALLED': {
+        // Show DudoOverlay for dudo call
+        const { setDudoOverlay, setDudoCaller } = useUIStore.getState();
+        setJoinState(prev => {
+          if (prev.status === 'joined') {
+            const callerName = prev.roomState.players.find(p => p.id === message.callerId)?.name ?? 'Unknown';
+            setDudoCaller(message.callerId, callerName, 'dudo');
+            setDudoOverlay(true);
+          }
+          return prev;
+        });
+        break;
+      }
+
+      case 'CALZA_CALLED': {
+        // Show DudoOverlay for calza call
+        const { setDudoOverlay, setDudoCaller } = useUIStore.getState();
+        setJoinState(prev => {
+          if (prev.status === 'joined') {
+            const callerName = prev.roomState.players.find(p => p.id === message.callerId)?.name ?? 'Unknown';
+            setDudoCaller(message.callerId, callerName, 'calza');
+            setDudoOverlay(true);
+          }
+          return prev;
+        });
+        break;
+      }
+
+      case 'ROUND_RESULT': {
+        // Store revealed hands and round result, transition to reveal phase
+        const { setRevealedHands, setRoundResult } = useUIStore.getState();
+        setRevealedHands(message.allHands);
+        setRoundResult({
+          bid: message.bid,
+          actualCount: message.actualCount,
+          loserId: message.loserId,
+          winnerId: message.winnerId,
+          isCalza: message.isCalza,
+        });
+        setJoinState(prev => {
+          if (prev.status === 'joined' && prev.roomState.gameState) {
+            // Update dice counts based on result
+            const updatedPlayers = prev.roomState.gameState.players.map(p => {
+              if (p.id === message.loserId) {
+                return { ...p, diceCount: Math.max(0, p.diceCount - 1), isEliminated: p.diceCount - 1 <= 0 };
+              }
+              if (p.id === message.winnerId && message.isCalza) {
+                return { ...p, diceCount: Math.min(5, p.diceCount + 1) };
+              }
+              return p;
+            });
+            return {
+              ...prev,
+              roomState: {
+                ...prev.roomState,
+                gameState: {
+                  ...prev.roomState.gameState,
+                  phase: 'reveal',
+                  players: updatedPlayers,
+                },
+              },
+            };
+          }
+          return prev;
+        });
+        break;
+      }
+
+      case 'GAME_ENDED':
+        // Update game phase to ended and store winner
+        setJoinState(prev => {
+          if (prev.status === 'joined' && prev.roomState.gameState) {
+            return {
+              ...prev,
+              roomState: {
+                ...prev.roomState,
+                gameState: {
+                  ...prev.roomState.gameState,
+                  phase: 'ended',
+                },
+              },
+            };
+          }
+          return prev;
+        });
+        break;
+
+      case 'GAME_STATE':
+        // Full game state update from server
+        setJoinState(prev => {
+          if (prev.status === 'joined') {
+            return {
+              ...prev,
+              myHand: message.yourHand ?? prev.myHand,
+              roomState: {
+                ...prev.roomState,
+                gameState: message.state,
+              },
+            };
+          }
+          return prev;
+        });
         break;
 
       case 'ERROR':

@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { PlayerColor } from '@/shared/types';
+import type { PlayerColor, Bid } from '@/shared/types';
+
+interface RoundResult {
+  bid: Bid;
+  actualCount: number;
+  loserId: string | null;
+  winnerId: string | null;
+  isCalza: boolean;
+}
 
 interface UIStore {
   // Animation state (not persisted)
@@ -11,6 +19,13 @@ interface UIStore {
   dyingDieIndex: number;
   highlightedDiceIndex: number;
   countingComplete: boolean;
+
+  // Game phase state (not persisted)
+  revealedHands: Record<string, number[]> | null;
+  roundResult: RoundResult | null;
+  dudoCallerId: string | null;
+  dudoCallerName: string | null;
+  dudoType: 'dudo' | 'calza' | null;
 
   // Connection state (not persisted)
   connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error';
@@ -36,6 +51,9 @@ interface UIStore {
   setPreferredMode: (mode: 'ai' | 'multiplayer') => void;
   clearPreferredMode: () => void;
   resetAnimationState: () => void;
+  setRevealedHands: (hands: Record<string, number[]> | null) => void;
+  setRoundResult: (result: RoundResult | null) => void;
+  setDudoCaller: (callerId: string | null, callerName: string | null, type: 'dudo' | 'calza' | null) => void;
 }
 
 // Split into persisted and non-persisted state
@@ -50,6 +68,13 @@ export const useUIStore = create<UIStore>()(
       dyingDieIndex: -1,
       highlightedDiceIndex: -1,
       countingComplete: false,
+
+      // Game phase state - not persisted
+      revealedHands: null,
+      roundResult: null,
+      dudoCallerId: null,
+      dudoCallerName: null,
+      dudoType: null,
 
       // Connection state - not persisted
       connectionStatus: 'disconnected',
@@ -85,6 +110,18 @@ export const useUIStore = create<UIStore>()(
         dyingDieIndex: -1,
         highlightedDiceIndex: -1,
         countingComplete: false,
+        revealedHands: null,
+        roundResult: null,
+        dudoCallerId: null,
+        dudoCallerName: null,
+        dudoType: null,
+      }),
+      setRevealedHands: (hands) => set({ revealedHands: hands }),
+      setRoundResult: (result) => set({ roundResult: result }),
+      setDudoCaller: (callerId, callerName, type) => set({
+        dudoCallerId: callerId,
+        dudoCallerName: callerName,
+        dudoType: type,
       }),
     }),
     {
