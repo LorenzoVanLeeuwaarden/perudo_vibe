@@ -380,8 +380,19 @@ export default class GameServer implements Party.Server {
     }
 
     // Guard: must be in rolling phase
+    // If already in bidding phase, silently ignore - another client already triggered the roll
+    // This handles the race condition where multiple clients send ROLL_DICE after GAME_STARTED
     if (this.roomState.gameState.phase !== 'rolling') {
-      this.sendError(sender, 'INVALID_ACTION', 'Not in rolling phase');
+      // Not an error - just a late/duplicate roll request after dice were already rolled
+      // Re-send the player their hand in case they missed the DICE_ROLLED message
+      const player = this.roomState.gameState.players.find(p => p.id === sender.id);
+      if (player && !player.isEliminated && player.hand.length > 0) {
+        this.sendToConnection(sender, {
+          type: 'DICE_ROLLED',
+          yourHand: player.hand,
+          timestamp: Date.now(),
+        });
+      }
       return;
     }
 
