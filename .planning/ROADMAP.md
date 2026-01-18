@@ -159,11 +159,13 @@ Plans:
   2. After game ends, all players return to the lobby for potential rematch
   3. Game statistics are displayed at game end (rounds played, dice lost, who called dudo, etc.)
   4. Host can start a new game from the post-game lobby
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
+- [ ] 09-01-PLAN.md — Server infrastructure for emotes, statistics tracking, and RETURN_TO_LOBBY handler
+- [ ] 09-02-PLAN.md — Emote UI with EmotePicker and EmoteBubble components
+- [ ] 09-03-PLAN.md — Game end polish with enhanced VictoryScreen, GameResultsScreen, and sound effects
+- [ ] 09-04-PLAN.md — Full integration of celebration flow, emote handling, and rematch flow
 
 ## Progress
 
@@ -180,7 +182,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 6. Game State Sync | 3/3 | ✓ Complete | 2026-01-18 |
 | 7. Turn Timers | 3/3 | ✓ Complete | 2026-01-18 |
 | 8. Disconnect and Reconnection | 2/2 | ✓ Complete | 2026-01-18 |
-| 9. Social and Polish | 0/TBD | Not started | - |
+| 9. Social and Polish | 0/4 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-18*
