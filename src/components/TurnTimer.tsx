@@ -40,10 +40,13 @@ export function TurnTimer({ turnStartedAt, turnTimeoutMs, isMyTurn }: TurnTimerP
     return null;
   }
 
-  const progress = remainingMs / turnTimeoutMs;
+  // Clamp progress to ensure bar is always visible when time > 0
+  // Minimum 5% width when there's any time remaining
+  const rawProgress = remainingMs / turnTimeoutMs;
+  const progress = remainingMs > 0 ? Math.max(0.05, rawProgress) : 0;
   const seconds = Math.ceil(remainingMs / 1000);
-  const color = getTimerColor(progress);
-  const isPulsing = progress <= 0.25;
+  const color = getTimerColor(rawProgress); // Use raw progress for color thresholds
+  const isPulsing = rawProgress <= 0.25;
 
   return (
     <div className="w-full max-w-xs mx-auto">
