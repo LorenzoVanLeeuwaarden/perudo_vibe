@@ -17,7 +17,7 @@ const TURN_TIME_OPTIONS = [
   { value: 30000, label: '30s' },
   { value: 60000, label: '60s' },
   { value: 90000, label: '90s' },
-  { value: 0, label: 'Unlimited' },
+  { value: 120000, label: '120s' },
 ];
 
 export function GameSettingsModal({ isOpen, onClose, settings, onSave, isHost }: GameSettingsModalProps) {
