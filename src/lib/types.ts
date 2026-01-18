@@ -1,4 +1,4 @@
-export type GameState = 'Lobby' | 'Rolling' | 'Bidding' | 'Reveal' | 'Victory' | 'Defeat';
+export type GameState = 'ModeSelection' | 'Lobby' | 'Rolling' | 'Bidding' | 'Reveal' | 'Victory' | 'Defeat';
 
 export type PlayerColor = 'blue' | 'green' | 'orange' | 'yellow' | 'black' | 'red';
 
