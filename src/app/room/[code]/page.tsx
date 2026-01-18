@@ -108,13 +108,15 @@ export default function RoomPage() {
 
             const player = prev.roomState.players.find(p => p.id === message.playerId);
             if (message.reason === 'disconnected') {
-              // Just mark as disconnected, don't remove - they might reconnect
+              // Just mark as disconnected with timestamp, don't remove - they might reconnect
               return {
                 ...prev,
                 roomState: {
                   ...prev.roomState,
                   players: prev.roomState.players.map(p =>
-                    p.id === message.playerId ? { ...p, isConnected: false } : p
+                    p.id === message.playerId
+                      ? { ...p, isConnected: false, disconnectedAt: Date.now() }
+                      : p
                   ),
                 },
               };
@@ -137,22 +139,35 @@ export default function RoomPage() {
         break;
 
       case 'PLAYER_RECONNECTED':
-        // Update player's connection status
+        // Update player's connection status and clear disconnectedAt
         setJoinState(prev => {
           if (prev.status === 'joined') {
+            // Check if this reconnection message is for ourselves
+            const isMe = message.playerId === prev.playerId;
+
+            // Schedule toast after state update
+            queueMicrotask(() => {
+              if (isMe) {
+                toast.success("Welcome back! You're back in the game");
+              } else {
+                toast.success(`${message.playerName} reconnected`);
+              }
+            });
+
             return {
               ...prev,
               roomState: {
                 ...prev.roomState,
                 players: prev.roomState.players.map(p =>
-                  p.id === message.playerId ? { ...p, isConnected: true } : p
+                  p.id === message.playerId
+                    ? { ...p, isConnected: true, disconnectedAt: null }
+                    : p
                 ),
               },
             };
           }
           return prev;
         });
-        toast.success(`${message.playerName} reconnected`);
         break;
 
       case 'SETTINGS_UPDATED':
