@@ -11,6 +11,7 @@ import {
   MIN_PLAYERS,
   MAX_PLAYERS,
 } from '../src/shared';
+import { rollDice, isValidBid, countMatching } from '../src/lib/gameLogic';
 
 // Default game settings
 const DEFAULT_SETTINGS: GameSettings = {
@@ -361,16 +362,117 @@ export default class GameServer implements Party.Server {
     msg: Extract<ClientMessage, { type: 'ROLL_DICE' }>,
     sender: Party.Connection
   ): Promise<void> {
-    // TODO: Implement in Phase 6 (Game State Sync)
-    console.log(`[ROLL_DICE] requested by ${sender.id}`);
+    // Guard: game must exist
+    if (!this.roomState?.gameState) {
+      this.sendError(sender, 'GAME_NOT_STARTED', 'Game has not started');
+      return;
+    }
+
+    // Guard: must be in rolling phase
+    if (this.roomState.gameState.phase !== 'rolling') {
+      this.sendError(sender, 'INVALID_ACTION', 'Not in rolling phase');
+      return;
+    }
+
+    const gameState = this.roomState.gameState;
+
+    // Roll dice for each non-eliminated player
+    for (const player of gameState.players) {
+      if (!player.isEliminated) {
+        player.hand = rollDice(player.diceCount);
+      }
+    }
+
+    // Check for palifico: round starter has exactly 1 die
+    const roundStarter = gameState.players.find(p => p.id === gameState.roundStarterId);
+    if (roundStarter && roundStarter.diceCount === 1 && this.roomState.settings.palificoEnabled) {
+      gameState.isPalifico = true;
+    } else {
+      gameState.isPalifico = false;
+    }
+
+    // Transition to bidding phase
+    gameState.phase = 'bidding';
+    gameState.turnStartedAt = Date.now();
+
+    await this.persistState();
+
+    // Send private hand to each player
+    for (const connection of this.room.getConnections()) {
+      const player = gameState.players.find(p => p.id === connection.id);
+      if (player && !player.isEliminated) {
+        this.sendToConnection(connection, {
+          type: 'DICE_ROLLED',
+          yourHand: player.hand,
+          timestamp: Date.now(),
+        });
+      }
+    }
+
+    // Broadcast public game state (without private hands)
+    this.broadcast({
+      type: 'GAME_STATE',
+      state: this.getPublicRoomState().gameState,
+      timestamp: Date.now(),
+    });
   }
 
   private async handlePlaceBid(
     msg: Extract<ClientMessage, { type: 'PLACE_BID' }>,
     sender: Party.Connection
   ): Promise<void> {
-    // TODO: Implement in Phase 6
-    console.log(`[PLACE_BID] ${msg.bid.count}x${msg.bid.value} by ${sender.id}`);
+    // Guard: game must exist and be in bidding phase
+    if (!this.roomState?.gameState || this.roomState.gameState.phase !== 'bidding') {
+      this.sendError(sender, 'INVALID_ACTION', 'Not in bidding phase');
+      return;
+    }
+
+    const gameState = this.roomState.gameState;
+
+    // Guard: must be sender's turn
+    if (gameState.currentTurnPlayerId !== sender.id) {
+      this.sendError(sender, 'NOT_YOUR_TURN', 'It is not your turn');
+      return;
+    }
+
+    // Calculate total dice in play
+    const activePlayers = gameState.players.filter(p => !p.isEliminated);
+    const totalDice = activePlayers.reduce((sum, p) => sum + p.diceCount, 0);
+
+    // Validate bid
+    const validation = isValidBid(msg.bid, gameState.currentBid, totalDice, gameState.isPalifico);
+    if (!validation.valid) {
+      this.sendToConnection(sender, {
+        type: 'ERROR',
+        error: {
+          type: 'INVALID_BID',
+          reason: validation.reason || 'Invalid bid',
+          currentBid: gameState.currentBid,
+        },
+        timestamp: Date.now(),
+      });
+      return;
+    }
+
+    // Update game state
+    gameState.currentBid = msg.bid;
+    gameState.lastBidderId = sender.id;
+
+    // Advance turn to next active player
+    const currentIndex = activePlayers.findIndex(p => p.id === sender.id);
+    const nextIndex = (currentIndex + 1) % activePlayers.length;
+    gameState.currentTurnPlayerId = activePlayers[nextIndex].id;
+    gameState.turnStartedAt = Date.now();
+
+    await this.persistState();
+
+    // Broadcast bid placed
+    this.broadcast({
+      type: 'BID_PLACED',
+      playerId: sender.id,
+      bid: msg.bid,
+      timestamp: Date.now(),
+    });
   }
 
   private async handleCallDudo(
