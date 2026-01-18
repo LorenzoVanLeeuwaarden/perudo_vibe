@@ -621,9 +621,9 @@ export default class GameServer implements Party.Server {
 
     const gameState = this.roomState.gameState;
 
-    // Guard: cannot calza on your own turn
-    if (gameState.currentTurnPlayerId === sender.id) {
-      this.sendError(sender, 'INVALID_ACTION', 'Cannot calza on your own turn');
+    // Guard: must be sender's turn (calza is a turn action like bid or dudo)
+    if (gameState.currentTurnPlayerId !== sender.id) {
+      this.sendError(sender, 'NOT_YOUR_TURN', 'It is not your turn');
       return;
     }
 
