@@ -12,8 +12,10 @@ import { RevealPhase } from './RevealPhase';
 import { ShaderBackground } from './ShaderBackground';
 import { EmotePicker } from './EmotePicker';
 import { EmoteBubble } from './EmoteBubble';
-import type { ServerRoomState, ClientMessage, ServerPlayer } from '@/shared';
+import type { ServerRoomState, ClientMessage, ServerPlayer, GameStats } from '@/shared';
 import type { PlayerColor } from '@/lib/types';
+import { VictoryScreen } from './VictoryScreen';
+import { GameResultsScreen } from './GameResultsScreen';
 
 /**
  * Check if disconnect visual should be shown for a player
@@ -30,9 +32,27 @@ interface GameBoardProps {
   myPlayerId: string;
   myHand: number[];
   sendMessage: (msg: ClientMessage) => void;
+  // New props for celebration/results flow
+  showCelebration?: boolean;
+  showResults?: boolean;
+  gameStats?: GameStats | null;
+  onCelebrationComplete?: () => void;
+  onReturnToLobby?: () => void;
+  onLeaveGame?: () => void;
 }
 
-export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBoardProps) {
+export function GameBoard({
+  roomState,
+  myPlayerId,
+  myHand,
+  sendMessage,
+  showCelebration,
+  showResults,
+  gameStats,
+  onCelebrationComplete,
+  onReturnToLobby,
+  onLeaveGame,
+}: GameBoardProps) {
   const {
     showDudoOverlay,
     dudoCallerName,
@@ -82,6 +102,11 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
   const dudoCallerColor = dudoCallerName
     ? (players.find(p => p.name === dudoCallerName)?.color as PlayerColor) ?? 'blue'
     : 'blue';
+
+  // Celebration/results computations
+  const winnerId = gameStats?.winnerId;
+  const isWinner = winnerId === myPlayerId;
+  const isHost = roomState.hostId === myPlayerId;
 
   // Action handlers
   const handleBid = (bid: { count: number; value: number }) => {
@@ -286,6 +311,49 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
           roundResult={roundResult}
           onContinue={handleContinueRound}
           showOverlay={showDudoOverlay}
+        />
+      )}
+
+      {/* Victory celebration for winner */}
+      {showCelebration && isWinner && (
+        <VictoryScreen
+          playerColor={myColor}
+          onPlayAgain={onCelebrationComplete || (() => {})}
+        />
+      )}
+
+      {/* Waiting screen for non-winners during celebration */}
+      {showCelebration && !isWinner && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-40 flex items-center justify-center"
+          style={{
+            background: 'radial-gradient(ellipse at center, #1a0a2e 0%, #0d0416 70%, #050208 100%)',
+          }}
+        >
+          <div className="text-center">
+            <h2 className="text-4xl font-bold text-white-soft mb-4">Game Over</h2>
+            <p className="text-xl text-white-soft/70">
+              {players.find(p => p.id === winnerId)?.name} wins!
+            </p>
+            <p className="text-white-soft/50 mt-4">Loading results...</p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Results screen for all players after celebration */}
+      {showResults && gameStats && (
+        <GameResultsScreen
+          stats={gameStats}
+          players={players.map(p => ({
+            id: p.id,
+            name: p.name,
+            color: p.color as PlayerColor,
+          }))}
+          isHost={isHost}
+          onReturnToLobby={onReturnToLobby || (() => {})}
+          onLeaveGame={onLeaveGame || (() => {})}
         />
       )}
     </main>
