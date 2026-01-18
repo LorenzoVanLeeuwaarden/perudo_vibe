@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 5 in progress - Lobby Experience (server handlers complete)
+**Current focus:** Phase 5 complete - Ready for Phase 6 (Game State Sync)
 
 ## Current Position
 
-Phase: 5 of 9 (Lobby Experience)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-18 - Completed 05-01-PLAN.md (server-side lobby controls)
+Phase: 5 of 9 (Lobby Experience) - COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-18 - Completed 05-02-PLAN.md (lobby UI components)
 
-Progress: [████████░-] 50% (9 of 18 estimated plans)
+Progress: [█████████░] 55% (10 of 18 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 10
 - Average duration: ~7 min
-- Total execution time: ~1h 5min
+- Total execution time: ~1h 8min
 
 **By Phase:**
 
@@ -31,10 +31,10 @@ Progress: [████████░-] 50% (9 of 18 estimated plans)
 | 02-mode-selection | 1 | 15 min | 15 min |
 | 03-room-creation | 2 | 10 min | 5 min |
 | 04-join-flow | 2 | 28 min | 14 min |
-| 05-lobby-experience | 1 | 5 min | 5 min |
+| 05-lobby-experience | 2 | 8 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (8 min), 04-01 (3 min), 04-02 (25 min), 05-01 (5 min)
+- Last 5 plans: 04-01 (3 min), 04-02 (25 min), 05-01 (5 min), 05-02 (3 min)
 - Trend: Server-only plans execute quickly; UI plans take longer
 
 *Updated after each plan completion*
@@ -78,6 +78,9 @@ Recent decisions affecting current work:
 - [05-01]: Host transfers to earliest-joined connected player when host disconnects
 - [05-01]: Kicked players receive PLAYER_LEFT with reason 'kicked' before connection close
 - [05-01]: Game starts in 'rolling' phase with first player as turn starter
+- [05-02]: Modal pattern: AnimatePresence wrapper, backdrop onClick to close, inner stopPropagation
+- [05-02]: List animation: AnimatePresence mode='popLayout' with layout prop on children
+- [05-02]: Turn time options: Predefined values (30s, 60s, 90s, Unlimited) for better UX
 
 ### Pending Todos
 
@@ -90,5 +93,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 05-01-PLAN.md, ready for 05-02 (Lobby UI)
+Stopped at: Completed 05-02-PLAN.md, Phase 5 complete, ready for Phase 6 (Game State Sync)
 Resume file: None

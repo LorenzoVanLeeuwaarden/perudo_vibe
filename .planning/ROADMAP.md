@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Mode Selection** - Landing page with single-player vs multiplayer choice
 - [x] **Phase 3: Room Creation** - Create multiplayer rooms with shareable links
 - [x] **Phase 4: Join Flow** - Join rooms via link with guest nickname
-- [ ] **Phase 5: Lobby Experience** - Player list, host controls, and game configuration
+- [x] **Phase 5: Lobby Experience** - Player list, host controls, and game configuration
 - [ ] **Phase 6: Game State Sync** - Real-time game state synchronization across players
 - [ ] **Phase 7: Turn Timers** - Turn countdown timers with AI timeout handling
 - [ ] **Phase 8: Disconnect and Reconnection** - Graceful disconnect handling with AI takeover and reconnection
@@ -96,8 +96,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Server-side lobby handlers (UPDATE_SETTINGS, KICK_PLAYER, START_GAME) and host transfer
-- [ ] 05-02-PLAN.md — Lobby UI components (PlayerList, KickConfirmDialog, GameSettingsModal) and integration
+- [x] 05-01-PLAN.md — Server-side lobby handlers (UPDATE_SETTINGS, KICK_PLAYER, START_GAME) and host transfer
+- [x] 05-02-PLAN.md — Lobby UI components (PlayerList, KickConfirmDialog, GameSettingsModal) and integration
 
 ### Phase 6: Game State Sync
 **Goal**: All players see the same public game state in real-time, with hidden information (dice) properly filtered per player
@@ -173,7 +173,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 2. Mode Selection | 1/1 | ✓ Complete | 2026-01-18 |
 | 3. Room Creation | 2/2 | ✓ Complete | 2026-01-18 |
 | 4. Join Flow | 2/2 | Complete | 2026-01-18 |
-| 5. Lobby Experience | 0/2 | Not started | - |
+| 5. Lobby Experience | 2/2 | Complete | 2026-01-18 |
 | 6. Game State Sync | 0/TBD | Not started | - |
 | 7. Turn Timers | 0/TBD | Not started | - |
 | 8. Disconnect and Reconnection | 0/TBD | Not started | - |
