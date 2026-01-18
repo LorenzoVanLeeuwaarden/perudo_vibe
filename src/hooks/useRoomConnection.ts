@@ -9,6 +9,7 @@ export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'er
 
 interface UseRoomConnectionOptions {
   roomCode: string;
+  clientId?: string | null; // Pass from useClientIdentity
   onMessage?: (message: ServerMessage) => void;
   onStatusChange?: (status: ConnectionStatus) => void;
 }
@@ -17,7 +18,7 @@ interface UseRoomConnectionOptions {
  * Hook for managing PartySocket connection to a game room.
  * Handles connection lifecycle and message parsing.
  */
-export function useRoomConnection({ roomCode, onMessage, onStatusChange }: UseRoomConnectionOptions) {
+export function useRoomConnection({ roomCode, clientId, onMessage, onStatusChange }: UseRoomConnectionOptions) {
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
 
   const handleStatusChange = useCallback((newStatus: ConnectionStatus) => {
@@ -28,6 +29,7 @@ export function useRoomConnection({ roomCode, onMessage, onStatusChange }: UseRo
   const ws = usePartySocket({
     host: process.env.NEXT_PUBLIC_PARTYKIT_HOST!,
     room: normalizeRoomCode(roomCode),
+    id: clientId ?? undefined, // Custom connection ID for reconnection
 
     onOpen() {
       handleStatusChange('connected');
