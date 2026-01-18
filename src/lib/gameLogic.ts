@@ -1,5 +1,198 @@
 import { Bid } from './types';
 
+// =============================================================================
+// Timeout AI - Conservative strategy for auto-play on turn timeout
+// =============================================================================
+
+/**
+ * Binomial coefficient (n choose k)
+ */
+function binomialCoeff(n: number, k: number): number {
+  if (k > n || k < 0) return 0;
+  if (k === 0 || k === n) return 1;
+
+  // Use iterative approach to avoid factorial overflow
+  let result = 1;
+  for (let i = 0; i < k; i++) {
+    result = result * (n - i) / (i + 1);
+  }
+  return result;
+}
+
+/**
+ * Binomial probability: P(X = k) for X ~ Binomial(n, p)
+ */
+function binomialProbability(n: number, k: number, p: number): number {
+  return binomialCoeff(n, k) * Math.pow(p, k) * Math.pow(1 - p, n - k);
+}
+
+/**
+ * Calculate the probability that a bid is wrong (actual count < bid count)
+ *
+ * Uses binomial distribution to calculate P(total matching dice < bid.count)
+ *
+ * @param bid - The bid to evaluate
+ * @param hand - The timeout player's hand (known dice)
+ * @param totalDice - Total dice in play across all players
+ * @param isPalifico - Whether this is a palifico round (no wild aces)
+ * @returns Probability between 0 and 1 that the bid is wrong
+ */
+export function calculateBidFailureProbability(
+  bid: Bid,
+  hand: number[],
+  totalDice: number,
+  isPalifico: boolean
+): number {
+  // Count matching dice in our hand
+  const knownMatching = countMatching(hand, bid.value, isPalifico);
+
+  // Number of unknown dice (other players' dice)
+  const unknownDice = totalDice - hand.length;
+
+  // Probability of a single unknown die matching the bid value
+  // - In palifico: only exact value matches (1/6)
+  // - For aces: only aces match (1/6)
+  // - For 2-6: value OR aces match (2/6)
+  const p = isPalifico ? 1/6 : (bid.value === 1 ? 1/6 : 2/6);
+
+  // We need (bid.count - knownMatching) matches from unknownDice
+  const needed = bid.count - knownMatching;
+
+  // If we already have enough matches in hand, bid is definitely correct
+  if (needed <= 0) {
+    return 0;
+  }
+
+  // If we need more matches than possible, bid is definitely wrong
+  if (needed > unknownDice) {
+    return 1;
+  }
+
+  // Calculate P(X < needed) = sum of P(X = k) for k = 0 to needed-1
+  let failureProbability = 0;
+  for (let k = 0; k < needed; k++) {
+    failureProbability += binomialProbability(unknownDice, k, p);
+  }
+
+  return failureProbability;
+}
+
+/**
+ * Generate a minimum valid bid (conservative increment)
+ *
+ * Strategy: Make the smallest legal bid increase
+ */
+function generateMinimumBid(
+  currentBid: Bid,
+  hand: number[],
+  totalDice: number,
+  isPalifico: boolean
+): Bid {
+  // In palifico, can only increase count (same value)
+  if (isPalifico) {
+    return { count: currentBid.count + 1, value: currentBid.value };
+  }
+
+  // Non-palifico: try same count + higher value first (smaller commitment)
+  // then fall back to count + 1 with same value
+  if (currentBid.value < 6) {
+    // Can increase value keeping same count
+    return { count: currentBid.count, value: currentBid.value + 1 };
+  }
+
+  // At max value (6), must increase count
+  return { count: currentBid.count + 1, value: currentBid.value };
+}
+
+/**
+ * Generate a safe opening bid based on player's hand
+ *
+ * Strategy: Bid on the value we have the most of
+ */
+function generateSafeOpeningBid(hand: number[], isPalifico: boolean): Bid {
+  // Count occurrences of each value in hand
+  const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+  for (const die of hand) {
+    counts[die]++;
+  }
+
+  // Find the value we have the most of (excluding aces in non-palifico for variety)
+  let bestValue = 2;
+  let bestCount = 0;
+
+  for (let v = 2; v <= 6; v++) {
+    // In non-palifico, aces are wild, so effective count = count[v] + count[1]
+    const effectiveCount = isPalifico ? counts[v] : counts[v] + counts[1];
+    if (effectiveCount > bestCount) {
+      bestCount = effectiveCount;
+      bestValue = v;
+    }
+  }
+
+  // Bid conservatively: start with count = what we have (or 1 if we have none)
+  return { count: Math.max(1, bestCount), value: bestValue };
+}
+
+/**
+ * Generate a timeout AI move - conservative strategy
+ *
+ * This function is used when a player times out. The AI makes a conservative
+ * move that favors bidding over challenging. This is intentionally NOT optimal
+ * play - it's a penalty for timing out.
+ *
+ * Strategy:
+ * - Never calls calza (too risky)
+ * - Only calls dudo if >80% probability the bid is wrong
+ * - Otherwise makes the minimum valid bid
+ *
+ * @param hand - The timeout player's dice
+ * @param currentBid - The current bid (null if first bid of round)
+ * @param totalDice - Total dice in play
+ * @param isPalifico - Whether this is a palifico round
+ * @returns Either a bid action or a dudo action
+ */
+export function generateTimeoutAIMove(
+  hand: number[],
+  currentBid: Bid | null,
+  totalDice: number,
+  isPalifico: boolean
+): { type: 'bid'; bid: Bid } | { type: 'dudo' } {
+  // If no current bid, must make opening bid
+  if (!currentBid) {
+    return { type: 'bid', bid: generateSafeOpeningBid(hand, isPalifico) };
+  }
+
+  // Calculate probability the current bid is wrong
+  const probBidWrong = calculateBidFailureProbability(
+    currentBid,
+    hand,
+    totalDice,
+    isPalifico
+  );
+
+  // Only call dudo if very confident bid is wrong (>80% threshold)
+  // This is conservative - the AI prefers to bid rather than challenge
+  if (probBidWrong > 0.80) {
+    return { type: 'dudo' };
+  }
+
+  // Generate minimum valid bid
+  const minBid = generateMinimumBid(currentBid, hand, totalDice, isPalifico);
+
+  // Validate the bid is actually valid (sanity check)
+  const validation = isValidBid(minBid, currentBid, totalDice, isPalifico);
+  if (!validation.valid) {
+    // If minimum bid isn't valid (shouldn't happen), call dudo as fallback
+    return { type: 'dudo' };
+  }
+
+  return { type: 'bid', bid: minBid };
+}
+
+// =============================================================================
+// Core Game Logic
+// =============================================================================
+
 /**
  * Validates a bid according to Perudo rules:
  * 1. Normal bid: increase count (with same or higher value) OR increase value (with same or higher count)
