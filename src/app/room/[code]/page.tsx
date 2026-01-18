@@ -212,19 +212,14 @@ export default function RoomPage() {
         break;
 
       case 'DICE_ROLLED':
-        // Update my hand with rolled dice and transition to bidding
+        // Update my hand with rolled dice
+        // Note: Don't modify gameState here - GAME_STATE message will update it
+        // This avoids race conditions when React batches state updates
         setJoinState(prev => {
           if (prev.status === 'joined') {
             return {
               ...prev,
               myHand: message.yourHand,
-              roomState: {
-                ...prev.roomState,
-                gameState: prev.roomState.gameState ? {
-                  ...prev.roomState.gameState,
-                  phase: 'bidding',
-                } : null,
-              },
             };
           }
           return prev;

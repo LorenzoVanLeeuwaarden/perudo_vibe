@@ -692,7 +692,6 @@ export default class GameServer implements Party.Server {
     for (const player of gameState.players) {
       playerDiceCounts[player.id] = player.diceCount;
     }
-
     // Broadcast round result
     this.broadcast({
       type: 'ROUND_RESULT',
