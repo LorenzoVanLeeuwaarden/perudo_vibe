@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 Phase: 4 of 9 (Join Flow)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-01-18 - Phase 3 complete (2 plans executed, goal verified)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-18 - Completed 04-01-PLAN.md (server join flow)
 
-Progress: [███-------] 33%
+Progress: [████------] 39%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: ~5.5 min
-- Total execution time: ~0.45 hours
+- Total plans completed: 7
+- Average duration: ~5 min
+- Total execution time: ~0.5 hours
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: [███-------] 33%
 | 01-architecture-foundation | 3 | 5 min | 1.7 min |
 | 02-mode-selection | 1 | 15 min | 15 min |
 | 03-room-creation | 2 | 10 min | 5 min |
+| 04-join-flow | 1 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (2 min), 02-01 (15 min), 03-01 (2 min), 03-02 (8 min)
-- Trend: UI plans taking longer due to checkpoint verification
+- Last 5 plans: 02-01 (15 min), 03-01 (2 min), 03-02 (8 min), 04-01 (3 min)
+- Trend: Backend plans faster than UI plans
 
 *Updated after each plan completion*
 
@@ -64,6 +65,11 @@ Recent decisions affecting current work:
 - [03-02]: QR code uses qrcode.react (SVG-based, lightweight)
 - [03-02]: Web Share API with clipboard fallback for broad compatibility
 - [03-02]: Connection status indicator in top-right corner
+- [04-01]: Client ID stored in localStorage under 'perudo-client-id' key
+- [04-01]: ROOM_INFO sent to ALL new connections for join form population
+- [04-01]: Nickname validation is case-insensitive (Bob == bob)
+- [04-01]: First player to join becomes host automatically
+- [04-01]: Colors assigned in fixed order: blue, green, orange, yellow, black, red
 
 ### Pending Todos
 
@@ -71,10 +77,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet.
+- `npm run lint` / `next lint` failing with directory error (unrelated to implementation, using tsc --noEmit instead)
 
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Phase 3 complete, ready for Phase 4
+Stopped at: Completed 04-01-PLAN.md, ready for 04-02
 Resume file: None
