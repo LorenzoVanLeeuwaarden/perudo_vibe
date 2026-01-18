@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 6 complete - Game State Sync (3 of 3 plans done)
+**Current focus:** Phase 7 in progress - Turn Timers (1 of 3 plans done)
 
 ## Current Position
 
-Phase: 6 of 9 (Game State Sync)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-01-18 - Completed 06-03-PLAN.md (reveal animation)
+Phase: 7 of 9 (Turn Timers)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-18 - Completed 07-01-PLAN.md (server-side timer)
 
-Progress: [█████████████░] 72% (13 of 18 estimated plans)
+Progress: [██████████████░] 78% (14 of 18 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: ~14 min
-- Total execution time: ~3h (including verification time)
+- Total execution time: ~3.2h (including verification time)
 
 **By Phase:**
 
@@ -33,9 +33,10 @@ Progress: [█████████████░] 72% (13 of 18 estimated p
 | 04-join-flow | 2 | 28 min | 14 min |
 | 05-lobby-experience | 2 | 8 min | 4 min |
 | 06-game-state-sync | 3 | 111 min | 37 min |
+| 07-turn-timers | 1 | 12 min | 12 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-02 (3 min), 06-01 (8 min), 06-02 (3 min), 06-03 (~100 min)
+- Last 5 plans: 06-01 (8 min), 06-02 (3 min), 06-03 (~100 min), 07-01 (12 min)
 - Note: 06-03 included extensive human verification and 13 bug fixes
 
 *Updated after each plan completion*
@@ -93,6 +94,11 @@ Recent decisions affecting current work:
 - [06-03]: Server auto-rolls dice on CONTINUE_ROUND for synchronization
 - [06-03]: myHand trimmed client-side to match diceCount after losing dice
 - [06-03]: Calza changed to turn-based action per standard Perudo rules
+- [07-01]: PartyKit alarm API for server-side turn timeout scheduling
+- [07-01]: 500ms grace period added to turn timeout for network latency
+- [07-01]: 80% probability threshold for timeout AI to call dudo
+- [07-01]: Timeout AI never calls calza - too risky for penalty scenario
+- [07-01]: lastActionWasTimeout field added for UI robot badge
 
 ### Pending Todos
 
@@ -105,5 +111,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 06-03-PLAN.md, Phase 6 complete (all 3 plans done)
+Stopped at: Completed 07-01-PLAN.md (server-side timer)
 Resume file: None
