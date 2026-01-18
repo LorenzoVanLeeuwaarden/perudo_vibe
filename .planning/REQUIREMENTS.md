@@ -94,32 +94,32 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MODE-01 | TBD | Pending |
-| ROOM-01 | TBD | Pending |
-| ROOM-02 | TBD | Pending |
-| ROOM-03 | TBD | Pending |
-| ROOM-04 | TBD | Pending |
-| ROOM-05 | TBD | Pending |
-| SYNC-01 | TBD | Pending |
-| SYNC-02 | TBD | Pending |
-| SYNC-03 | TBD | Pending |
-| SYNC-04 | TBD | Pending |
-| TURN-01 | TBD | Pending |
-| TURN-02 | TBD | Pending |
-| TURN-03 | TBD | Pending |
-| DISC-01 | TBD | Pending |
-| DISC-02 | TBD | Pending |
-| DISC-03 | TBD | Pending |
-| SOCL-01 | TBD | Pending |
-| SOCL-02 | TBD | Pending |
-| SOCL-03 | TBD | Pending |
-| HOST-01 | TBD | Pending |
+| MODE-01 | Phase 2 | Pending |
+| ROOM-01 | Phase 3 | Pending |
+| ROOM-02 | Phase 4 | Pending |
+| ROOM-03 | Phase 5 | Pending |
+| ROOM-04 | Phase 5 | Pending |
+| ROOM-05 | Phase 5 | Pending |
+| SYNC-01 | Phase 6 | Pending |
+| SYNC-02 | Phase 6 | Pending |
+| SYNC-03 | Phase 6 | Pending |
+| SYNC-04 | Phase 8 | Pending |
+| TURN-01 | Phase 7 | Pending |
+| TURN-02 | Phase 7 | Pending |
+| TURN-03 | Phase 6 | Pending |
+| DISC-01 | Phase 8 | Pending |
+| DISC-02 | Phase 8 | Pending |
+| DISC-03 | Phase 8 | Pending |
+| SOCL-01 | Phase 9 | Pending |
+| SOCL-02 | Phase 9 | Pending |
+| SOCL-03 | Phase 9 | Pending |
+| HOST-01 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 20 total
-- Mapped to phases: 0
-- Unmapped: 20 (pending roadmap creation)
+- Mapped to phases: 20
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-18*
-*Last updated: 2026-01-18 after initial definition*
+*Last updated: 2026-01-18 after roadmap creation*
