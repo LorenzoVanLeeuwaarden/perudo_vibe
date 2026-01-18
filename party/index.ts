@@ -8,6 +8,7 @@ import {
   type GameSettings,
   STARTING_DICE,
   DEFAULT_TURN_TIMEOUT_MS,
+  MIN_PLAYERS,
   MAX_PLAYERS,
 } from '../src/shared';
 
@@ -147,10 +148,45 @@ export default class GameServer implements Party.Server {
 
     const player = this.roomState.players.find(p => p.id === connection.id);
     if (player) {
-      player.isConnected = false;
-      await this.persistState();
+      // Check if disconnecting player was host
+      const wasHost = this.roomState.hostId === connection.id;
 
-      // Notify other players
+      // Mark player as disconnected
+      player.isConnected = false;
+
+      // Handle host transfer if necessary
+      if (wasHost) {
+        // Find first connected player (excluding the one who just disconnected)
+        const connectedPlayers = this.roomState.players.filter(
+          p => p.isConnected && p.id !== connection.id
+        );
+
+        if (connectedPlayers.length > 0) {
+          const newHost = connectedPlayers[0]; // Earliest joined (array is ordered by join time)
+
+          // Update isHost flags
+          player.isHost = false;
+          newHost.isHost = true;
+          this.roomState.hostId = newHost.id;
+
+          // Persist state before broadcasting
+          await this.persistState();
+
+          // Broadcast HOST_CHANGED
+          this.broadcast({
+            type: 'HOST_CHANGED',
+            newHostId: newHost.id,
+            timestamp: Date.now(),
+          }, [connection.id]);
+        } else {
+          // No players left, just persist
+          await this.persistState();
+        }
+      } else {
+        await this.persistState();
+      }
+
+      // Notify other players of disconnection
       this.broadcast({
         type: 'PLAYER_LEFT',
         playerId: connection.id,
@@ -270,8 +306,55 @@ export default class GameServer implements Party.Server {
     msg: Extract<ClientMessage, { type: 'START_GAME' }>,
     sender: Party.Connection
   ): Promise<void> {
-    // TODO: Implement in Phase 5 (Lobby Experience)
-    console.log(`[START_GAME] requested by ${sender.id}`);
+    if (!this.roomState) {
+      this.sendError(sender, 'INVALID_ACTION', 'Room does not exist');
+      return;
+    }
+
+    // Verify sender is host
+    if (this.roomState.hostId !== sender.id) {
+      this.sendError(sender, 'NOT_HOST', 'Only the host can start the game');
+      return;
+    }
+
+    // Verify game not already in progress
+    if (this.roomState.gameState !== null && this.roomState.gameState.phase !== 'lobby') {
+      this.sendError(sender, 'INVALID_ACTION', 'Game already in progress');
+      return;
+    }
+
+    // Count connected players
+    const connectedPlayers = this.roomState.players.filter(p => p.isConnected);
+    const connectedCount = connectedPlayers.length;
+
+    if (connectedCount < MIN_PLAYERS || connectedCount > MAX_PLAYERS) {
+      this.sendError(sender, 'INVALID_ACTION', `Need ${MIN_PLAYERS}-${MAX_PLAYERS} players to start`);
+      return;
+    }
+
+    // Find first connected player for turn order
+    const firstPlayer = connectedPlayers[0];
+
+    // Set game state to initial rolling phase
+    this.roomState.gameState = {
+      phase: 'rolling',
+      players: connectedPlayers,
+      currentBid: null,
+      currentTurnPlayerId: firstPlayer?.id ?? null,
+      roundStarterId: firstPlayer?.id ?? null,
+      lastBidderId: null,
+      isPalifico: false,
+      roundNumber: 1,
+      turnStartedAt: Date.now(),
+    };
+
+    await this.persistState();
+
+    // Broadcast GAME_STARTED to all players
+    this.broadcast({
+      type: 'GAME_STARTED',
+      timestamp: Date.now(),
+    });
   }
 
   private async handleRollDice(
