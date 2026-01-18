@@ -127,10 +127,12 @@ Plans:
   2. Timer is synchronized across all clients (same time shown)
   3. If timer expires, AI automatically takes the turn for the player
   4. Other players see indication that AI made a move due to timeout
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 07-01: TBD
+- [ ] 07-01-PLAN.md — Server timer infrastructure with PartyKit alarms and conservative timeout AI
+- [ ] 07-02-PLAN.md — TurnTimer UI component with progress bar, color transitions, and AI badge
+- [ ] 07-03-PLAN.md — Settings modal update (remove Unlimited) and full integration verification
 
 ### Phase 8: Disconnect and Reconnection
 **Goal**: Players can reconnect after disconnection, with AI maintaining their position until they return
@@ -176,7 +178,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 4. Join Flow | 2/2 | ✓ Complete | 2026-01-18 |
 | 5. Lobby Experience | 2/2 | ✓ Complete | 2026-01-18 |
 | 6. Game State Sync | 3/3 | ✓ Complete | 2026-01-18 |
-| 7. Turn Timers | 0/TBD | Not started | - |
+| 7. Turn Timers | 0/3 | Planned | - |
 | 8. Disconnect and Reconnection | 0/TBD | Not started | - |
 | 9. Social and Polish | 0/TBD | Not started | - |
 
