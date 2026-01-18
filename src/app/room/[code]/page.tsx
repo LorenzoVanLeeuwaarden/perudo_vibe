@@ -108,6 +108,12 @@ export default function RoomPage() {
 
             const player = prev.roomState.players.find(p => p.id === message.playerId);
             if (message.reason === 'disconnected') {
+              // Show toast for disconnect (but not for ourselves)
+              if (player && message.playerId !== prev.playerId) {
+                queueMicrotask(() => {
+                  toast.warning(`${player.name} disconnected`);
+                });
+              }
               // Just mark as disconnected with timestamp, don't remove - they might reconnect
               return {
                 ...prev,

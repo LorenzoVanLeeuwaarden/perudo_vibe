@@ -136,6 +136,7 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
               showThinking={player.id === gameState.currentTurnPlayerId && gameState.phase === 'bidding'}
               thinkingPrompt={player.id === myPlayerId ? 'Your turn' : 'Thinking'}
               showDisconnectedVisual={shouldShowDisconnectedVisual(player, currentTime)}
+              isConnected={player.isConnected}
             />
           ))}
         </motion.div>

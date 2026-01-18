@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { WifiOff } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 
 interface PlayerDiceBadgeProps {
@@ -13,6 +14,7 @@ interface PlayerDiceBadgeProps {
   showThinking?: boolean;
   thinkingPrompt?: string;
   showDisconnectedVisual?: boolean;
+  isConnected?: boolean;
 }
 
 export function PlayerDiceBadge({
@@ -25,6 +27,7 @@ export function PlayerDiceBadge({
   showThinking = false,
   thinkingPrompt = 'Thinking',
   showDisconnectedVisual = false,
+  isConnected = true,
 }: PlayerDiceBadgeProps) {
   const colorConfig = PLAYER_COLORS[color];
 
@@ -98,8 +101,11 @@ export function PlayerDiceBadge({
         )}
       </AnimatePresence>
 
-      <span className="text-xs uppercase block text-center mb-1 font-bold" style={{ color: colorConfig.bg }}>
+      <span className="text-xs uppercase block text-center mb-1 font-bold flex items-center justify-center gap-1" style={{ color: colorConfig.bg }}>
         {playerName}
+        {!isConnected && (
+          <WifiOff className="w-3 h-3 text-white-soft/60" />
+        )}
       </span>
       <div className="flex items-center gap-1">
         {Array.from({ length: 5 }).map((_, i) => (
