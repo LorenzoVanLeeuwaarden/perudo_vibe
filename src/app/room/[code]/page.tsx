@@ -11,6 +11,7 @@ import { useRoomConnection, type ConnectionStatus } from '@/hooks/useRoomConnect
 import { useUIStore } from '@/stores/uiStore';
 import { JoinForm } from '@/components/JoinForm';
 import { RoomLobby } from '@/components/RoomLobby';
+import { GameBoard } from '@/components/GameBoard';
 import { CasinoLogo } from '@/components/CasinoLogo';
 import { ShaderBackground } from '@/components/ShaderBackground';
 import type { ServerMessage, ServerRoomState, ClientMessage, GameSettings } from '@/shared';
@@ -470,8 +471,22 @@ export default function RoomPage() {
     );
   }
 
-  // Joined state - show lobby
+  // Joined state - show lobby or game board
   if (joinState.status === 'joined') {
+    const gameActive = joinState.roomState.gameState &&
+                       joinState.roomState.gameState.phase !== 'lobby';
+
+    if (gameActive) {
+      return (
+        <GameBoard
+          roomState={joinState.roomState}
+          myPlayerId={joinState.playerId}
+          myHand={joinState.myHand}
+          sendMessage={sendMessage}
+        />
+      );
+    }
+
     return (
       <RoomLobby
         roomCode={roomCode}
