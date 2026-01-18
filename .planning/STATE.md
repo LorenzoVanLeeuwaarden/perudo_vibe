@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 4 complete - Ready for Phase 5 (Lobby Experience)
+**Current focus:** Phase 5 in progress - Lobby Experience (server handlers complete)
 
 ## Current Position
 
-Phase: 4 of 9 (Join Flow)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-18 - Completed 04-02-PLAN.md (client join flow)
+Phase: 5 of 9 (Lobby Experience)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-18 - Completed 05-01-PLAN.md (server-side lobby controls)
 
-Progress: [████████--] 44% (8 of 18 estimated plans)
+Progress: [████████░-] 50% (9 of 18 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: ~7 min
-- Total execution time: ~1 hour
+- Total execution time: ~1h 5min
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: [████████--] 44% (8 of 18 estimated plans)
 | 02-mode-selection | 1 | 15 min | 15 min |
 | 03-room-creation | 2 | 10 min | 5 min |
 | 04-join-flow | 2 | 28 min | 14 min |
+| 05-lobby-experience | 1 | 5 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (2 min), 03-02 (8 min), 04-01 (3 min), 04-02 (25 min)
-- Trend: UI plans with checkpoints take longer due to verification and bug fixes
+- Last 5 plans: 03-02 (8 min), 04-01 (3 min), 04-02 (25 min), 05-01 (5 min)
+- Trend: Server-only plans execute quickly; UI plans take longer
 
 *Updated after each plan completion*
 
@@ -74,6 +75,9 @@ Recent decisions affecting current work:
 - [04-02]: JoinForm uses grapheme-aware length for emoji support
 - [04-02]: JoinState discriminated union for type-safe status handling
 - [04-02]: RoomLobby receives roomState as props from parent page
+- [05-01]: Host transfers to earliest-joined connected player when host disconnects
+- [05-01]: Kicked players receive PLAYER_LEFT with reason 'kicked' before connection close
+- [05-01]: Game starts in 'rolling' phase with first player as turn starter
 
 ### Pending Todos
 
@@ -86,5 +90,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 04-02-PLAN.md, Phase 4 complete, ready for Phase 5
+Stopped at: Completed 05-01-PLAN.md, ready for 05-02 (Lobby UI)
 Resume file: None
