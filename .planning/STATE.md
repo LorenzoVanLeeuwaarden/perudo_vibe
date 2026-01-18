@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 3 - Room Creation (complete)
+**Current focus:** Phase 4 - Join Flow
 
 ## Current Position
 
-Phase: 3 of 9 (Room Creation)
-Plan: 2 of 2 in current phase (complete)
-Status: Phase complete
-Last activity: 2026-01-18 - Completed 03-02-PLAN.md
+Phase: 4 of 9 (Join Flow)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-01-18 - Phase 3 complete (2 plans executed, goal verified)
 
-Progress: [████------] 35%
+Progress: [███-------] 33%
 
 ## Performance Metrics
 
@@ -76,5 +76,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 03-02-PLAN.md (Phase 3 complete)
+Stopped at: Phase 3 complete, ready for Phase 4
 Resume file: None

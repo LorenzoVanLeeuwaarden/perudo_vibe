@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Architecture Foundation** - Establish server-authoritative types, state separation, and message protocol
 - [x] **Phase 2: Mode Selection** - Landing page with single-player vs multiplayer choice
-- [ ] **Phase 3: Room Creation** - Create multiplayer rooms with shareable links
+- [x] **Phase 3: Room Creation** - Create multiplayer rooms with shareable links
 - [ ] **Phase 4: Join Flow** - Join rooms via link with guest nickname
 - [ ] **Phase 5: Lobby Experience** - Player list, host controls, and game configuration
 - [ ] **Phase 6: Game State Sync** - Real-time game state synchronization across players
@@ -65,8 +65,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Room code utilities and PartySocket connection infrastructure
-- [ ] 03-02-PLAN.md — RoomShare UI, RoomLobby, room page route, and ModeSelection integration
+- [x] 03-01-PLAN.md — Room code utilities and PartySocket connection infrastructure
+- [x] 03-02-PLAN.md — RoomShare UI, RoomLobby, room page route, and ModeSelection integration
 
 ### Phase 4: Join Flow
 **Goal**: Users can join rooms via link with a guest nickname
@@ -170,7 +170,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 |-------|----------------|--------|-----------|
 | 1. Architecture Foundation | 3/3 | ✓ Complete | 2026-01-18 |
 | 2. Mode Selection | 1/1 | ✓ Complete | 2026-01-18 |
-| 3. Room Creation | 0/2 | Planning complete | - |
+| 3. Room Creation | 2/2 | ✓ Complete | 2026-01-18 |
 | 4. Join Flow | 0/TBD | Not started | - |
 | 5. Lobby Experience | 0/TBD | Not started | - |
 | 6. Game State Sync | 0/TBD | Not started | - |
