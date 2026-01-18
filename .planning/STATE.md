@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 6 in progress - Game State Sync (plan 1 of 2 complete)
+**Current focus:** Phase 6 complete - Game State Sync (2 of 2 plans done)
 
 ## Current Position
 
 Phase: 6 of 9 (Game State Sync)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-18 - Completed 06-01-PLAN.md (game action handlers)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-18 - Completed 06-02-PLAN.md (client state sync)
 
-Progress: [██████████░] 61% (11 of 18 estimated plans)
+Progress: [████████████░] 67% (12 of 18 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: ~7 min
-- Total execution time: ~1h 16min
+- Total plans completed: 12
+- Average duration: ~6.5 min
+- Total execution time: ~1h 19min
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [██████████░] 61% (11 of 18 estimated plans)
 | 03-room-creation | 2 | 10 min | 5 min |
 | 04-join-flow | 2 | 28 min | 14 min |
 | 05-lobby-experience | 2 | 8 min | 4 min |
-| 06-game-state-sync | 1 | 8 min | 8 min |
+| 06-game-state-sync | 2 | 11 min | 5.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-02 (25 min), 05-01 (5 min), 05-02 (3 min), 06-01 (8 min)
-- Trend: Server-only plans execute quickly; UI plans take longer
+- Last 5 plans: 05-01 (5 min), 05-02 (3 min), 06-01 (8 min), 06-02 (3 min)
+- Trend: Execution speeding up with established patterns
 
 *Updated after each plan completion*
 
@@ -85,6 +85,10 @@ Recent decisions affecting current work:
 - [06-01]: lastRoundLoserId added to ServerGameState for correct round starter assignment
 - [06-01]: DICE_ROLLED sent individually to each player with their private hand
 - [06-01]: Calza success sets lastRoundLoserId to null; last bidder starts next round
+- [06-02]: myHand stored in JoinState rather than uiStore for co-location with roomState
+- [06-02]: dudoCaller state (id, name, type) added to uiStore for overlay display
+- [06-02]: Client calculates next turn player locally on BID_PLACED for responsiveness
+- [06-02]: Reveal phase shows all hands with continue button to trigger CONTINUE_ROUND
 
 ### Pending Todos
 
@@ -97,5 +101,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 06-01-PLAN.md, ready for 06-02-PLAN.md (client state sync)
+Stopped at: Completed 06-02-PLAN.md, Phase 6 complete
 Resume file: None
