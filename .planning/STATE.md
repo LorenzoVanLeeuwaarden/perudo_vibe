@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 8 complete - Disconnect and Reconnection ready for Phase 9
+**Current focus:** Phase 9 in progress - Social and Polish features
 
 ## Current Position
 
-Phase: 8 of 9 (Disconnect and Reconnection) - COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-18 - Completed 08-02-PLAN.md (client disconnect visuals)
+Phase: 9 of 9 (Social and Polish)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-18 - Completed 09-01-PLAN.md (server-side social infrastructure)
 
-Progress: [██████████████████░] 100% (18 of 18 estimated plans)
+Progress: [███████████████████░] 95% (19 of 20 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
+- Total plans completed: 19
 - Average duration: ~15 min
-- Total execution time: ~4.5h (including verification time)
+- Total execution time: ~4.7h (including verification time)
 
 **By Phase:**
 
@@ -35,10 +35,11 @@ Progress: [██████████████████░] 100% (18 o
 | 06-game-state-sync | 3 | 111 min | 37 min |
 | 07-turn-timers | 3 | 29 min | 10 min |
 | 08-disconnect-reconnection | 2 | 45 min | 22 min |
+| 09-social-and-polish | 1 | 12 min | 12 min |
 
 **Recent Trend:**
-- Last 5 plans: 07-02 (2 min), 07-03 (15 min), 08-01 (4 min), 08-02 (~40 min with bug fixes)
-- Note: 08-02 required 6 bug fixes discovered during human verification
+- Last 5 plans: 07-03 (15 min), 08-01 (4 min), 08-02 (~40 min with bug fixes), 09-01 (12 min)
+- Note: 09-01 was straightforward server-side work with no deviations
 
 *Updated after each plan completion*
 
@@ -116,6 +117,9 @@ Recent decisions affecting current work:
 - [08-02]: AI takeover has 5-second grace period (separate from 60-second elimination)
 - [08-02]: useRoomConnection refactored to manual PartySocket for connection timing control
 - [08-02]: TURN_CHANGED message type for turn advancement after disconnect elimination
+- [09-01]: Emote cooldown 2.5 seconds with silent ignore (no error spam)
+- [09-01]: Stats stored in gameState.stats for lifecycle co-location
+- [09-01]: RETURN_TO_LOBBY host-only from ended state
 
 ### Pending Todos
 
@@ -128,5 +132,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 08-02-PLAN.md (client disconnect visuals) - Phase 8 complete
+Stopped at: Completed 09-01-PLAN.md (server-side social infrastructure)
 Resume file: None
