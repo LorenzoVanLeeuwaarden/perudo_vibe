@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Architecture Foundation** - Establish server-authoritative types, state separation, and message protocol
 - [x] **Phase 2: Mode Selection** - Landing page with single-player vs multiplayer choice
 - [x] **Phase 3: Room Creation** - Create multiplayer rooms with shareable links
-- [ ] **Phase 4: Join Flow** - Join rooms via link with guest nickname
+- [x] **Phase 4: Join Flow** - Join rooms via link with guest nickname
 - [ ] **Phase 5: Lobby Experience** - Player list, host controls, and game configuration
 - [ ] **Phase 6: Game State Sync** - Real-time game state synchronization across players
 - [ ] **Phase 7: Turn Timers** - Turn countdown timers with AI timeout handling
@@ -80,8 +80,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Server-side join flow infrastructure with client identity persistence
-- [ ] 04-02-PLAN.md — Client-side join flow UI with JoinForm and state machine
+- [x] 04-01-PLAN.md — Server-side join flow infrastructure with client identity persistence
+- [x] 04-02-PLAN.md — Client-side join flow UI with JoinForm and state machine
 
 ### Phase 5: Lobby Experience
 **Goal**: Players in lobby can see each other, host can manage the room and start the game
@@ -172,7 +172,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 1. Architecture Foundation | 3/3 | ✓ Complete | 2026-01-18 |
 | 2. Mode Selection | 1/1 | ✓ Complete | 2026-01-18 |
 | 3. Room Creation | 2/2 | ✓ Complete | 2026-01-18 |
-| 4. Join Flow | 0/2 | Ready to execute | - |
+| 4. Join Flow | 2/2 | Complete | 2026-01-18 |
 | 5. Lobby Experience | 0/TBD | Not started | - |
 | 6. Game State Sync | 0/TBD | Not started | - |
 | 7. Turn Timers | 0/TBD | Not started | - |
