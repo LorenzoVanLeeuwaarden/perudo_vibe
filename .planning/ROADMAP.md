@@ -93,11 +93,11 @@ Plans:
   3. Host can kick players from the lobby before game starts
   4. Host can configure game settings (starting dice count, wild ones toggle)
   5. Host can start the game when 2-6 players are present
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [ ] 05-01-PLAN.md — Server-side lobby handlers (UPDATE_SETTINGS, KICK_PLAYER, START_GAME) and host transfer
+- [ ] 05-02-PLAN.md — Lobby UI components (PlayerList, KickConfirmDialog, GameSettingsModal) and integration
 
 ### Phase 6: Game State Sync
 **Goal**: All players see the same public game state in real-time, with hidden information (dice) properly filtered per player
@@ -173,7 +173,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 2. Mode Selection | 1/1 | ✓ Complete | 2026-01-18 |
 | 3. Room Creation | 2/2 | ✓ Complete | 2026-01-18 |
 | 4. Join Flow | 2/2 | Complete | 2026-01-18 |
-| 5. Lobby Experience | 0/TBD | Not started | - |
+| 5. Lobby Experience | 0/2 | Not started | - |
 | 6. Game State Sync | 0/TBD | Not started | - |
 | 7. Turn Timers | 0/TBD | Not started | - |
 | 8. Disconnect and Reconnection | 0/TBD | Not started | - |
