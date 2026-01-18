@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useUIStore } from '@/stores/uiStore';
 import { PlayerDiceBadge } from './PlayerDiceBadge';
 import { BidUI } from './BidUI';
+import { TurnTimer } from './TurnTimer';
 import { SortedDiceDisplay } from './SortedDiceDisplay';
 import { DudoOverlay } from './DudoOverlay';
 import { RevealPhase } from './RevealPhase';
@@ -47,6 +48,11 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
   const lastBidderColor = lastBidder?.color as PlayerColor | undefined;
   const lastBidderName = lastBidder?.name;
   const currentTurnPlayer = players.find(p => p.id === gameState.currentTurnPlayerId);
+
+  // Timer values
+  const turnStartedAt = gameState.turnStartedAt;
+  const turnTimeoutMs = roomState.settings.turnTimeoutMs;
+  const wasAutoPlayed = gameState.lastActionWasTimeout ?? false;
   const dudoCallerColor = dudoCallerName
     ? (players.find(p => p.name === dudoCallerName)?.color as PlayerColor) ?? 'blue'
     : 'blue';
@@ -139,19 +145,32 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
 
           {/* Show bidding UI during bidding phase */}
           {gameState.phase === 'bidding' && !isRevealPhase && !isEndedPhase && (
-            <BidUI
-              currentBid={gameState.currentBid}
-              onBid={handleBid}
-              onDudo={handleDudo}
-              onCalza={handleCalza}
-              isMyTurn={isMyTurn}
-              totalDice={totalDice}
-              isPalifico={gameState.isPalifico}
-              canCalza={canCalza ?? false}
-              playerColor={myColor}
-              lastBidderColor={lastBidderColor}
-              lastBidderName={lastBidderName}
-            />
+            <>
+              {/* Turn timer - only show if timeout is configured */}
+              {turnTimeoutMs > 0 && turnStartedAt && (
+                <div className="mb-4">
+                  <TurnTimer
+                    turnStartedAt={turnStartedAt}
+                    turnTimeoutMs={turnTimeoutMs}
+                    isMyTurn={isMyTurn}
+                  />
+                </div>
+              )}
+              <BidUI
+                currentBid={gameState.currentBid}
+                onBid={handleBid}
+                onDudo={handleDudo}
+                onCalza={handleCalza}
+                isMyTurn={isMyTurn}
+                totalDice={totalDice}
+                isPalifico={gameState.isPalifico}
+                canCalza={canCalza ?? false}
+                playerColor={myColor}
+                lastBidderColor={lastBidderColor}
+                lastBidderName={lastBidderName}
+                wasAutoPlayed={wasAutoPlayed}
+              />
+            </>
           )}
 
           {/* Show rolling state */}
