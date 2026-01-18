@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Toaster } from 'sonner';
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,6 +16,16 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased min-h-screen bg-bg-dark">
         {children}
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: 'rgba(26, 11, 46, 0.95)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              color: '#e8e6f2',
+            },
+          }}
+        />
         {/* CRT Scanlines Overlay */}
         <div
           className="fixed inset-0 pointer-events-none z-[9999]"
