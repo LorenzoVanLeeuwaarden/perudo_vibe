@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 4 - Join Flow
+**Current focus:** Phase 4 complete - Ready for Phase 5 (Lobby Experience)
 
 ## Current Position
 
 Phase: 4 of 9 (Join Flow)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-18 - Completed 04-01-PLAN.md (server join flow)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-18 - Completed 04-02-PLAN.md (client join flow)
 
-Progress: [████------] 39%
+Progress: [████████--] 44% (8 of 18 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: ~5 min
-- Total execution time: ~0.5 hours
+- Total plans completed: 8
+- Average duration: ~7 min
+- Total execution time: ~1 hour
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [████------] 39%
 | 01-architecture-foundation | 3 | 5 min | 1.7 min |
 | 02-mode-selection | 1 | 15 min | 15 min |
 | 03-room-creation | 2 | 10 min | 5 min |
-| 04-join-flow | 1 | 3 min | 3 min |
+| 04-join-flow | 2 | 28 min | 14 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (15 min), 03-01 (2 min), 03-02 (8 min), 04-01 (3 min)
-- Trend: Backend plans faster than UI plans
+- Last 5 plans: 03-01 (2 min), 03-02 (8 min), 04-01 (3 min), 04-02 (25 min)
+- Trend: UI plans with checkpoints take longer due to verification and bug fixes
 
 *Updated after each plan completion*
 
@@ -70,6 +70,10 @@ Recent decisions affecting current work:
 - [04-01]: Nickname validation is case-insensitive (Bob == bob)
 - [04-01]: First player to join becomes host automatically
 - [04-01]: Colors assigned in fixed order: blue, green, orange, yellow, black, red
+- [04-02]: Sonner toast positioned top-center with purple-deep background
+- [04-02]: JoinForm uses grapheme-aware length for emoji support
+- [04-02]: JoinState discriminated union for type-safe status handling
+- [04-02]: RoomLobby receives roomState as props from parent page
 
 ### Pending Todos
 
@@ -82,5 +86,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 04-01-PLAN.md, ready for 04-02
+Stopped at: Completed 04-02-PLAN.md, Phase 4 complete, ready for Phase 5
 Resume file: None
