@@ -144,11 +144,11 @@ Plans:
   3. AI plays on behalf of disconnected player until they reconnect
   4. Other players see a visual indicator showing which player is disconnected
   5. Reconnecting player resumes control from AI seamlessly
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 08-01: TBD
-- [ ] 08-02: TBD
+- [ ] 08-01-PLAN.md — Server disconnect infrastructure with unified alarm handler and AI takeover
+- [ ] 08-02-PLAN.md — Client disconnect visuals with grayed-out styling and reconnection toasts
 
 ### Phase 9: Social and Polish
 **Goal**: Players can express themselves with emotes, rematch easily, and see game statistics
@@ -179,7 +179,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 5. Lobby Experience | 2/2 | ✓ Complete | 2026-01-18 |
 | 6. Game State Sync | 3/3 | ✓ Complete | 2026-01-18 |
 | 7. Turn Timers | 3/3 | ✓ Complete | 2026-01-18 |
-| 8. Disconnect and Reconnection | 0/TBD | Not started | - |
+| 8. Disconnect and Reconnection | 0/2 | In Progress | - |
 | 9. Social and Polish | 0/TBD | Not started | - |
 
 ---
