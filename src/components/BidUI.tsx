@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { ChevronUp, ChevronDown, AlertTriangle, Send, Target } from 'lucide-react';
+import { ChevronUp, ChevronDown, AlertTriangle, Send, Target, Bot } from 'lucide-react';
 import { Bid, PlayerColor } from '@/lib/types';
 import { isValidBid } from '@/lib/gameLogic';
 import { Dice } from './Dice';
@@ -20,6 +20,7 @@ interface BidUIProps {
   lastBidderColor?: PlayerColor;
   lastBidderName?: string;
   hideBidDisplay?: boolean;
+  wasAutoPlayed?: boolean;  // True if current bid was made by timeout AI
 }
 
 export function BidUI({
@@ -35,6 +36,7 @@ export function BidUI({
   lastBidderColor,
   lastBidderName,
   hideBidDisplay = false,
+  wasAutoPlayed = false,
 }: BidUIProps) {
   const getInitialCount = () => {
     if (!currentBid) return 1;
@@ -110,6 +112,11 @@ export function BidUI({
               }}
             >
               {lastBidderName}
+              {wasAutoPlayed && (
+                <span className="inline-flex items-center ml-1.5">
+                  <Bot className="w-3 h-3" />
+                </span>
+              )}
             </div>
           )}
           <div className="flex flex-wrap items-center justify-center gap-1 max-w-[280px] mx-auto pt-2">
