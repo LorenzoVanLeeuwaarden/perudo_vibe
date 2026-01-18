@@ -1,34 +1,59 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Wifi, WifiOff, Loader2 } from 'lucide-react';
+import { ArrowLeft, Wifi, WifiOff, Loader2, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { RoomShare } from '@/components/RoomShare';
+import { PlayerList } from '@/components/PlayerList';
+import { KickConfirmDialog } from '@/components/KickConfirmDialog';
+import { GameSettingsModal } from '@/components/GameSettingsModal';
 import { type ConnectionStatus } from '@/hooks/useRoomConnection';
 import { useUIStore } from '@/stores/uiStore';
-import { PLAYER_COLORS } from '@/lib/types';
 import { CasinoLogo } from '@/components/CasinoLogo';
 import { ShaderBackground } from '@/components/ShaderBackground';
-import type { ServerRoomState } from '@/shared';
+import type { ServerRoomState, ClientMessage, GameSettings } from '@/shared';
 
 interface RoomLobbyProps {
   roomCode: string;
   roomState: ServerRoomState;
   myPlayerId: string;
   connectionStatus: ConnectionStatus;
+  sendMessage: (msg: ClientMessage) => void;
 }
 
-export function RoomLobby({ roomCode, roomState, myPlayerId, connectionStatus }: RoomLobbyProps) {
+export function RoomLobby({ roomCode, roomState, myPlayerId, connectionStatus, sendMessage }: RoomLobbyProps) {
   const router = useRouter();
   const { playerColor, clearPreferredMode } = useUIStore();
-  const colorConfig = PLAYER_COLORS[playerColor];
+
+  const [showKickDialog, setShowKickDialog] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+
+  const isHost = roomState.hostId === myPlayerId;
+  const connectedCount = roomState.players.filter(p => p.isConnected).length;
+  const canStart = connectedCount >= 2 && connectedCount <= 6;
 
   const handleBack = () => {
     clearPreferredMode();
     router.push('/');
   };
 
-  const connectedPlayers = roomState.players.filter(p => p.isConnected);
+  const handleKickConfirm = () => {
+    if (showKickDialog) {
+      sendMessage({ type: 'KICK_PLAYER', playerId: showKickDialog, timestamp: Date.now() });
+      setShowKickDialog(null);
+    }
+  };
+
+  const handleSaveSettings = (settings: Partial<GameSettings>) => {
+    sendMessage({ type: 'UPDATE_SETTINGS', settings, timestamp: Date.now() });
+  };
+
+  const handleStartGame = () => {
+    sendMessage({ type: 'START_GAME', timestamp: Date.now() });
+  };
+
+  const playerToKick = roomState.players.find(p => p.id === showKickDialog);
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8 relative">
@@ -96,49 +121,82 @@ export function RoomLobby({ roomCode, roomState, myPlayerId, connectionStatus }:
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="retro-panel p-8 w-full"
+          className="retro-panel p-6 w-full"
         >
-          {/* Share UI */}
-          <RoomShare roomCode={roomCode} playerColor={playerColor} />
-
-          {/* Player count */}
-          <div className="mt-6 text-center">
-            <p className="text-white-soft/80 text-sm">
-              {connectedPlayers.length} / 6 players
-            </p>
+          {/* Start Game section (at top per CONTEXT.md) */}
+          <div className="mb-6">
+            {isHost ? (
+              <motion.button
+                whileHover={canStart ? { scale: 1.02 } : {}}
+                whileTap={canStart ? { scale: 0.98 } : {}}
+                onClick={handleStartGame}
+                disabled={!canStart}
+                className={`w-full py-4 rounded-lg font-bold text-lg transition-colors ${
+                  canStart
+                    ? 'bg-gold-accent text-purple-deep hover:bg-gold-accent/90'
+                    : 'bg-purple-mid/50 text-white-soft/50 cursor-not-allowed'
+                }`}
+              >
+                Start Game
+              </motion.button>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-white-soft/60">
+                  Waiting for host... ({connectedCount}/6 players)
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Waiting message */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-4 text-center"
-          >
-            <p className="text-white-soft/60 text-sm">
-              {connectedPlayers.length < 2
-                ? 'Waiting for players to join...'
-                : `${connectedPlayers.length} players ready`
-              }
-            </p>
-            <motion.div
-              className="flex justify-center gap-1 mt-3"
-              animate={{ opacity: [0.4, 1, 0.4] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
+          {/* Player List section */}
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-white-soft/80 uppercase tracking-wider mb-3">
+              Players ({connectedCount}/6)
+            </h3>
+            <PlayerList
+              players={roomState.players}
+              myPlayerId={myPlayerId}
+              isHost={isHost}
+              onKickPlayer={(playerId) => setShowKickDialog(playerId)}
+            />
+          </div>
+
+          {/* Settings section */}
+          <div className="mb-6">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowSettings(true)}
+              className="w-full py-3 rounded-lg bg-purple-mid border border-purple-glow text-white-soft flex items-center justify-center gap-2"
             >
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="w-2 h-2 rounded-full"
-                  style={{ background: colorConfig.bg }}
-                  animate={{ scale: [1, 1.3, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
-                />
-              ))}
-            </motion.div>
-          </motion.div>
+              <Settings className="w-4 h-4" />
+              {isHost ? 'Configure Game' : 'Game Settings'}
+            </motion.button>
+          </div>
+
+          {/* Share section */}
+          <div className="pt-4 border-t border-purple-mid">
+            <RoomShare roomCode={roomCode} playerColor={playerColor} />
+          </div>
         </motion.div>
       </div>
+
+      {/* Kick Confirm Dialog */}
+      <KickConfirmDialog
+        isOpen={!!showKickDialog}
+        playerName={playerToKick?.name ?? ''}
+        onCancel={() => setShowKickDialog(null)}
+        onConfirm={handleKickConfirm}
+      />
+
+      {/* Game Settings Modal */}
+      <GameSettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        settings={roomState.settings}
+        isHost={isHost}
+        onSave={handleSaveSettings}
+      />
     </main>
   );
 }

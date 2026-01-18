@@ -13,7 +13,7 @@ import { JoinForm } from '@/components/JoinForm';
 import { RoomLobby } from '@/components/RoomLobby';
 import { CasinoLogo } from '@/components/CasinoLogo';
 import { ShaderBackground } from '@/components/ShaderBackground';
-import type { ServerMessage, ServerRoomState } from '@/shared';
+import type { ServerMessage, ServerRoomState, ClientMessage, GameSettings } from '@/shared';
 
 type JoinState =
   | { status: 'connecting' }
@@ -97,6 +97,13 @@ export default function RoomPage() {
         // Player left or disconnected
         setJoinState(prev => {
           if (prev.status === 'joined') {
+            // Check if we were kicked
+            if (message.playerId === prev.playerId && message.reason === 'kicked') {
+              toast.error('You were removed from the room');
+              router.push('/');
+              return prev;
+            }
+
             const player = prev.roomState.players.find(p => p.id === message.playerId);
             if (message.reason === 'disconnected') {
               // Just mark as disconnected, don't remove - they might reconnect
@@ -146,6 +153,47 @@ export default function RoomPage() {
         toast.success(`${message.playerName} reconnected`);
         break;
 
+      case 'SETTINGS_UPDATED':
+        // Update room settings
+        setJoinState(prev => {
+          if (prev.status === 'joined') {
+            return {
+              ...prev,
+              roomState: {
+                ...prev.roomState,
+                settings: message.settings as GameSettings,
+              },
+            };
+          }
+          return prev;
+        });
+        break;
+
+      case 'HOST_CHANGED':
+        // Update host and players' isHost flags
+        setJoinState(prev => {
+          if (prev.status === 'joined') {
+            return {
+              ...prev,
+              roomState: {
+                ...prev.roomState,
+                hostId: message.newHostId,
+                players: prev.roomState.players.map(p => ({
+                  ...p,
+                  isHost: p.id === message.newHostId,
+                })),
+              },
+            };
+          }
+          return prev;
+        });
+        break;
+
+      case 'GAME_STARTED':
+        // Stub for Phase 6 - game state transition will be handled in game phase
+        console.log('Game started - transition will be implemented in Phase 6');
+        break;
+
       case 'ERROR':
         // Handle errors
         if (message.error.type === 'INVALID_NAME' || message.error.type === 'ROOM_FULL') {
@@ -162,7 +210,7 @@ export default function RoomPage() {
         }
         break;
     }
-  }, []);
+  }, [router]);
 
   // Connection hook - only connect when we have clientId
   const { ws, status } = useRoomConnection({
@@ -190,6 +238,11 @@ export default function RoomPage() {
       playerName: nickname,
       timestamp: Date.now(),
     }));
+  }, [wsRef]);
+
+  const sendMessage = useCallback((msg: ClientMessage) => {
+    if (!wsRef) return;
+    wsRef.send(JSON.stringify(msg));
   }, [wsRef]);
 
   const handleBack = useCallback(() => {
@@ -253,6 +306,7 @@ export default function RoomPage() {
         roomState={joinState.roomState}
         myPlayerId={joinState.playerId}
         connectionStatus={status}
+        sendMessage={sendMessage}
       />
     );
   }
