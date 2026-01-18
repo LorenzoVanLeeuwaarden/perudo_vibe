@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 7 in progress - Turn Timers (1 of 3 plans done)
+**Current focus:** Phase 7 in progress - Turn Timers (2 of 3 plans done)
 
 ## Current Position
 
 Phase: 7 of 9 (Turn Timers)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-18 - Completed 07-01-PLAN.md (server-side timer)
+Last activity: 2026-01-18 - Completed 07-02-PLAN.md (timer UI)
 
-Progress: [██████████████░] 78% (14 of 18 estimated plans)
+Progress: [███████████████░] 83% (15 of 18 estimated plans)
 
 ## Performance Metrics
 
@@ -33,10 +33,10 @@ Progress: [██████████████░] 78% (14 of 18 estimate
 | 04-join-flow | 2 | 28 min | 14 min |
 | 05-lobby-experience | 2 | 8 min | 4 min |
 | 06-game-state-sync | 3 | 111 min | 37 min |
-| 07-turn-timers | 1 | 12 min | 12 min |
+| 07-turn-timers | 2 | 14 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 06-01 (8 min), 06-02 (3 min), 06-03 (~100 min), 07-01 (12 min)
+- Last 5 plans: 06-02 (3 min), 06-03 (~100 min), 07-01 (12 min), 07-02 (2 min)
 - Note: 06-03 included extensive human verification and 13 bug fixes
 
 *Updated after each plan completion*
@@ -99,6 +99,10 @@ Recent decisions affecting current work:
 - [07-01]: 80% probability threshold for timeout AI to call dudo
 - [07-01]: Timeout AI never calls calza - too risky for penalty scenario
 - [07-01]: lastActionWasTimeout field added for UI robot badge
+- [07-02]: TurnTimer updates every 100ms via setInterval for smooth countdown
+- [07-02]: Timer color thresholds: green (>50%), yellow (25-50%), red (<25%)
+- [07-02]: Pulse animation triggers at 25% remaining time
+- [07-02]: Bot icon inline with player name badge for timeout move indication
 
 ### Pending Todos
 
@@ -111,5 +115,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 07-01-PLAN.md (server-side timer)
+Stopped at: Completed 07-02-PLAN.md (timer UI)
 Resume file: None
