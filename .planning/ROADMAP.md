@@ -13,7 +13,7 @@ This roadmap transforms Perudo Vibe from a single-player browser game into a rea
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Architecture Foundation** - Establish server-authoritative types, state separation, and message protocol
-- [ ] **Phase 2: Mode Selection** - Landing page with single-player vs multiplayer choice
+- [x] **Phase 2: Mode Selection** - Landing page with single-player vs multiplayer choice
 - [ ] **Phase 3: Room Creation** - Create multiplayer rooms with shareable links
 - [ ] **Phase 4: Join Flow** - Join rooms via link with guest nickname
 - [ ] **Phase 5: Lobby Experience** - Player list, host controls, and game configuration
@@ -51,7 +51,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 02-01-PLAN.md — Add ModeSelection screen with AI/multiplayer choice and preference persistence
+- [x] 02-01-PLAN.md — Add ModeSelection screen with AI/multiplayer choice and preference persistence
 
 ### Phase 3: Room Creation
 **Goal**: Users can create multiplayer rooms and receive shareable links to invite friends
@@ -168,7 +168,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Architecture Foundation | 3/3 | ✓ Complete | 2026-01-18 |
-| 2. Mode Selection | 0/1 | Not started | - |
+| 2. Mode Selection | 1/1 | ✓ Complete | 2026-01-18 |
 | 3. Room Creation | 0/TBD | Not started | - |
 | 4. Join Flow | 0/TBD | Not started | - |
 | 5. Lobby Experience | 0/TBD | Not started | - |

@@ -9,7 +9,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Mode Selection
 
-- [ ] **MODE-01**: User can choose between single-player (vs AI) and multiplayer modes
+- [x] **MODE-01**: User can choose between single-player (vs AI) and multiplayer modes
 
 ### Room/Lobby
 
@@ -94,7 +94,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MODE-01 | Phase 2 | Pending |
+| MODE-01 | Phase 2 | Complete |
 | ROOM-01 | Phase 3 | Pending |
 | ROOM-02 | Phase 4 | Pending |
 | ROOM-03 | Phase 5 | Pending |
