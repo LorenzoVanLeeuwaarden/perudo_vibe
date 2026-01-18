@@ -40,9 +40,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Social Features
 
-- [ ] **SOCL-01**: Players can send quick reactions/emotes during game
-- [ ] **SOCL-02**: Players return to lobby after game ends for rematch option
-- [ ] **SOCL-03**: Game statistics displayed at end (rounds played, dice lost, etc.)
+- [x] **SOCL-01**: Players can send quick reactions/emotes during game
+- [x] **SOCL-02**: Players return to lobby after game ends for rematch option
+- [x] **SOCL-03**: Game statistics displayed at end (rounds played, dice lost, etc.)
 
 ### Host Controls
 
@@ -110,9 +110,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DISC-01 | Phase 8 | Complete |
 | DISC-02 | Phase 8 | Complete |
 | DISC-03 | Phase 8 | Complete |
-| SOCL-01 | Phase 9 | Pending |
-| SOCL-02 | Phase 9 | Pending |
-| SOCL-03 | Phase 9 | Pending |
+| SOCL-01 | Phase 9 | Complete |
+| SOCL-02 | Phase 9 | Complete |
+| SOCL-03 | Phase 9 | Complete |
 | HOST-01 | Phase 5 | Complete |
 
 **Coverage:**
@@ -122,4 +122,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-18*
-*Last updated: 2026-01-18 after Phase 8 completion*
+*Last updated: 2026-01-18 after Phase 9 completion*
