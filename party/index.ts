@@ -479,16 +479,188 @@ export default class GameServer implements Party.Server {
     msg: Extract<ClientMessage, { type: 'CALL_DUDO' }>,
     sender: Party.Connection
   ): Promise<void> {
-    // TODO: Implement in Phase 6
-    console.log(`[CALL_DUDO] by ${sender.id}`);
+    // Guard: game must exist and be in bidding phase
+    if (!this.roomState?.gameState || this.roomState.gameState.phase !== 'bidding') {
+      this.sendError(sender, 'INVALID_ACTION', 'Not in bidding phase');
+      return;
+    }
+
+    const gameState = this.roomState.gameState;
+
+    // Guard: must be sender's turn
+    if (gameState.currentTurnPlayerId !== sender.id) {
+      this.sendError(sender, 'NOT_YOUR_TURN', 'It is not your turn');
+      return;
+    }
+
+    // Guard: must have a bid to challenge
+    if (!gameState.currentBid) {
+      this.sendError(sender, 'INVALID_ACTION', 'No bid to challenge');
+      return;
+    }
+
+    // Transition to reveal phase
+    gameState.phase = 'reveal';
+
+    // Broadcast dudo called
+    this.broadcast({
+      type: 'DUDO_CALLED',
+      callerId: sender.id,
+      timestamp: Date.now(),
+    });
+
+    // Calculate actual count of matching dice
+    const activePlayers = gameState.players.filter(p => !p.isEliminated);
+    let actualCount = 0;
+    for (const player of activePlayers) {
+      actualCount += countMatching(player.hand, gameState.currentBid.value, gameState.isPalifico);
+    }
+
+    // Build allHands for reveal
+    const allHands: Record<string, number[]> = {};
+    for (const player of activePlayers) {
+      allHands[player.id] = player.hand;
+    }
+
+    // Determine loser: if actualCount >= bid.count, bid was correct, challenger loses
+    // Otherwise, bid was wrong, last bidder loses
+    let loserId: string;
+    if (actualCount >= gameState.currentBid.count) {
+      // Bid was correct - challenger (sender) loses
+      loserId = sender.id;
+    } else {
+      // Bid was wrong - last bidder loses
+      loserId = gameState.lastBidderId!;
+    }
+
+    // Apply die loss
+    const loser = gameState.players.find(p => p.id === loserId);
+    if (loser) {
+      loser.diceCount -= 1;
+      if (loser.diceCount <= 0) {
+        loser.isEliminated = true;
+      }
+    }
+
+    await this.persistState();
+
+    // Broadcast round result
+    this.broadcast({
+      type: 'ROUND_RESULT',
+      bid: gameState.currentBid,
+      actualCount,
+      allHands,
+      loserId,
+      winnerId: null,
+      isCalza: false,
+      timestamp: Date.now(),
+    });
+
+    // Check for game end
+    const remainingPlayers = gameState.players.filter(p => !p.isEliminated);
+    if (remainingPlayers.length === 1) {
+      gameState.phase = 'ended';
+      this.broadcast({
+        type: 'GAME_ENDED',
+        winnerId: remainingPlayers[0].id,
+        timestamp: Date.now(),
+      });
+    }
   }
 
   private async handleCallCalza(
     msg: Extract<ClientMessage, { type: 'CALL_CALZA' }>,
     sender: Party.Connection
   ): Promise<void> {
-    // TODO: Implement in Phase 6
-    console.log(`[CALL_CALZA] by ${sender.id}`);
+    // Guard: game must exist and be in bidding phase
+    if (!this.roomState?.gameState || this.roomState.gameState.phase !== 'bidding') {
+      this.sendError(sender, 'INVALID_ACTION', 'Not in bidding phase');
+      return;
+    }
+
+    const gameState = this.roomState.gameState;
+
+    // Guard: cannot calza on your own turn
+    if (gameState.currentTurnPlayerId === sender.id) {
+      this.sendError(sender, 'INVALID_ACTION', 'Cannot calza on your own turn');
+      return;
+    }
+
+    // Guard: must have a bid to calza
+    if (!gameState.currentBid) {
+      this.sendError(sender, 'INVALID_ACTION', 'No bid to calza');
+      return;
+    }
+
+    // Transition to reveal phase
+    gameState.phase = 'reveal';
+
+    // Broadcast calza called
+    this.broadcast({
+      type: 'CALZA_CALLED',
+      callerId: sender.id,
+      timestamp: Date.now(),
+    });
+
+    // Calculate actual count of matching dice
+    const activePlayers = gameState.players.filter(p => !p.isEliminated);
+    let actualCount = 0;
+    for (const player of activePlayers) {
+      actualCount += countMatching(player.hand, gameState.currentBid.value, gameState.isPalifico);
+    }
+
+    // Build allHands for reveal
+    const allHands: Record<string, number[]> = {};
+    for (const player of activePlayers) {
+      allHands[player.id] = player.hand;
+    }
+
+    // Determine result: calza succeeds only if count is EXACTLY right
+    const caller = gameState.players.find(p => p.id === sender.id);
+    let loserId: string | null = null;
+    let winnerId: string | null = null;
+
+    if (actualCount === gameState.currentBid.count) {
+      // Calza success - caller gains 1 die (max 5)
+      winnerId = sender.id;
+      if (caller) {
+        caller.diceCount = Math.min(caller.diceCount + 1, 5);
+      }
+    } else {
+      // Calza failed - caller loses 1 die
+      loserId = sender.id;
+      if (caller) {
+        caller.diceCount -= 1;
+        if (caller.diceCount <= 0) {
+          caller.isEliminated = true;
+        }
+      }
+    }
+
+    await this.persistState();
+
+    // Broadcast round result
+    this.broadcast({
+      type: 'ROUND_RESULT',
+      bid: gameState.currentBid,
+      actualCount,
+      allHands,
+      loserId,
+      winnerId,
+      isCalza: true,
+      timestamp: Date.now(),
+    });
+
+    // Check for game end
+    const remainingPlayers = gameState.players.filter(p => !p.isEliminated);
+    if (remainingPlayers.length === 1) {
+      gameState.phase = 'ended';
+      this.broadcast({
+        type: 'GAME_ENDED',
+        winnerId: remainingPlayers[0].id,
+        timestamp: Date.now(),
+      });
+    }
   }
 
   private async handleContinueRound(
