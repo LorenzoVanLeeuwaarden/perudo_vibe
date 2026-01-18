@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, RotateCcw, Trophy, Skull, Dices, Target, Check, Users, Minus, Plus, Home, X, AlertTriangle, Settings, ArrowLeft } from 'lucide-react';
+import { createRoomCode } from '@/lib/roomCode';
 import { GameState, Bid, PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { DiceCup } from '@/components/DiceCup';
 import { BidUI } from '@/components/BidUI';
@@ -118,6 +120,9 @@ interface Opponent {
 const COLOR_OPTIONS: PlayerColor[] = ['blue', 'green', 'orange', 'yellow', 'black', 'red'];
 
 export default function PerudoGame() {
+  // Router for navigation
+  const router = useRouter();
+
   // UI store for preferences
   const { preferredMode, setPreferredMode, clearPreferredMode, playerColor: storedPlayerColor } = useUIStore();
 
@@ -203,10 +208,9 @@ export default function PerudoGame() {
 
   const handleSelectMultiplayer = useCallback(() => {
     setPreferredMode('multiplayer');
-    // For now, show alert - multiplayer flow built in Phase 3
-    alert('Multiplayer coming soon! Building room creation next.');
-    // Reset will happen in ModeSelection component after callback
-  }, [setPreferredMode]);
+    const roomCode = createRoomCode();
+    router.push(`/room/${roomCode}`);
+  }, [setPreferredMode, router]);
 
   // Calculate total dice
   const totalDice = playerDiceCount + opponents.reduce((sum, o) => sum + o.diceCount, 0);
