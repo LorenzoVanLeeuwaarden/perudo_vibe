@@ -617,6 +617,15 @@ export default function RoomPage() {
           myPlayerId={joinState.playerId}
           myHand={joinState.myHand}
           sendMessage={sendMessage}
+          showCelebration={showCelebration}
+          showResults={showResults}
+          gameStats={gameStats}
+          onCelebrationComplete={() => {
+            setShowCelebration(false);
+            setShowResults(true);
+          }}
+          onReturnToLobby={handleReturnToLobby}
+          onLeaveGame={handleLeaveGame}
         />
       );
     }
