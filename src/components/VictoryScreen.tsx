@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { useEffect, useState, useCallback } from 'react';
 import { Trophy, Star, Crown, Sparkles } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
+import { DiceExplosion } from './DiceExplosion';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 interface Particle {
   id: number;
@@ -31,7 +33,23 @@ const FIREWORK_COLORS = [
 
 export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) {
   const [particles, setParticles] = useState<Particle[]>([]);
+  const [explosionComplete, setExplosionComplete] = useState(false);
+  const [canSkip, setCanSkip] = useState(false);
   const colorConfig = PLAYER_COLORS[playerColor];
+  const { playVictory, playDiceRattle } = useSoundEffects();
+
+  // Play sounds on mount
+  useEffect(() => {
+    playVictory();
+    const rattleTimer = setTimeout(() => playDiceRattle(), 500);
+    return () => clearTimeout(rattleTimer);
+  }, [playVictory, playDiceRattle]);
+
+  // Enable skip after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => setCanSkip(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const createFirework = useCallback((x: number, y: number) => {
     const newParticles: Particle[] = [];
@@ -133,15 +151,31 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
     return () => clearInterval(interval);
   }, []);
 
+  const handleClick = useCallback(() => {
+    if (canSkip) {
+      onPlayAgain();
+    }
+  }, [canSkip, onPlayAgain]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
+      onClick={handleClick}
       className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
       style={{
         background: 'radial-gradient(ellipse at center, #1a0a2e 0%, #0d0416 70%, #050208 100%)',
+        cursor: canSkip ? 'pointer' : 'default',
       }}
     >
+      {/* Dice explosion overlay */}
+      {!explosionComplete && (
+        <DiceExplosion
+          color={playerColor}
+          onComplete={() => setExplosionComplete(true)}
+        />
+      )}
+
       {/* Animated background glow */}
       <motion.div
         className="absolute inset-0"
@@ -332,7 +366,10 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
           transition={{ delay: 1.6 }}
           whileHover={{ scale: 1.05, y: -4 }}
           whileTap={{ scale: 0.98, y: 0 }}
-          onClick={onPlayAgain}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPlayAgain();
+          }}
           className="px-12 py-4 rounded-xl font-bold uppercase tracking-wider text-lg relative overflow-hidden"
           style={{
             background: 'linear-gradient(135deg, #ffd700 0%, #f59e0b 50%, #d97706 100%)',
@@ -352,6 +389,17 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
           <span className="relative z-10">Play Again</span>
         </motion.button>
       </div>
+
+      {/* Skip hint */}
+      {canSkip && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white-soft/40 text-sm"
+        >
+          Click anywhere to continue
+        </motion.p>
+      )}
     </motion.div>
   );
 }
