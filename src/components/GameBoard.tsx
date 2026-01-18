@@ -194,6 +194,7 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
         type={dudoType ?? 'dudo'}
         callerName={dudoCallerName ?? 'Unknown'}
         callerColor={dudoCallerColor}
+        onComplete={() => setDudoOverlay(false)}
       />
 
       {/* Reveal phase overlay */}
