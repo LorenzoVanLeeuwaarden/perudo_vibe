@@ -70,7 +70,11 @@ export default class GameServer implements Party.Server {
 
     // New user - send room info for join form
     const connectedCount = this.roomState?.players.filter(p => p.isConnected).length ?? 0;
-    const gameInProgress = this.roomState?.gameState !== null && this.roomState?.gameState?.phase !== 'lobby';
+    // Check if game is in progress - must explicitly check roomState and gameState exist
+    // (undefined !== null is true, so we need to guard against undefined from optional chaining)
+    const gameInProgress = Boolean(
+      this.roomState?.gameState && this.roomState.gameState.phase !== 'lobby'
+    );
 
     this.sendToConnection(connection, {
       type: 'ROOM_INFO',
