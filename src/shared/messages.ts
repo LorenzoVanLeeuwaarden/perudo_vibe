@@ -88,6 +88,15 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     type: z.literal('CONTINUE_ROUND'),
     timestamp: TimestampSchema,
   }),
+  z.object({
+    type: z.literal('SEND_EMOTE'),
+    emote: z.string().max(4), // Single emoji character
+    timestamp: TimestampSchema,
+  }),
+  z.object({
+    type: z.literal('RETURN_TO_LOBBY'),
+    timestamp: TimestampSchema,
+  }),
 ]);
 
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
@@ -237,6 +246,7 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('GAME_ENDED'),
     winnerId: z.string(),
+    stats: z.any(), // GameStats
     timestamp: TimestampSchema,
   }),
 
@@ -266,6 +276,14 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('HOST_CHANGED'),
     newHostId: z.string(),
+    timestamp: TimestampSchema,
+  }),
+
+  // Emotes
+  z.object({
+    type: z.literal('EMOTE_RECEIVED'),
+    playerId: z.string(),
+    emote: z.string(),
     timestamp: TimestampSchema,
   }),
 

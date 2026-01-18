@@ -64,6 +64,7 @@ export interface ServerGameState {
   roundNumber: number;
   turnStartedAt: number | null;      // Timestamp for turn timer
   lastActionWasTimeout: boolean;     // True if last action was AI timeout (for UI badge)
+  stats: Record<string, PlayerStats>; // Per-player statistics tracked during gameplay
 }
 
 /**
@@ -92,3 +93,26 @@ export const DEFAULT_GAME_SETTINGS: GameSettings = {
   palificoEnabled: true,
   turnTimeoutMs: 30000,
 };
+
+/**
+ * Per-player game statistics tracked during gameplay
+ */
+export interface PlayerStats {
+  bidsPlaced: number;
+  dudosCalled: number;
+  dudosSuccessful: number;
+  calzasCalled: number;
+  calzasSuccessful: number;
+  diceLost: number;
+  diceGained: number;
+}
+
+/**
+ * Game-wide statistics sent at game end
+ */
+export interface GameStats {
+  roundsPlayed: number;
+  totalBids: number;
+  winnerId: string;
+  playerStats: Record<string, PlayerStats>;
+}
