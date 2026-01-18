@@ -24,6 +24,10 @@ export default class GameServer implements Party.Server {
   // Room state - persisted via PartyKit storage
   private roomState: ServerRoomState | null = null;
 
+  // Emote cooldowns - tracks last emote timestamp per player (in-memory, resets on server restart)
+  private playerEmoteCooldowns: Map<string, number> = new Map();
+  private readonly EMOTE_COOLDOWN_MS = 2500; // 2.5 seconds
+
   constructor(readonly room: Party.Room) {}
 
   // ========== Unified Alarm System (Turn Timer + Disconnect Grace Period) ==========
@@ -643,6 +647,12 @@ export default class GameServer implements Party.Server {
         break;
       case 'KICK_PLAYER':
         await this.handleKickPlayer(parsed, sender);
+        break;
+      case 'SEND_EMOTE':
+        await this.handleSendEmote(parsed, sender);
+        break;
+      case 'RETURN_TO_LOBBY':
+        await this.handleReturnToLobby(parsed, sender);
         break;
     }
   }
@@ -1480,6 +1490,35 @@ export default class GameServer implements Party.Server {
         break;
       }
     }
+  }
+
+  private async handleSendEmote(
+    msg: Extract<ClientMessage, { type: 'SEND_EMOTE' }>,
+    sender: Party.Connection
+  ): Promise<void> {
+    // Guard: player must be in room
+    if (!this.roomState) return;
+    const player = this.roomState.players.find(p => p.id === sender.id);
+    if (!player) return;
+
+    // Check cooldown (silently ignore if too frequent)
+    const lastEmote = this.playerEmoteCooldowns.get(sender.id) ?? 0;
+    if (Date.now() - lastEmote < this.EMOTE_COOLDOWN_MS) {
+      return; // Silently ignore - no error needed for spam protection
+    }
+
+    // Update cooldown
+    this.playerEmoteCooldowns.set(sender.id, Date.now());
+
+    // Broadcast to all players
+    this.broadcast({
+      type: 'EMOTE_RECEIVED',
+      playerId: sender.id,
+      emote: msg.emote,
+      timestamp: Date.now(),
+    });
+
+    console.log(`[EMOTE] ${player.name} sent emote: ${msg.emote}`);
   }
 
   // ========== Helper Methods ==========
