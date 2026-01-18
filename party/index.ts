@@ -33,11 +33,12 @@ export default class GameServer implements Party.Server {
    * Storage schema for alarm tracking:
    * - 'turnTimer': { fireAt: timestamp } - when turn timeout should fire
    * - 'disconnect_{playerId}': { playerId: string, eliminateAt: timestamp } - per-player disconnect elimination
+   * - 'aitakeover_{playerId}': { playerId: string, takeoverAt: timestamp } - delayed AI takeover for disconnected player's turn
    */
 
   /**
    * Schedule the next alarm based on all pending deadlines.
-   * Reads turn timer and all disconnect entries, sets alarm for the nearest deadline.
+   * Reads turn timer, disconnect entries, and AI takeover entries, sets alarm for the nearest deadline.
    */
   private async scheduleNextAlarm(): Promise<void> {
     const deadlines: number[] = [];
@@ -48,13 +49,18 @@ export default class GameServer implements Party.Server {
       deadlines.push(turnTimer.fireAt);
     }
 
-    // Check all disconnect entries
+    // Check all disconnect and AI takeover entries
     const allKeys = await this.room.storage.list();
     for (const [key, value] of allKeys) {
       if (key.startsWith('disconnect_')) {
         const entry = value as { playerId: string; eliminateAt: number };
         if (entry?.eliminateAt) {
           deadlines.push(entry.eliminateAt);
+        }
+      } else if (key.startsWith('aitakeover_')) {
+        const entry = value as { playerId: string; takeoverAt: number };
+        if (entry?.takeoverAt) {
+          deadlines.push(entry.takeoverAt);
         }
       }
     }
@@ -111,12 +117,15 @@ export default class GameServer implements Party.Server {
   }
 
   /**
-   * Unified alarm handler for turn timer and disconnect grace periods.
+   * Unified alarm handler for turn timer, disconnect grace periods, and AI takeovers.
    * Checks all pending deadlines and processes those that have expired.
    */
   async onAlarm(): Promise<void> {
     console.log('[ALARM] Alarm fired');
     const now = Date.now();
+
+    // Process AI takeovers for disconnected players (5-second grace)
+    await this.processAITakeovers(now);
 
     // Process turn timer if expired
     await this.processTurnTimer(now);
@@ -178,6 +187,68 @@ export default class GameServer implements Party.Server {
 
     // Execute AI move for the player
     await this.executeTimeoutAIMove(currentPlayer);
+  }
+
+  /**
+   * Process AI takeovers for disconnected players whose grace period has expired.
+   * This handles the 5-second delay before AI takes over a disconnected player's turn.
+   */
+  private async processAITakeovers(now: number): Promise<void> {
+    const allKeys = await this.room.storage.list();
+
+    for (const [key, value] of allKeys) {
+      if (!key.startsWith('aitakeover_')) continue;
+
+      const entry = value as { playerId: string; takeoverAt: number };
+      if (!entry || entry.takeoverAt > now) continue;
+
+      // Grace period expired - AI takes over if player still disconnected and it's their turn
+      console.log(`[AI_TAKEOVER] Grace period expired for player ${entry.playerId}`);
+
+      // Delete the storage entry first
+      await this.room.storage.delete(key);
+
+      // Guard: room state must exist with game state
+      if (!this.roomState?.gameState) continue;
+
+      const gameState = this.roomState.gameState;
+
+      // Guard: must still be in bidding phase
+      if (gameState.phase !== 'bidding') {
+        console.log(`[AI_TAKEOVER] Game phase is ${gameState.phase}, not bidding - skipping`);
+        continue;
+      }
+
+      // Guard: must still be this player's turn
+      if (gameState.currentTurnPlayerId !== entry.playerId) {
+        console.log(`[AI_TAKEOVER] No longer ${entry.playerId}'s turn - skipping`);
+        continue;
+      }
+
+      // Find the player
+      const player = gameState.players.find(p => p.id === entry.playerId);
+      if (!player) continue;
+
+      // Guard: player must still be disconnected
+      if (player.isConnected) {
+        console.log(`[AI_TAKEOVER] Player ${player.name} reconnected - skipping AI takeover`);
+        continue;
+      }
+
+      // Guard: player must not be eliminated
+      if (player.isEliminated) {
+        console.log(`[AI_TAKEOVER] Player ${player.name} is eliminated - skipping`);
+        continue;
+      }
+
+      console.log(`[AI_TAKEOVER] AI taking over for disconnected player ${player.name}`);
+
+      // Mark that this action was a timeout (AI)
+      gameState.lastActionWasTimeout = true;
+
+      // Execute AI move
+      await this.executeTimeoutAIMove(player);
+    }
   }
 
   /**
@@ -472,8 +543,9 @@ export default class GameServer implements Party.Server {
         existingPlayer.isConnected = true;
         existingPlayer.disconnectedAt = null;
 
-        // Cancel any scheduled elimination for this player
+        // Cancel any scheduled elimination and AI takeover for this player
         await this.room.storage.delete(`disconnect_${connection.id}`);
+        await this.room.storage.delete(`aitakeover_${connection.id}`);
         await this.scheduleNextAlarm();
 
         await this.persistState();
@@ -629,15 +701,18 @@ export default class GameServer implements Party.Server {
 
         console.log(`[DISCONNECT] Scheduled elimination for ${player.name} at ${new Date(eliminateAt).toISOString()}`);
 
-        // If it's the disconnected player's turn, trigger AI immediately
+        // If it's the disconnected player's turn, schedule AI takeover after short grace period
+        // This allows for page refreshes without losing your turn
         if (gameState.phase === 'bidding' && gameState.currentTurnPlayerId === connection.id) {
-          console.log(`[DISCONNECT] It's ${player.name}'s turn - AI taking over immediately`);
+          const AI_TAKEOVER_DELAY_MS = 5000; // 5 seconds grace for reconnection
+          const aiTakeoverAt = Date.now() + AI_TAKEOVER_DELAY_MS;
 
-          // Mark that this action was a timeout (AI)
-          gameState.lastActionWasTimeout = true;
+          await this.room.storage.put(`aitakeover_${connection.id}`, {
+            playerId: connection.id,
+            takeoverAt: aiTakeoverAt,
+          });
 
-          // Execute AI move
-          await this.executeTimeoutAIMove(player);
+          console.log(`[DISCONNECT] Scheduled AI takeover for ${player.name} in 5 seconds`);
         }
 
         await this.scheduleNextAlarm();
