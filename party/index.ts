@@ -553,6 +553,12 @@ export default class GameServer implements Party.Server {
 
     console.log(`[GAME_START] Starting game with ${connectedPlayers.length} players: ${connectedPlayers.map(p => p.name).join(', ')}`);
 
+    // Reset dice counts to current setting (in case setting changed after players joined)
+    const startingDice = this.roomState.settings.startingDice;
+    for (const player of connectedPlayers) {
+      player.diceCount = startingDice;
+    }
+
     // Set game state to initial rolling phase
     this.roomState.gameState = {
       phase: 'rolling',
