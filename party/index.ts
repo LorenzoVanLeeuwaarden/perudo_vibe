@@ -11,7 +11,7 @@ import {
   MIN_PLAYERS,
   MAX_PLAYERS,
 } from '../src/shared';
-import { rollDice, isValidBid, countMatching } from '../src/lib/gameLogic';
+import { rollDice, isValidBid, countMatching, generateTimeoutAIMove } from '../src/lib/gameLogic';
 
 // Default game settings
 const DEFAULT_SETTINGS: GameSettings = {
@@ -25,6 +25,218 @@ export default class GameServer implements Party.Server {
   private roomState: ServerRoomState | null = null;
 
   constructor(readonly room: Party.Room) {}
+
+  // ========== Turn Timer (Alarm-based) ==========
+
+  /**
+   * Set a turn timer alarm using PartyKit's alarm API.
+   * The alarm will fire after turnTimeoutMs + 500ms grace period.
+   *
+   * Note: PartyKit only supports ONE alarm per room. Setting a new alarm
+   * automatically cancels the previous one.
+   */
+  private async setTurnTimer(): Promise<void> {
+    // Guard: must have active game in bidding phase
+    if (!this.roomState?.gameState || this.roomState.gameState.phase !== 'bidding') {
+      return;
+    }
+
+    // Guard: timeout must be configured (> 0)
+    const timeoutMs = this.roomState.settings.turnTimeoutMs;
+    if (!timeoutMs || timeoutMs <= 0) {
+      return;
+    }
+
+    // Add 500ms grace period for network latency compensation
+    const alarmTime = Date.now() + timeoutMs + 500;
+    await this.room.storage.setAlarm(alarmTime);
+    console.log(`[TIMER] Set turn timer for ${timeoutMs}ms + 500ms grace (alarm at ${new Date(alarmTime).toISOString()})`);
+  }
+
+  /**
+   * Called when the turn timer alarm fires.
+   * If the game is still in bidding phase and the current player hasn't acted,
+   * the AI takes over with a conservative move.
+   */
+  async onAlarm(): Promise<void> {
+    console.log('[ALARM] Turn timer alarm fired');
+
+    // Guard: room state must exist
+    if (!this.roomState?.gameState) {
+      console.log('[ALARM] No game state - ignoring');
+      return;
+    }
+
+    const gameState = this.roomState.gameState;
+
+    // Guard: must be in bidding phase (if not, turn already ended normally - ignore)
+    if (gameState.phase !== 'bidding') {
+      console.log(`[ALARM] Game phase is ${gameState.phase}, not bidding - ignoring`);
+      return;
+    }
+
+    // Guard: must have a current turn player
+    if (!gameState.currentTurnPlayerId) {
+      console.log('[ALARM] No current turn player - ignoring');
+      return;
+    }
+
+    // Find current player
+    const currentPlayer = gameState.players.find(p => p.id === gameState.currentTurnPlayerId);
+    if (!currentPlayer) {
+      console.log('[ALARM] Current player not found - ignoring');
+      return;
+    }
+
+    // Guard: player must still be connected and not eliminated
+    if (!currentPlayer.isConnected || currentPlayer.isEliminated) {
+      console.log(`[ALARM] Player ${currentPlayer.name} is disconnected or eliminated - ignoring`);
+      return;
+    }
+
+    console.log(`[TIMEOUT] Player ${currentPlayer.name} timed out - AI taking over`);
+
+    // Calculate total dice in play
+    const activePlayers = gameState.players.filter(p => !p.isEliminated);
+    const totalDice = activePlayers.reduce((sum, p) => sum + p.diceCount, 0);
+
+    // Generate conservative AI move
+    const aiMove = generateTimeoutAIMove(
+      currentPlayer.hand,
+      gameState.currentBid,
+      totalDice,
+      gameState.isPalifico
+    );
+
+    // Mark that this action was a timeout
+    gameState.lastActionWasTimeout = true;
+
+    if (aiMove.type === 'bid') {
+      // AI places a bid
+      console.log(`[TIMEOUT] AI bids ${aiMove.bid.count}x ${aiMove.bid.value}s`);
+
+      gameState.currentBid = aiMove.bid;
+      gameState.lastBidderId = currentPlayer.id;
+
+      // Advance turn to next active player
+      const currentIndex = activePlayers.findIndex(p => p.id === currentPlayer.id);
+      const nextIndex = (currentIndex + 1) % activePlayers.length;
+      gameState.currentTurnPlayerId = activePlayers[nextIndex].id;
+      gameState.turnStartedAt = Date.now();
+
+      await this.persistState();
+
+      // Broadcast TURN_TIMEOUT with the bid
+      this.broadcast({
+        type: 'TURN_TIMEOUT',
+        playerId: currentPlayer.id,
+        aiAction: 'bid',
+        bid: aiMove.bid,
+        timestamp: Date.now(),
+      });
+
+      // Broadcast BID_PLACED so clients update normally
+      this.broadcast({
+        type: 'BID_PLACED',
+        playerId: currentPlayer.id,
+        bid: aiMove.bid,
+        timestamp: Date.now(),
+      });
+
+      // Set timer for next player's turn
+      await this.setTurnTimer();
+
+    } else {
+      // AI calls dudo
+      console.log(`[TIMEOUT] AI calls DUDO`);
+
+      // Transition to reveal phase (alarm for next turn is not needed)
+      gameState.phase = 'reveal';
+
+      // Broadcast TURN_TIMEOUT
+      this.broadcast({
+        type: 'TURN_TIMEOUT',
+        playerId: currentPlayer.id,
+        aiAction: 'dudo',
+        timestamp: Date.now(),
+      });
+
+      // Broadcast DUDO_CALLED
+      this.broadcast({
+        type: 'DUDO_CALLED',
+        callerId: currentPlayer.id,
+        timestamp: Date.now(),
+      });
+
+      // Calculate actual count (same logic as handleCallDudo)
+      let actualCount = 0;
+      for (const player of activePlayers) {
+        actualCount += countMatching(player.hand, gameState.currentBid!.value, gameState.isPalifico);
+      }
+
+      // Build allHands for reveal
+      const allHands: Record<string, number[]> = {};
+      for (const player of activePlayers) {
+        allHands[player.id] = player.hand;
+      }
+
+      // Determine loser
+      let loserId: string;
+      if (actualCount >= gameState.currentBid!.count) {
+        // Bid was correct - caller loses
+        loserId = currentPlayer.id;
+      } else {
+        // Bid was wrong - last bidder loses
+        loserId = gameState.lastBidderId!;
+      }
+
+      // Apply die loss
+      const loser = gameState.players.find(p => p.id === loserId);
+      if (loser) {
+        loser.diceCount -= 1;
+        console.log(`[TIMEOUT DUDO] ${loser.name} lost a die, now has ${loser.diceCount} dice`);
+        if (loser.diceCount <= 0) {
+          loser.isEliminated = true;
+          console.log(`[TIMEOUT DUDO] ${loser.name} has been ELIMINATED`);
+        }
+      }
+
+      gameState.lastRoundLoserId = loserId;
+
+      await this.persistState();
+
+      // Build playerDiceCounts
+      const playerDiceCounts: Record<string, number> = {};
+      for (const player of gameState.players) {
+        playerDiceCounts[player.id] = player.diceCount;
+      }
+
+      // Broadcast round result
+      this.broadcast({
+        type: 'ROUND_RESULT',
+        bid: gameState.currentBid!,
+        actualCount,
+        allHands,
+        loserId,
+        winnerId: null,
+        isCalza: false,
+        playerDiceCounts,
+        timestamp: Date.now(),
+      });
+
+      // Check for game end
+      const remainingPlayers = gameState.players.filter(p => !p.isEliminated && p.diceCount > 0);
+      if (remainingPlayers.length === 1) {
+        gameState.phase = 'ended';
+        await this.persistState();
+        this.broadcast({
+          type: 'GAME_ENDED',
+          winnerId: remainingPlayers[0].id,
+          timestamp: Date.now(),
+        });
+      }
+    }
+  }
 
   // Called when room starts or wakes from hibernation
   async onStart(): Promise<void> {
@@ -443,6 +655,9 @@ export default class GameServer implements Party.Server {
       state: this.getPublicRoomState().gameState,
       timestamp: Date.now(),
     });
+
+    // Set turn timer for the first player
+    await this.setTurnTimer();
   }
 
   private async handlePlaceBid(
@@ -456,6 +671,9 @@ export default class GameServer implements Party.Server {
     }
 
     const gameState = this.roomState.gameState;
+
+    // Clear timeout flag - this is a human action
+    gameState.lastActionWasTimeout = false;
 
     // Guard: must be sender's turn
     if (gameState.currentTurnPlayerId !== sender.id) {
@@ -501,6 +719,9 @@ export default class GameServer implements Party.Server {
       bid: msg.bid,
       timestamp: Date.now(),
     });
+
+    // Set turn timer for next player
+    await this.setTurnTimer();
   }
 
   private async handleCallDudo(
@@ -515,6 +736,9 @@ export default class GameServer implements Party.Server {
 
     const gameState = this.roomState.gameState;
 
+    // Clear timeout flag - this is a human action
+    gameState.lastActionWasTimeout = false;
+
     // Guard: must be sender's turn
     if (gameState.currentTurnPlayerId !== sender.id) {
       this.sendError(sender, 'NOT_YOUR_TURN', 'It is not your turn');
@@ -527,7 +751,7 @@ export default class GameServer implements Party.Server {
       return;
     }
 
-    // Transition to reveal phase
+    // Transition to reveal phase (alarm is naturally ignored since phase changes)
     gameState.phase = 'reveal';
 
     // Broadcast dudo called
@@ -625,6 +849,9 @@ export default class GameServer implements Party.Server {
 
     const gameState = this.roomState.gameState;
 
+    // Clear timeout flag - this is a human action
+    gameState.lastActionWasTimeout = false;
+
     // Guard: must be sender's turn (calza is a turn action like bid or dudo)
     if (gameState.currentTurnPlayerId !== sender.id) {
       this.sendError(sender, 'NOT_YOUR_TURN', 'It is not your turn');
@@ -637,7 +864,7 @@ export default class GameServer implements Party.Server {
       return;
     }
 
-    // Transition to reveal phase
+    // Transition to reveal phase (alarm is naturally ignored since phase changes)
     gameState.phase = 'reveal';
 
     // Broadcast calza called
@@ -840,6 +1067,9 @@ export default class GameServer implements Party.Server {
       state: sanitizedGameState,
       timestamp: Date.now(),
     });
+
+    // Set turn timer for the round starter
+    await this.setTurnTimer();
   }
 
   private async handleUpdateSettings(
