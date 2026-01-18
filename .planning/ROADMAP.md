@@ -36,9 +36,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Install dependencies and create project structure
-- [ ] 01-02-PLAN.md — Define shared types and message protocol with Zod
-- [ ] 01-03-PLAN.md — Create Zustand stores and PartyKit server skeleton
+- [x] 01-01-PLAN.md — Install dependencies and create project structure
+- [x] 01-02-PLAN.md — Define shared types and message protocol with Zod
+- [x] 01-03-PLAN.md — Create Zustand stores and PartyKit server skeleton
 
 ### Phase 2: Mode Selection
 **Goal**: Users can choose between single-player (vs AI) and multiplayer modes from the landing page
@@ -48,10 +48,10 @@ Plans:
   1. User sees clear choice between "Play vs AI" and "Play with Friends" on landing page
   2. Selecting "Play vs AI" starts single-player game with existing flow
   3. Selecting "Play with Friends" initiates multiplayer room creation flow
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 02-01: TBD
+- [ ] 02-01-PLAN.md — Add ModeSelection screen with AI/multiplayer choice and preference persistence
 
 ### Phase 3: Room Creation
 **Goal**: Users can create multiplayer rooms and receive shareable links to invite friends
@@ -168,7 +168,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Architecture Foundation | 3/3 | ✓ Complete | 2026-01-18 |
-| 2. Mode Selection | 0/TBD | Not started | - |
+| 2. Mode Selection | 0/1 | Not started | - |
 | 3. Room Creation | 0/TBD | Not started | - |
 | 4. Join Flow | 0/TBD | Not started | - |
 | 5. Lobby Experience | 0/TBD | Not started | - |
