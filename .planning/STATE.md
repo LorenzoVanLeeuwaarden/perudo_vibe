@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 5 complete - Ready for Phase 6 (Game State Sync)
+**Current focus:** Phase 6 in progress - Game State Sync (plan 1 of 2 complete)
 
 ## Current Position
 
-Phase: 5 of 9 (Lobby Experience) - COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-18 - Completed 05-02-PLAN.md (lobby UI components)
+Phase: 6 of 9 (Game State Sync)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-18 - Completed 06-01-PLAN.md (game action handlers)
 
-Progress: [█████████░] 55% (10 of 18 estimated plans)
+Progress: [██████████░] 61% (11 of 18 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
+- Total plans completed: 11
 - Average duration: ~7 min
-- Total execution time: ~1h 8min
+- Total execution time: ~1h 16min
 
 **By Phase:**
 
@@ -32,9 +32,10 @@ Progress: [█████████░] 55% (10 of 18 estimated plans)
 | 03-room-creation | 2 | 10 min | 5 min |
 | 04-join-flow | 2 | 28 min | 14 min |
 | 05-lobby-experience | 2 | 8 min | 4 min |
+| 06-game-state-sync | 1 | 8 min | 8 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (3 min), 04-02 (25 min), 05-01 (5 min), 05-02 (3 min)
+- Last 5 plans: 04-02 (25 min), 05-01 (5 min), 05-02 (3 min), 06-01 (8 min)
 - Trend: Server-only plans execute quickly; UI plans take longer
 
 *Updated after each plan completion*
@@ -81,6 +82,9 @@ Recent decisions affecting current work:
 - [05-02]: Modal pattern: AnimatePresence wrapper, backdrop onClick to close, inner stopPropagation
 - [05-02]: List animation: AnimatePresence mode='popLayout' with layout prop on children
 - [05-02]: Turn time options: Predefined values (30s, 60s, 90s, Unlimited) for better UX
+- [06-01]: lastRoundLoserId added to ServerGameState for correct round starter assignment
+- [06-01]: DICE_ROLLED sent individually to each player with their private hand
+- [06-01]: Calza success sets lastRoundLoserId to null; last bidder starts next round
 
 ### Pending Todos
 
@@ -93,5 +97,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 05-02-PLAN.md, Phase 5 complete, ready for Phase 6 (Game State Sync)
+Stopped at: Completed 06-01-PLAN.md, ready for 06-02-PLAN.md (client state sync)
 Resume file: None
