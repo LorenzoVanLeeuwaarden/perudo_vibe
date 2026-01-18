@@ -318,16 +318,85 @@ export default class GameServer implements Party.Server {
     msg: Extract<ClientMessage, { type: 'UPDATE_SETTINGS' }>,
     sender: Party.Connection
   ): Promise<void> {
-    // TODO: Implement in Phase 5
-    console.log(`[UPDATE_SETTINGS] by ${sender.id}`);
+    if (!this.roomState) {
+      this.sendError(sender, 'INVALID_ACTION', 'Room does not exist');
+      return;
+    }
+
+    // Verify sender is host
+    if (this.roomState.hostId !== sender.id) {
+      this.sendError(sender, 'NOT_HOST', 'Only the host can change settings');
+      return;
+    }
+
+    // Verify game not in progress
+    if (this.roomState.gameState !== null && this.roomState.gameState.phase !== 'lobby') {
+      this.sendError(sender, 'INVALID_ACTION', 'Cannot change settings during game');
+      return;
+    }
+
+    // Merge settings (partial update)
+    this.roomState.settings = {
+      ...this.roomState.settings,
+      ...msg.settings,
+    };
+
+    await this.persistState();
+
+    // Broadcast updated settings to all players
+    this.broadcast({
+      type: 'SETTINGS_UPDATED',
+      settings: this.roomState.settings,
+      timestamp: Date.now(),
+    });
   }
 
   private async handleKickPlayer(
     msg: Extract<ClientMessage, { type: 'KICK_PLAYER' }>,
     sender: Party.Connection
   ): Promise<void> {
-    // TODO: Implement in Phase 5
-    console.log(`[KICK_PLAYER] ${msg.playerId} by ${sender.id}`);
+    if (!this.roomState) {
+      this.sendError(sender, 'INVALID_ACTION', 'Room does not exist');
+      return;
+    }
+
+    // Verify sender is host
+    if (this.roomState.hostId !== sender.id) {
+      this.sendError(sender, 'NOT_HOST', 'Only the host can kick players');
+      return;
+    }
+
+    // Verify target exists and is not the host
+    const targetIndex = this.roomState.players.findIndex(p => p.id === msg.playerId);
+    if (targetIndex === -1) {
+      this.sendError(sender, 'INVALID_ACTION', 'Player not found');
+      return;
+    }
+
+    if (msg.playerId === this.roomState.hostId) {
+      this.sendError(sender, 'INVALID_ACTION', 'Cannot kick yourself');
+      return;
+    }
+
+    // Remove player from room
+    this.roomState.players.splice(targetIndex, 1);
+    await this.persistState();
+
+    // Broadcast PLAYER_LEFT with reason 'kicked' to all
+    this.broadcast({
+      type: 'PLAYER_LEFT',
+      playerId: msg.playerId,
+      reason: 'kicked',
+      timestamp: Date.now(),
+    });
+
+    // Close kicked player's connection
+    for (const connection of this.room.getConnections()) {
+      if (connection.id === msg.playerId) {
+        connection.close();
+        break;
+      }
+    }
   }
 
   // ========== Helper Methods ==========

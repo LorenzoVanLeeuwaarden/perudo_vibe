@@ -253,6 +253,13 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
     timestamp: TimestampSchema,
   }),
 
+  // Host transfer
+  z.object({
+    type: z.literal('HOST_CHANGED'),
+    newHostId: z.string(),
+    timestamp: TimestampSchema,
+  }),
+
   // Error handling
   z.object({
     type: z.literal('ERROR'),
