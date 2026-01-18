@@ -34,6 +34,7 @@ export interface ServerPlayer {
   diceCount: number;    // Current dice remaining
   hand: number[];       // Dice values (only sent to owner in messages)
   isConnected: boolean; // WebSocket currently connected
+  disconnectedAt: number | null; // Unix timestamp when disconnected (null = connected)
   isEliminated: boolean;
   isHost: boolean;
 }

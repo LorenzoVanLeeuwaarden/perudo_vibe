@@ -487,6 +487,7 @@ export default class GameServer implements Party.Server {
       diceCount: this.roomState.settings.startingDice,
       hand: [],
       isConnected: true,
+      disconnectedAt: null,
       isEliminated: false,
       isHost: this.roomState.players.length === 0, // First player is host
     };
