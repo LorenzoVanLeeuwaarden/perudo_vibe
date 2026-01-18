@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import usePartySocket from 'partysocket/react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import PartySocket from 'partysocket';
 import { normalizeRoomCode } from '@/lib/roomCode';
 import type { ServerMessage } from '@/shared';
 
@@ -9,7 +9,7 @@ export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'er
 
 interface UseRoomConnectionOptions {
   roomCode: string;
-  clientId?: string | null; // Pass from useClientIdentity
+  clientId?: string | null; // Pass from useClientIdentity - must be non-null to connect
   onMessage?: (message: ServerMessage) => void;
   onStatusChange?: (status: ConnectionStatus) => void;
 }
@@ -17,38 +17,63 @@ interface UseRoomConnectionOptions {
 /**
  * Hook for managing PartySocket connection to a game room.
  * Handles connection lifecycle and message parsing.
+ * IMPORTANT: Does not connect until clientId is available (non-null).
  */
 export function useRoomConnection({ roomCode, clientId, onMessage, onStatusChange }: UseRoomConnectionOptions) {
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
+  const [ws, setWs] = useState<PartySocket | null>(null);
+  const onMessageRef = useRef(onMessage);
+  const onStatusChangeRef = useRef(onStatusChange);
 
-  const handleStatusChange = useCallback((newStatus: ConnectionStatus) => {
-    setStatus(newStatus);
-    onStatusChange?.(newStatus);
-  }, [onStatusChange]);
+  // Keep refs updated
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+    onStatusChangeRef.current = onStatusChange;
+  }, [onMessage, onStatusChange]);
 
-  const ws = usePartySocket({
-    host: process.env.NEXT_PUBLIC_PARTYKIT_HOST!,
-    room: normalizeRoomCode(roomCode),
-    id: clientId ?? undefined, // Custom connection ID for reconnection
+  // Only connect when clientId is available
+  useEffect(() => {
+    // Don't connect until we have the clientId
+    if (!clientId) {
+      return;
+    }
 
-    onOpen() {
-      handleStatusChange('connected');
-    },
-    onMessage(event) {
+    const socket = new PartySocket({
+      host: process.env.NEXT_PUBLIC_PARTYKIT_HOST!,
+      room: normalizeRoomCode(roomCode),
+      id: clientId, // Use the persistent client ID for reconnection
+    });
+
+    socket.onopen = () => {
+      setStatus('connected');
+      onStatusChangeRef.current?.('connected');
+    };
+
+    socket.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data) as ServerMessage;
-        onMessage?.(message);
+        onMessageRef.current?.(message);
       } catch (err) {
         console.error('Failed to parse message:', err);
       }
-    },
-    onClose() {
-      handleStatusChange('disconnected');
-    },
-    onError() {
-      handleStatusChange('error');
-    },
-  });
+    };
+
+    socket.onclose = () => {
+      setStatus('disconnected');
+      onStatusChangeRef.current?.('disconnected');
+    };
+
+    socket.onerror = () => {
+      setStatus('error');
+      onStatusChangeRef.current?.('error');
+    };
+
+    setWs(socket);
+
+    return () => {
+      socket.close();
+    };
+  }, [clientId, roomCode]);
 
   return { ws, status };
 }
