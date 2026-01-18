@@ -12,6 +12,7 @@ interface PlayerDiceBadgeProps {
   isEliminated?: boolean;
   showThinking?: boolean;
   thinkingPrompt?: string;
+  showDisconnectedVisual?: boolean;
 }
 
 export function PlayerDiceBadge({
@@ -23,12 +24,13 @@ export function PlayerDiceBadge({
   isEliminated = false,
   showThinking = false,
   thinkingPrompt = 'Thinking',
+  showDisconnectedVisual = false,
 }: PlayerDiceBadgeProps) {
   const colorConfig = PLAYER_COLORS[color];
 
   return (
     <motion.div
-      className={`retro-panel px-4 py-2 relative ${isEliminated ? 'opacity-40' : ''}`}
+      className={`retro-panel px-4 py-2 relative transition-all duration-300 ${isEliminated ? 'opacity-40' : ''} ${showDisconnectedVisual ? 'opacity-50 grayscale' : ''}`}
       animate={{
         boxShadow: isActive
           ? `0 0 ${showThinking ? '25px' : '20px'} ${colorConfig.glow}, 0 0 ${showThinking ? '50px' : '40px'} ${colorConfig.glow}`

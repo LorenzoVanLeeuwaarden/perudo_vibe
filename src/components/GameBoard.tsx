@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useUIStore } from '@/stores/uiStore';
 import { PlayerDiceBadge } from './PlayerDiceBadge';
@@ -9,8 +10,18 @@ import { SortedDiceDisplay } from './SortedDiceDisplay';
 import { DudoOverlay } from './DudoOverlay';
 import { RevealPhase } from './RevealPhase';
 import { ShaderBackground } from './ShaderBackground';
-import type { ServerRoomState, ClientMessage } from '@/shared';
+import type { ServerRoomState, ClientMessage, ServerPlayer } from '@/shared';
 import type { PlayerColor } from '@/lib/types';
+
+/**
+ * Check if disconnect visual should be shown for a player
+ * Returns true if player disconnected more than 5 seconds ago
+ */
+function shouldShowDisconnectedVisual(player: ServerPlayer, currentTime: number): boolean {
+  if (player.isConnected) return false;
+  if (!player.disconnectedAt) return false;
+  return (currentTime - player.disconnectedAt) >= 5000;
+}
 
 interface GameBoardProps {
   roomState: ServerRoomState;
@@ -31,6 +42,17 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
     setDudoOverlay,
     setDudoCaller,
   } = useUIStore();
+
+  // Track current time for disconnect visual delay calculation
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  // Update every second to recalculate disconnect visuals
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const gameState = roomState.gameState;
   if (!gameState) return null;
@@ -108,6 +130,7 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
               hasPalifico={gameState.isPalifico && player.id === gameState.roundStarterId}
               showThinking={player.id === gameState.currentTurnPlayerId && gameState.phase === 'bidding'}
               thinkingPrompt={player.id === myPlayerId ? 'Your turn' : 'Thinking'}
+              showDisconnectedVisual={shouldShowDisconnectedVisual(player, currentTime)}
             />
           ))}
         </motion.div>
