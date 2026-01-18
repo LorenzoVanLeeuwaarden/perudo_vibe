@@ -12,7 +12,7 @@ interface TurnTimerProps {
 function getTimerColor(progress: number): string {
   if (progress > 0.5) return 'bg-green-crt';     // > 50% remaining
   if (progress > 0.25) return 'bg-yellow-400';   // 25-50% remaining
-  return 'bg-red-crt';                           // < 25% remaining
+  return 'bg-red-danger';                         // < 25% remaining
 }
 
 export function TurnTimer({ turnStartedAt, turnTimeoutMs, isMyTurn }: TurnTimerProps) {
@@ -65,7 +65,7 @@ export function TurnTimer({ turnStartedAt, turnTimeoutMs, isMyTurn }: TurnTimerP
         />
       </div>
       {/* Numeric display */}
-      <p className={`text-center mt-1 font-mono text-lg ${isPulsing ? 'text-red-crt' : 'text-white-soft'}`}>
+      <p className={`text-center mt-1 font-mono text-lg ${isPulsing ? 'text-red-danger' : 'text-white-soft'}`}>
         {seconds}s
       </p>
     </div>
