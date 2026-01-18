@@ -555,7 +555,7 @@ export default class GameServer implements Party.Server {
       loserId = gameState.lastBidderId!;
     }
 
-    // Apply die loss
+    // Apply die loss to loser
     const loser = gameState.players.find(p => p.id === loserId);
     if (loser) {
       loser.diceCount -= 1;
@@ -569,6 +569,12 @@ export default class GameServer implements Party.Server {
 
     await this.persistState();
 
+    // Build playerDiceCounts map with updated values
+    const playerDiceCounts: Record<string, number> = {};
+    for (const player of gameState.players) {
+      playerDiceCounts[player.id] = player.diceCount;
+    }
+
     // Broadcast round result
     this.broadcast({
       type: 'ROUND_RESULT',
@@ -578,6 +584,7 @@ export default class GameServer implements Party.Server {
       loserId,
       winnerId: null,
       isCalza: false,
+      playerDiceCounts,
       timestamp: Date.now(),
     });
 
@@ -669,6 +676,12 @@ export default class GameServer implements Party.Server {
 
     await this.persistState();
 
+    // Build playerDiceCounts map with updated values
+    const playerDiceCounts: Record<string, number> = {};
+    for (const player of gameState.players) {
+      playerDiceCounts[player.id] = player.diceCount;
+    }
+
     // Broadcast round result
     this.broadcast({
       type: 'ROUND_RESULT',
@@ -678,6 +691,7 @@ export default class GameServer implements Party.Server {
       loserId,
       winnerId,
       isCalza: true,
+      playerDiceCounts,
       timestamp: Date.now(),
     });
 
@@ -794,9 +808,17 @@ export default class GameServer implements Party.Server {
     }
 
     // Broadcast public game state (now in bidding phase)
+    // Sanitize gameState.players to clear private hands before broadcasting
+    const sanitizedGameState = {
+      ...gameState,
+      players: gameState.players.map(p => ({
+        ...p,
+        hand: [], // Never send private hands in broadcast
+      })),
+    };
     this.broadcast({
       type: 'GAME_STATE',
-      state: this.getPublicRoomState().gameState,
+      state: sanitizedGameState,
       timestamp: Date.now(),
     });
   }

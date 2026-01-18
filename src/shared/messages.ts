@@ -231,6 +231,7 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
     loserId: z.string().nullable(), // Who loses a die (null for calza success)
     winnerId: z.string().nullable(), // Who gains a die (calza only)
     isCalza: z.boolean(),
+    playerDiceCounts: z.record(z.string(), z.number()), // Updated dice counts for all players
     timestamp: TimestampSchema,
   }),
   z.object({

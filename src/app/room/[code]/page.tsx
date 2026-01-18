@@ -309,15 +309,14 @@ export default function RoomPage() {
         });
         setJoinState(prev => {
           if (prev.status === 'joined' && prev.roomState.gameState) {
-            // Update dice counts based on result
+            // Update dice counts from server-provided values (authoritative)
             const updatedPlayers = prev.roomState.gameState.players.map(p => {
-              if (p.id === message.loserId) {
-                return { ...p, diceCount: Math.max(0, p.diceCount - 1), isEliminated: p.diceCount - 1 <= 0 };
-              }
-              if (p.id === message.winnerId && message.isCalza) {
-                return { ...p, diceCount: Math.min(5, p.diceCount + 1) };
-              }
-              return p;
+              const newDiceCount = message.playerDiceCounts[p.id] ?? p.diceCount;
+              return {
+                ...p,
+                diceCount: newDiceCount,
+                isEliminated: newDiceCount <= 0,
+              };
             });
             return {
               ...prev,
