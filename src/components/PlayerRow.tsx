@@ -10,14 +10,17 @@ interface PlayerRowProps {
   isMe: boolean;
   showKick: boolean;
   onKick: () => void;
+  showDisconnectedVisual?: boolean;
 }
 
-export function PlayerRow({ player, isMe, showKick, onKick }: PlayerRowProps) {
+export function PlayerRow({ player, isMe, showKick, onKick, showDisconnectedVisual }: PlayerRowProps) {
   const colorConfig = PLAYER_COLORS[player.color];
 
   return (
     <div
-      className={`flex items-center gap-3 p-3 rounded-lg border ${
+      className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 ${
+        showDisconnectedVisual ? 'opacity-50 grayscale' : ''
+      } ${
         isMe
           ? 'bg-purple-mid/30 border-purple-glow'
           : 'bg-purple-deep/30 border-purple-mid'
