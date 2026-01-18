@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Lobby Experience** - Player list, host controls, and game configuration
 - [x] **Phase 6: Game State Sync** - Real-time game state synchronization across players
 - [x] **Phase 7: Turn Timers** - Turn countdown timers with AI timeout handling
-- [ ] **Phase 8: Disconnect and Reconnection** - Graceful disconnect handling with AI takeover and reconnection
+- [x] **Phase 8: Disconnect and Reconnection** - Graceful disconnect handling with AI takeover and reconnection
 - [ ] **Phase 9: Social and Polish** - Emotes, rematch flow, and end-game statistics
 
 ## Phase Details
@@ -147,8 +147,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Server disconnect infrastructure with unified alarm handler and AI takeover
-- [ ] 08-02-PLAN.md — Client disconnect visuals with grayed-out styling and reconnection toasts
+- [x] 08-01-PLAN.md — Server disconnect infrastructure with unified alarm handler and AI takeover
+- [x] 08-02-PLAN.md — Client disconnect visuals with grayed-out styling and reconnection toasts
 
 ### Phase 9: Social and Polish
 **Goal**: Players can express themselves with emotes, rematch easily, and see game statistics
@@ -179,7 +179,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 5. Lobby Experience | 2/2 | ✓ Complete | 2026-01-18 |
 | 6. Game State Sync | 3/3 | ✓ Complete | 2026-01-18 |
 | 7. Turn Timers | 3/3 | ✓ Complete | 2026-01-18 |
-| 8. Disconnect and Reconnection | 0/2 | In Progress | - |
+| 8. Disconnect and Reconnection | 2/2 | ✓ Complete | 2026-01-18 |
 | 9. Social and Polish | 0/TBD | Not started | - |
 
 ---

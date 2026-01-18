@@ -24,7 +24,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **SYNC-01**: All players see same game state in real-time (sub-200ms latency)
 - [x] **SYNC-02**: Current player's turn is clearly indicated to all players
 - [x] **SYNC-03**: Players receive visual confirmation when their action is received
-- [ ] **SYNC-04**: Player can rejoin game after page refresh with state intact
+- [x] **SYNC-04**: Player can rejoin game after page refresh with state intact
 
 ### Turn Management
 
@@ -34,9 +34,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Disconnect Handling
 
-- [ ] **DISC-01**: Disconnected player can reconnect within grace period
-- [ ] **DISC-02**: AI takes over for disconnected player until they return
-- [ ] **DISC-03**: Other players see visual indicator when player is disconnected
+- [x] **DISC-01**: Disconnected player can reconnect within grace period
+- [x] **DISC-02**: AI takes over for disconnected player until they return
+- [x] **DISC-03**: Other players see visual indicator when player is disconnected
 
 ### Social Features
 
@@ -103,13 +103,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SYNC-01 | Phase 6 | Complete |
 | SYNC-02 | Phase 6 | Complete |
 | SYNC-03 | Phase 6 | Complete |
-| SYNC-04 | Phase 8 | Pending |
+| SYNC-04 | Phase 8 | Complete |
 | TURN-01 | Phase 7 | Complete |
 | TURN-02 | Phase 7 | Complete |
 | TURN-03 | Phase 6 | Complete |
-| DISC-01 | Phase 8 | Pending |
-| DISC-02 | Phase 8 | Pending |
-| DISC-03 | Phase 8 | Pending |
+| DISC-01 | Phase 8 | Complete |
+| DISC-02 | Phase 8 | Complete |
+| DISC-03 | Phase 8 | Complete |
 | SOCL-01 | Phase 9 | Pending |
 | SOCL-02 | Phase 9 | Pending |
 | SOCL-03 | Phase 9 | Pending |
@@ -122,4 +122,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-18*
-*Last updated: 2026-01-18 after Phase 7 completion*
+*Last updated: 2026-01-18 after Phase 8 completion*

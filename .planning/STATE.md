@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 8 in progress - Disconnect and Reconnection
+**Current focus:** Phase 8 complete - Disconnect and Reconnection ready for Phase 9
 
 ## Current Position
 
-Phase: 8 of 9 (Disconnect and Reconnection)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-18 - Completed 08-01-PLAN.md (server-side disconnect handling)
+Phase: 8 of 9 (Disconnect and Reconnection) - COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-18 - Completed 08-02-PLAN.md (client disconnect visuals)
 
-Progress: [█████████████████░] 94% (17 of 18 estimated plans)
+Progress: [██████████████████░] 100% (18 of 18 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
-- Average duration: ~13 min
-- Total execution time: ~3.8h (including verification time)
+- Total plans completed: 18
+- Average duration: ~15 min
+- Total execution time: ~4.5h (including verification time)
 
 **By Phase:**
 
@@ -34,11 +34,11 @@ Progress: [█████████████████░] 94% (17 of 18
 | 05-lobby-experience | 2 | 8 min | 4 min |
 | 06-game-state-sync | 3 | 111 min | 37 min |
 | 07-turn-timers | 3 | 29 min | 10 min |
-| 08-disconnect-reconnection | 1 | 4 min | 4 min |
+| 08-disconnect-reconnection | 2 | 45 min | 22 min |
 
 **Recent Trend:**
-- Last 5 plans: 07-01 (12 min), 07-02 (2 min), 07-03 (15 min), 08-01 (4 min)
-- Note: 08-01 fast execution - straightforward server-side implementation
+- Last 5 plans: 07-02 (2 min), 07-03 (15 min), 08-01 (4 min), 08-02 (~40 min with bug fixes)
+- Note: 08-02 required 6 bug fixes discovered during human verification
 
 *Updated after each plan completion*
 
@@ -107,10 +107,15 @@ Recent decisions affecting current work:
 - [07-03]: Turn time options: 30s, 60s, 90s, 120s (Unlimited removed per CONTEXT.md)
 - [07-03]: Timer bar minimum 5% width for visibility at low time
 - [07-03]: turnStartedAt reset on BID_PLACED for correct timer after AI timeout
-- [08-01]: Storage-based alarm tracking: turn timer and disconnect entries, single alarm for nearest deadline
+- [08-01]: Storage-based alarm tracking: turn timer, disconnect entries, and AI takeover entries
 - [08-01]: 60-second grace period before elimination (GRACE_PERIOD_MS constant)
-- [08-01]: AI takes over immediately when disconnected player's turn comes
 - [08-01]: 'eliminated' reason added to PLAYER_LEFT message for grace period expiration
+- [08-02]: WifiOff icon in PlayerDiceBadge uses 3x3 size to fit compact badge
+- [08-02]: Toast notification uses toast.warning for disconnect events
+- [08-02]: 5-second delay before grayed-out visual to avoid flicker on brief network blips
+- [08-02]: AI takeover has 5-second grace period (separate from 60-second elimination)
+- [08-02]: useRoomConnection refactored to manual PartySocket for connection timing control
+- [08-02]: TURN_CHANGED message type for turn advancement after disconnect elimination
 
 ### Pending Todos
 
@@ -123,5 +128,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 08-01-PLAN.md (server-side disconnect handling)
+Stopped at: Completed 08-02-PLAN.md (client disconnect visuals) - Phase 8 complete
 Resume file: None
