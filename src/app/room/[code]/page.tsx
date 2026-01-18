@@ -325,8 +325,14 @@ export default function RoomPage() {
               };
             });
 
+            // Get current player's new dice count and trim myHand to match
+            // This prevents showing stale dice while waiting for DICE_ROLLED
+            const myNewDiceCount = message.playerDiceCounts[prev.playerId] ?? prev.myHand.length;
+            const trimmedHand = prev.myHand.slice(0, myNewDiceCount);
+
             return {
               ...prev,
+              myHand: trimmedHand,
               roomState: {
                 ...prev.roomState,
                 players: updatedRoomPlayers,

@@ -51,11 +51,14 @@ export default class GameServer implements Party.Server {
         existingPlayer.isConnected = true;
         await this.persistState();
 
+        // Ensure hand length matches diceCount (fixes stale hand after losing dice)
+        const safeHand = existingPlayer.hand.slice(0, existingPlayer.diceCount);
+
         this.sendToConnection(connection, {
           type: 'ROOM_STATE',
           state: this.getPublicRoomState(),
           yourPlayerId: connection.id,
-          yourHand: existingPlayer.hand,
+          yourHand: safeHand,
           timestamp: Date.now(),
         });
 
