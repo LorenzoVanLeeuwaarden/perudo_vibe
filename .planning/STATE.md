@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 7 in progress - Turn Timers (2 of 3 plans done)
+**Current focus:** Phase 7 complete - Turn Timers ready for Phase 8
 
 ## Current Position
 
-Phase: 7 of 9 (Turn Timers)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-18 - Completed 07-02-PLAN.md (timer UI)
+Phase: 7 of 9 (Turn Timers) - COMPLETE
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-01-18 - Completed 07-03-PLAN.md (turn time options)
 
-Progress: [███████████████░] 83% (15 of 18 estimated plans)
+Progress: [████████████████░] 89% (16 of 18 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
+- Total plans completed: 16
 - Average duration: ~14 min
-- Total execution time: ~3.2h (including verification time)
+- Total execution time: ~3.7h (including verification time)
 
 **By Phase:**
 
@@ -33,11 +33,11 @@ Progress: [███████████████░] 83% (15 of 18 estim
 | 04-join-flow | 2 | 28 min | 14 min |
 | 05-lobby-experience | 2 | 8 min | 4 min |
 | 06-game-state-sync | 3 | 111 min | 37 min |
-| 07-turn-timers | 2 | 14 min | 7 min |
+| 07-turn-timers | 3 | 29 min | 10 min |
 
 **Recent Trend:**
-- Last 5 plans: 06-02 (3 min), 06-03 (~100 min), 07-01 (12 min), 07-02 (2 min)
-- Note: 06-03 included extensive human verification and 13 bug fixes
+- Last 5 plans: 06-03 (~100 min), 07-01 (12 min), 07-02 (2 min), 07-03 (15 min)
+- Note: 07-03 included 4 bug fixes discovered during human verification
 
 *Updated after each plan completion*
 
@@ -82,7 +82,7 @@ Recent decisions affecting current work:
 - [05-01]: Game starts in 'rolling' phase with first player as turn starter
 - [05-02]: Modal pattern: AnimatePresence wrapper, backdrop onClick to close, inner stopPropagation
 - [05-02]: List animation: AnimatePresence mode='popLayout' with layout prop on children
-- [05-02]: Turn time options: Predefined values (30s, 60s, 90s, Unlimited) for better UX
+- [05-02]: Turn time options: Predefined values for better UX (updated in 07-03 to remove Unlimited)
 - [06-01]: lastRoundLoserId added to ServerGameState for correct round starter assignment
 - [06-01]: DICE_ROLLED sent individually to each player with their private hand
 - [06-01]: Calza success sets lastRoundLoserId to null; last bidder starts next round
@@ -103,6 +103,9 @@ Recent decisions affecting current work:
 - [07-02]: Timer color thresholds: green (>50%), yellow (25-50%), red (<25%)
 - [07-02]: Pulse animation triggers at 25% remaining time
 - [07-02]: Bot icon inline with player name badge for timeout move indication
+- [07-03]: Turn time options: 30s, 60s, 90s, 120s (Unlimited removed per CONTEXT.md)
+- [07-03]: Timer bar minimum 5% width for visibility at low time
+- [07-03]: turnStartedAt reset on BID_PLACED for correct timer after AI timeout
 
 ### Pending Todos
 
@@ -115,5 +118,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 07-02-PLAN.md (timer UI)
+Stopped at: Completed 07-03-PLAN.md (turn time options) - Phase 7 complete
 Resume file: None
