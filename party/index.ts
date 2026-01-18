@@ -769,13 +769,31 @@ export default class GameServer implements Party.Server {
       gameState.isPalifico = false;
     }
 
-    // Transition to rolling phase
-    gameState.phase = 'rolling';
+    // Roll dice for each non-eliminated player immediately
+    // (No need for 'rolling' phase - we roll synchronously here)
+    for (const player of activePlayers) {
+      player.hand = rollDice(player.diceCount);
+    }
+
+    // Transition directly to bidding phase
+    gameState.phase = 'bidding';
     gameState.turnStartedAt = Date.now();
 
     await this.persistState();
 
-    // Broadcast public game state - clients will trigger ROLL_DICE
+    // Send private hand to each player
+    for (const connection of this.room.getConnections()) {
+      const player = activePlayers.find(p => p.id === connection.id);
+      if (player) {
+        this.sendToConnection(connection, {
+          type: 'DICE_ROLLED',
+          yourHand: player.hand,
+          timestamp: Date.now(),
+        });
+      }
+    }
+
+    // Broadcast public game state (now in bidding phase)
     this.broadcast({
       type: 'GAME_STATE',
       state: this.getPublicRoomState().gameState,
