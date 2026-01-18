@@ -182,7 +182,7 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('PLAYER_LEFT'),
     playerId: z.string(),
-    reason: z.enum(['left', 'kicked', 'disconnected']),
+    reason: z.enum(['left', 'kicked', 'disconnected', 'eliminated']),
     timestamp: TimestampSchema,
   }),
   z.object({

@@ -26,83 +26,174 @@ export default class GameServer implements Party.Server {
 
   constructor(readonly room: Party.Room) {}
 
-  // ========== Turn Timer (Alarm-based) ==========
+  // ========== Unified Alarm System (Turn Timer + Disconnect Grace Period) ==========
+  // PartyKit only supports ONE alarm per room, so we use storage to track multiple deadlines
 
   /**
-   * Set a turn timer alarm using PartyKit's alarm API.
-   * The alarm will fire after turnTimeoutMs + 500ms grace period.
-   *
-   * Note: PartyKit only supports ONE alarm per room. Setting a new alarm
-   * automatically cancels the previous one.
+   * Storage schema for alarm tracking:
+   * - 'turnTimer': { fireAt: timestamp } - when turn timeout should fire
+   * - 'disconnect_{playerId}': { playerId: string, eliminateAt: timestamp } - per-player disconnect elimination
+   */
+
+  /**
+   * Schedule the next alarm based on all pending deadlines.
+   * Reads turn timer and all disconnect entries, sets alarm for the nearest deadline.
+   */
+  private async scheduleNextAlarm(): Promise<void> {
+    const deadlines: number[] = [];
+
+    // Check turn timer
+    const turnTimer = await this.room.storage.get<{ fireAt: number }>('turnTimer');
+    if (turnTimer?.fireAt) {
+      deadlines.push(turnTimer.fireAt);
+    }
+
+    // Check all disconnect entries
+    const allKeys = await this.room.storage.list();
+    for (const [key, value] of allKeys) {
+      if (key.startsWith('disconnect_')) {
+        const entry = value as { playerId: string; eliminateAt: number };
+        if (entry?.eliminateAt) {
+          deadlines.push(entry.eliminateAt);
+        }
+      }
+    }
+
+    if (deadlines.length === 0) {
+      // No pending deadlines - clear any existing alarm
+      // PartyKit doesn't have clearAlarm, but setting alarm to past time effectively clears it
+      // Actually, we just don't set any alarm
+      console.log('[ALARM] No pending deadlines');
+      return;
+    }
+
+    // Set alarm for nearest deadline
+    const nextDeadline = Math.min(...deadlines);
+    await this.room.storage.setAlarm(nextDeadline);
+    console.log(`[ALARM] Next alarm scheduled for ${new Date(nextDeadline).toISOString()}`);
+  }
+
+  /**
+   * Set a turn timer for the current player.
+   * Stores the timer in storage and schedules the next alarm.
    */
   private async setTurnTimer(): Promise<void> {
     // Guard: must have active game in bidding phase
     if (!this.roomState?.gameState || this.roomState.gameState.phase !== 'bidding') {
+      // Clear turn timer if not in bidding phase
+      await this.room.storage.delete('turnTimer');
+      await this.scheduleNextAlarm();
       return;
     }
 
     // Guard: timeout must be configured (> 0)
     const timeoutMs = this.roomState.settings.turnTimeoutMs;
     if (!timeoutMs || timeoutMs <= 0) {
+      await this.room.storage.delete('turnTimer');
+      await this.scheduleNextAlarm();
       return;
     }
 
     // Add 500ms grace period for network latency compensation
-    const alarmTime = Date.now() + timeoutMs + 500;
-    await this.room.storage.setAlarm(alarmTime);
-    console.log(`[TIMER] Set turn timer for ${timeoutMs}ms + 500ms grace (alarm at ${new Date(alarmTime).toISOString()})`);
+    const fireAt = Date.now() + timeoutMs + 500;
+    await this.room.storage.put('turnTimer', { fireAt });
+    console.log(`[TIMER] Set turn timer for ${timeoutMs}ms + 500ms grace (fireAt ${new Date(fireAt).toISOString()})`);
+
+    await this.scheduleNextAlarm();
   }
 
   /**
-   * Called when the turn timer alarm fires.
-   * If the game is still in bidding phase and the current player hasn't acted,
-   * the AI takes over with a conservative move.
+   * Clear the turn timer (e.g., when phase changes to reveal).
+   */
+  private async clearTurnTimer(): Promise<void> {
+    await this.room.storage.delete('turnTimer');
+    await this.scheduleNextAlarm();
+  }
+
+  /**
+   * Unified alarm handler for turn timer and disconnect grace periods.
+   * Checks all pending deadlines and processes those that have expired.
    */
   async onAlarm(): Promise<void> {
-    console.log('[ALARM] Turn timer alarm fired');
+    console.log('[ALARM] Alarm fired');
+    const now = Date.now();
 
-    // Guard: room state must exist
+    // Process turn timer if expired
+    await this.processTurnTimer(now);
+
+    // Process disconnect eliminations
+    await this.processDisconnectEliminations(now);
+
+    // Schedule next alarm for any remaining deadlines
+    await this.scheduleNextAlarm();
+  }
+
+  /**
+   * Process turn timer if it has expired.
+   * AI takes over with a conservative move.
+   */
+  private async processTurnTimer(now: number): Promise<void> {
+    const turnTimer = await this.room.storage.get<{ fireAt: number }>('turnTimer');
+    if (!turnTimer || turnTimer.fireAt > now) {
+      return; // Not expired yet
+    }
+
+    // Clear the turn timer entry
+    await this.room.storage.delete('turnTimer');
+
+    // Guard: room state must exist with game state
     if (!this.roomState?.gameState) {
-      console.log('[ALARM] No game state - ignoring');
+      console.log('[TIMER] No game state - ignoring turn timer');
       return;
     }
 
     const gameState = this.roomState.gameState;
 
-    // Guard: must be in bidding phase (if not, turn already ended normally - ignore)
+    // Guard: must be in bidding phase
     if (gameState.phase !== 'bidding') {
-      console.log(`[ALARM] Game phase is ${gameState.phase}, not bidding - ignoring`);
+      console.log(`[TIMER] Game phase is ${gameState.phase}, not bidding - ignoring`);
       return;
     }
 
     // Guard: must have a current turn player
     if (!gameState.currentTurnPlayerId) {
-      console.log('[ALARM] No current turn player - ignoring');
+      console.log('[TIMER] No current turn player - ignoring');
       return;
     }
 
     // Find current player
     const currentPlayer = gameState.players.find(p => p.id === gameState.currentTurnPlayerId);
     if (!currentPlayer) {
-      console.log('[ALARM] Current player not found - ignoring');
+      console.log('[TIMER] Current player not found - ignoring');
       return;
     }
 
-    // Guard: player must still be connected and not eliminated
-    if (!currentPlayer.isConnected || currentPlayer.isEliminated) {
-      console.log(`[ALARM] Player ${currentPlayer.name} is disconnected or eliminated - ignoring`);
+    // Guard: player must not be eliminated (disconnected players can still have AI play)
+    if (currentPlayer.isEliminated) {
+      console.log(`[TIMER] Player ${currentPlayer.name} is eliminated - ignoring`);
       return;
     }
 
     console.log(`[TIMEOUT] Player ${currentPlayer.name} timed out - AI taking over`);
 
-    // Calculate total dice in play
+    // Execute AI move for the player
+    await this.executeTimeoutAIMove(currentPlayer);
+  }
+
+  /**
+   * Execute AI move for a player who has timed out or is disconnected.
+   * Reused for both turn timeout and disconnected player turn handling.
+   */
+  private async executeTimeoutAIMove(player: ServerPlayer): Promise<void> {
+    if (!this.roomState?.gameState) return;
+
+    const gameState = this.roomState.gameState;
     const activePlayers = gameState.players.filter(p => !p.isEliminated);
     const totalDice = activePlayers.reduce((sum, p) => sum + p.diceCount, 0);
 
     // Generate conservative AI move
     const aiMove = generateTimeoutAIMove(
-      currentPlayer.hand,
+      player.hand,
       gameState.currentBid,
       totalDice,
       gameState.isPalifico
@@ -116,10 +207,10 @@ export default class GameServer implements Party.Server {
       console.log(`[TIMEOUT] AI bids ${aiMove.bid.count}x ${aiMove.bid.value}s`);
 
       gameState.currentBid = aiMove.bid;
-      gameState.lastBidderId = currentPlayer.id;
+      gameState.lastBidderId = player.id;
 
       // Advance turn to next active player
-      const currentIndex = activePlayers.findIndex(p => p.id === currentPlayer.id);
+      const currentIndex = activePlayers.findIndex(p => p.id === player.id);
       const nextIndex = (currentIndex + 1) % activePlayers.length;
       gameState.currentTurnPlayerId = activePlayers[nextIndex].id;
       gameState.turnStartedAt = Date.now();
@@ -129,7 +220,7 @@ export default class GameServer implements Party.Server {
       // Broadcast TURN_TIMEOUT with the bid
       this.broadcast({
         type: 'TURN_TIMEOUT',
-        playerId: currentPlayer.id,
+        playerId: player.id,
         aiAction: 'bid',
         bid: aiMove.bid,
         timestamp: Date.now(),
@@ -138,7 +229,7 @@ export default class GameServer implements Party.Server {
       // Broadcast BID_PLACED so clients update normally
       this.broadcast({
         type: 'BID_PLACED',
-        playerId: currentPlayer.id,
+        playerId: player.id,
         bid: aiMove.bid,
         timestamp: Date.now(),
       });
@@ -150,13 +241,16 @@ export default class GameServer implements Party.Server {
       // AI calls dudo
       console.log(`[TIMEOUT] AI calls DUDO`);
 
-      // Transition to reveal phase (alarm for next turn is not needed)
+      // Transition to reveal phase
       gameState.phase = 'reveal';
+
+      // Clear turn timer since we're leaving bidding phase
+      await this.room.storage.delete('turnTimer');
 
       // Broadcast TURN_TIMEOUT
       this.broadcast({
         type: 'TURN_TIMEOUT',
-        playerId: currentPlayer.id,
+        playerId: player.id,
         aiAction: 'dudo',
         timestamp: Date.now(),
       });
@@ -164,27 +258,27 @@ export default class GameServer implements Party.Server {
       // Broadcast DUDO_CALLED
       this.broadcast({
         type: 'DUDO_CALLED',
-        callerId: currentPlayer.id,
+        callerId: player.id,
         timestamp: Date.now(),
       });
 
       // Calculate actual count (same logic as handleCallDudo)
       let actualCount = 0;
-      for (const player of activePlayers) {
-        actualCount += countMatching(player.hand, gameState.currentBid!.value, gameState.isPalifico);
+      for (const p of activePlayers) {
+        actualCount += countMatching(p.hand, gameState.currentBid!.value, gameState.isPalifico);
       }
 
       // Build allHands for reveal
       const allHands: Record<string, number[]> = {};
-      for (const player of activePlayers) {
-        allHands[player.id] = player.hand;
+      for (const p of activePlayers) {
+        allHands[p.id] = p.hand;
       }
 
       // Determine loser
       let loserId: string;
       if (actualCount >= gameState.currentBid!.count) {
         // Bid was correct - caller loses
-        loserId = currentPlayer.id;
+        loserId = player.id;
       } else {
         // Bid was wrong - last bidder loses
         loserId = gameState.lastBidderId!;
@@ -207,8 +301,8 @@ export default class GameServer implements Party.Server {
 
       // Build playerDiceCounts
       const playerDiceCounts: Record<string, number> = {};
-      for (const player of gameState.players) {
-        playerDiceCounts[player.id] = player.diceCount;
+      for (const p of gameState.players) {
+        playerDiceCounts[p.id] = p.diceCount;
       }
 
       // Broadcast round result
@@ -234,6 +328,75 @@ export default class GameServer implements Party.Server {
           winnerId: remainingPlayers[0].id,
           timestamp: Date.now(),
         });
+      }
+    }
+  }
+
+  /**
+   * Process disconnect eliminations for players whose grace period has expired.
+   */
+  private async processDisconnectEliminations(now: number): Promise<void> {
+    const allKeys = await this.room.storage.list();
+
+    for (const [key, value] of allKeys) {
+      if (!key.startsWith('disconnect_')) continue;
+
+      const entry = value as { playerId: string; eliminateAt: number };
+      if (!entry || entry.eliminateAt > now) continue;
+
+      // Grace period expired - eliminate player if still disconnected
+      console.log(`[DISCONNECT] Grace period expired for player ${entry.playerId}`);
+
+      // Delete the storage entry first
+      await this.room.storage.delete(key);
+
+      // Find the player
+      if (!this.roomState?.gameState) continue;
+
+      const player = this.roomState.gameState.players.find(p => p.id === entry.playerId);
+      if (!player) continue;
+
+      // Check if player is still disconnected
+      if (player.isConnected) {
+        console.log(`[DISCONNECT] Player ${player.name} reconnected - skipping elimination`);
+        continue;
+      }
+
+      // Already eliminated? Skip
+      if (player.isEliminated) {
+        console.log(`[DISCONNECT] Player ${player.name} already eliminated - skipping`);
+        continue;
+      }
+
+      // Eliminate the player
+      player.isEliminated = true;
+      player.diceCount = 0;
+      console.log(`[DISCONNECT] Player ${player.name} eliminated due to disconnect timeout`);
+
+      await this.persistState();
+
+      // Broadcast PLAYER_LEFT with reason 'eliminated'
+      this.broadcast({
+        type: 'PLAYER_LEFT',
+        playerId: entry.playerId,
+        reason: 'eliminated',
+        timestamp: Date.now(),
+      });
+
+      // Check for game end condition
+      const remainingPlayers = this.roomState.gameState.players.filter(
+        p => !p.isEliminated && p.diceCount > 0
+      );
+      if (remainingPlayers.length === 1) {
+        this.roomState.gameState.phase = 'ended';
+        await this.persistState();
+        this.broadcast({
+          type: 'GAME_ENDED',
+          winnerId: remainingPlayers[0].id,
+          timestamp: Date.now(),
+        });
+      } else if (remainingPlayers.length === 0) {
+        console.error('[DISCONNECT] ERROR: No remaining players after elimination!');
       }
     }
   }
