@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 7 complete - Turn Timers ready for Phase 8
+**Current focus:** Phase 8 in progress - Disconnect and Reconnection
 
 ## Current Position
 
-Phase: 7 of 9 (Turn Timers) - COMPLETE
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-01-18 - Completed 07-03-PLAN.md (turn time options)
+Phase: 8 of 9 (Disconnect and Reconnection)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-18 - Completed 08-01-PLAN.md (server-side disconnect handling)
 
-Progress: [████████████████░] 89% (16 of 18 estimated plans)
+Progress: [█████████████████░] 94% (17 of 18 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
-- Average duration: ~14 min
-- Total execution time: ~3.7h (including verification time)
+- Total plans completed: 17
+- Average duration: ~13 min
+- Total execution time: ~3.8h (including verification time)
 
 **By Phase:**
 
@@ -34,10 +34,11 @@ Progress: [████████████████░] 89% (16 of 18 es
 | 05-lobby-experience | 2 | 8 min | 4 min |
 | 06-game-state-sync | 3 | 111 min | 37 min |
 | 07-turn-timers | 3 | 29 min | 10 min |
+| 08-disconnect-reconnection | 1 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 06-03 (~100 min), 07-01 (12 min), 07-02 (2 min), 07-03 (15 min)
-- Note: 07-03 included 4 bug fixes discovered during human verification
+- Last 5 plans: 07-01 (12 min), 07-02 (2 min), 07-03 (15 min), 08-01 (4 min)
+- Note: 08-01 fast execution - straightforward server-side implementation
 
 *Updated after each plan completion*
 
@@ -106,6 +107,10 @@ Recent decisions affecting current work:
 - [07-03]: Turn time options: 30s, 60s, 90s, 120s (Unlimited removed per CONTEXT.md)
 - [07-03]: Timer bar minimum 5% width for visibility at low time
 - [07-03]: turnStartedAt reset on BID_PLACED for correct timer after AI timeout
+- [08-01]: Storage-based alarm tracking: turn timer and disconnect entries, single alarm for nearest deadline
+- [08-01]: 60-second grace period before elimination (GRACE_PERIOD_MS constant)
+- [08-01]: AI takes over immediately when disconnected player's turn comes
+- [08-01]: 'eliminated' reason added to PLAYER_LEFT message for grace period expiration
 
 ### Pending Todos
 
@@ -118,5 +123,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 07-03-PLAN.md (turn time options) - Phase 7 complete
+Stopped at: Completed 08-01-PLAN.md (server-side disconnect handling)
 Resume file: None
