@@ -192,17 +192,14 @@ export default function RoomPage() {
         break;
 
       case 'GAME_STARTED':
-        // Update game state phase to rolling and trigger roll
+        // Set initial game state from server (includes phase, currentTurnPlayerId, etc.)
         setJoinState(prev => {
-          if (prev.status === 'joined' && prev.roomState.gameState) {
+          if (prev.status === 'joined') {
             return {
               ...prev,
               roomState: {
                 ...prev.roomState,
-                gameState: {
-                  ...prev.roomState.gameState,
-                  phase: 'rolling',
-                },
+                gameState: message.initialState,
               },
             };
           }

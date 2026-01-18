@@ -352,9 +352,19 @@ export default class GameServer implements Party.Server {
 
     await this.persistState();
 
-    // Broadcast GAME_STARTED to all players
+    // Broadcast GAME_STARTED to all players with sanitized initial state
+    // Sanitize: remove hands from players
+    const sanitizedGameState = {
+      ...this.roomState.gameState,
+      players: this.roomState.gameState.players.map(p => ({
+        ...p,
+        hand: [], // Never send private hands
+      })),
+    };
+
     this.broadcast({
       type: 'GAME_STARTED',
+      initialState: sanitizedGameState,
       timestamp: Date.now(),
     });
   }

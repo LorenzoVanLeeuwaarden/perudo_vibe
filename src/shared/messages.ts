@@ -195,6 +195,7 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
   // Game lifecycle
   z.object({
     type: z.literal('GAME_STARTED'),
+    initialState: z.any(), // ServerGameState - initial game state (hands sanitized)
     timestamp: TimestampSchema,
   }),
   z.object({
