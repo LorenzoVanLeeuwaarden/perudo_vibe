@@ -1,40 +1,34 @@
 'use client';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Wifi, WifiOff, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { RoomShare } from '@/components/RoomShare';
-import { useRoomConnection, type ConnectionStatus } from '@/hooks/useRoomConnection';
+import { type ConnectionStatus } from '@/hooks/useRoomConnection';
 import { useUIStore } from '@/stores/uiStore';
 import { PLAYER_COLORS } from '@/lib/types';
 import { CasinoLogo } from '@/components/CasinoLogo';
 import { ShaderBackground } from '@/components/ShaderBackground';
+import type { ServerRoomState } from '@/shared';
 
 interface RoomLobbyProps {
   roomCode: string;
+  roomState: ServerRoomState;
+  myPlayerId: string;
+  connectionStatus: ConnectionStatus;
 }
 
-export function RoomLobby({ roomCode }: RoomLobbyProps) {
+export function RoomLobby({ roomCode, roomState, myPlayerId, connectionStatus }: RoomLobbyProps) {
   const router = useRouter();
   const { playerColor, clearPreferredMode } = useUIStore();
   const colorConfig = PLAYER_COLORS[playerColor];
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connecting');
-
-  // Connect to room via PartySocket
-  const { status } = useRoomConnection({
-    roomCode,
-    onStatusChange: setConnectionStatus,
-    onMessage: (message) => {
-      // Handle server messages (to be expanded in Phase 4)
-      console.log('Received:', message);
-    },
-  });
 
   const handleBack = () => {
     clearPreferredMode();
     router.push('/');
   };
+
+  const connectedPlayers = roomState.players.filter(p => p.isConnected);
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8 relative">
@@ -60,25 +54,25 @@ export function RoomLobby({ roomCode }: RoomLobbyProps) {
         animate={{ opacity: 1 }}
         className="fixed top-4 right-4 z-50 px-4 py-2 rounded-lg bg-purple-deep/90 border border-purple-mid backdrop-blur-sm flex items-center gap-2"
       >
-        {status === 'connecting' && (
+        {connectionStatus === 'connecting' && (
           <>
             <Loader2 className="w-4 h-4 animate-spin text-yellow-400" />
             <span className="text-sm text-yellow-400">Connecting...</span>
           </>
         )}
-        {status === 'connected' && (
+        {connectionStatus === 'connected' && (
           <>
             <Wifi className="w-4 h-4 text-green-crt" />
             <span className="text-sm text-green-crt">Connected</span>
           </>
         )}
-        {status === 'disconnected' && (
+        {connectionStatus === 'disconnected' && (
           <>
             <WifiOff className="w-4 h-4 text-red-danger" />
             <span className="text-sm text-red-danger">Disconnected</span>
           </>
         )}
-        {status === 'error' && (
+        {connectionStatus === 'error' && (
           <>
             <WifiOff className="w-4 h-4 text-red-danger" />
             <span className="text-sm text-red-danger">Connection Error</span>
@@ -107,15 +101,25 @@ export function RoomLobby({ roomCode }: RoomLobbyProps) {
           {/* Share UI */}
           <RoomShare roomCode={roomCode} playerColor={playerColor} />
 
+          {/* Player count */}
+          <div className="mt-6 text-center">
+            <p className="text-white-soft/80 text-sm">
+              {connectedPlayers.length} / 6 players
+            </p>
+          </div>
+
           {/* Waiting message */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="mt-8 text-center"
+            className="mt-4 text-center"
           >
             <p className="text-white-soft/60 text-sm">
-              Waiting for players to join...
+              {connectedPlayers.length < 2
+                ? 'Waiting for players to join...'
+                : `${connectedPlayers.length} players ready`
+              }
             </p>
             <motion.div
               className="flex justify-center gap-1 mt-3"
