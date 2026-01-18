@@ -10,6 +10,8 @@ import { SortedDiceDisplay } from './SortedDiceDisplay';
 import { DudoOverlay } from './DudoOverlay';
 import { RevealPhase } from './RevealPhase';
 import { ShaderBackground } from './ShaderBackground';
+import { EmotePicker } from './EmotePicker';
+import { EmoteBubble } from './EmoteBubble';
 import type { ServerRoomState, ClientMessage, ServerPlayer } from '@/shared';
 import type { PlayerColor } from '@/lib/types';
 
@@ -37,10 +39,12 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
     dudoType,
     revealedHands,
     roundResult,
+    activeEmotes,
     setRevealedHands,
     setRoundResult,
     setDudoOverlay,
     setDudoCaller,
+    removeEmote,
   } = useUIStore();
 
   // Track current time for disconnect visual delay calculation
@@ -92,6 +96,12 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
     sendMessage({ type: 'CALL_CALZA', timestamp: Date.now() });
   };
 
+  // Note: EMOTE_RECEIVED messages are handled in the parent room page
+  // and call addEmote(playerId, emote) to trigger bubble display
+  const handleSendEmote = (emote: string) => {
+    sendMessage({ type: 'SEND_EMOTE', emote, timestamp: Date.now() });
+  };
+
   const handleContinueRound = () => {
     // Clear reveal UI state
     setRevealedHands(null);
@@ -124,21 +134,33 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-wrap justify-center gap-2 mb-4"
         >
-          {players.map(player => (
-            <PlayerDiceBadge
-              key={player.id}
-              playerName={player.name}
-              diceCount={player.diceCount}
-              color={player.color as PlayerColor}
-              isActive={player.id === gameState.currentTurnPlayerId}
-              isEliminated={player.isEliminated}
-              hasPalifico={gameState.isPalifico && player.id === gameState.roundStarterId}
-              showThinking={player.id === gameState.currentTurnPlayerId && gameState.phase === 'bidding'}
-              thinkingPrompt={player.id === myPlayerId ? 'Your turn' : 'Thinking'}
-              showDisconnectedVisual={shouldShowDisconnectedVisual(player, currentTime)}
-              isConnected={player.isConnected}
-            />
-          ))}
+          {players.map(player => {
+            const playerEmotes = activeEmotes.filter(e => e.playerId === player.id);
+            return (
+              <div key={player.id} className="relative">
+                <PlayerDiceBadge
+                  playerName={player.name}
+                  diceCount={player.diceCount}
+                  color={player.color as PlayerColor}
+                  isActive={player.id === gameState.currentTurnPlayerId}
+                  isEliminated={player.isEliminated}
+                  hasPalifico={gameState.isPalifico && player.id === gameState.roundStarterId}
+                  showThinking={player.id === gameState.currentTurnPlayerId && gameState.phase === 'bidding'}
+                  thinkingPrompt={player.id === myPlayerId ? 'Your turn' : 'Thinking'}
+                  showDisconnectedVisual={shouldShowDisconnectedVisual(player, currentTime)}
+                  isConnected={player.isConnected}
+                />
+                {/* Emote bubbles above player badge */}
+                {playerEmotes.slice(-1).map(activeEmote => (
+                  <EmoteBubble
+                    key={activeEmote.id}
+                    emote={activeEmote.emote}
+                    onComplete={() => removeEmote(activeEmote.id)}
+                  />
+                ))}
+              </div>
+            );
+          })}
         </motion.div>
 
         {/* Center area - bid display or reveal */}
@@ -236,6 +258,16 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
           </motion.div>
         )}
       </div>
+
+      {/* Emote picker - only show during active game */}
+      {gameState.phase === 'bidding' && (
+        <div className="fixed bottom-24 right-4 z-20">
+          <EmotePicker
+            onSelect={handleSendEmote}
+            disabled={false}
+          />
+        </div>
+      )}
 
       {/* Dudo/Calza overlay */}
       <DudoOverlay
