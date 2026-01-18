@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Phase 6 complete - Game State Sync (2 of 2 plans done)
+**Current focus:** Phase 6 complete - Game State Sync (3 of 3 plans done)
 
 ## Current Position
 
 Phase: 6 of 9 (Game State Sync)
-Plan: 2 of 2 in current phase
+Plan: 3 of 3 in current phase
 Status: Phase complete
-Last activity: 2026-01-18 - Completed 06-02-PLAN.md (client state sync)
+Last activity: 2026-01-18 - Completed 06-03-PLAN.md (reveal animation)
 
-Progress: [████████████░] 67% (12 of 18 estimated plans)
+Progress: [█████████████░] 72% (13 of 18 estimated plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: ~6.5 min
-- Total execution time: ~1h 19min
+- Total plans completed: 13
+- Average duration: ~14 min
+- Total execution time: ~3h (including verification time)
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [████████████░] 67% (12 of 18 estimated plan
 | 03-room-creation | 2 | 10 min | 5 min |
 | 04-join-flow | 2 | 28 min | 14 min |
 | 05-lobby-experience | 2 | 8 min | 4 min |
-| 06-game-state-sync | 2 | 11 min | 5.5 min |
+| 06-game-state-sync | 3 | 111 min | 37 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-01 (5 min), 05-02 (3 min), 06-01 (8 min), 06-02 (3 min)
-- Trend: Execution speeding up with established patterns
+- Last 5 plans: 05-02 (3 min), 06-01 (8 min), 06-02 (3 min), 06-03 (~100 min)
+- Note: 06-03 included extensive human verification and 13 bug fixes
 
 *Updated after each plan completion*
 
@@ -89,6 +89,10 @@ Recent decisions affecting current work:
 - [06-02]: dudoCaller state (id, name, type) added to uiStore for overlay display
 - [06-02]: Client calculates next turn player locally on BID_PLACED for responsiveness
 - [06-02]: Reveal phase shows all hands with continue button to trigger CONTINUE_ROUND
+- [06-03]: RevealPhase uses simple setTimeout chain rather than Framer Motion sequencing
+- [06-03]: Server auto-rolls dice on CONTINUE_ROUND for synchronization
+- [06-03]: myHand trimmed client-side to match diceCount after losing dice
+- [06-03]: Calza changed to turn-based action per standard Perudo rules
 
 ### Pending Todos
 
@@ -101,5 +105,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 06-02-PLAN.md, Phase 6 complete
+Stopped at: Completed 06-03-PLAN.md, Phase 6 complete (all 3 plans done)
 Resume file: None
