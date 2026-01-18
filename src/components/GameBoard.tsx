@@ -41,8 +41,9 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
   const myColor = (myPlayer?.color ?? 'blue') as PlayerColor;
   const isMyTurn = gameState.currentTurnPlayerId === myPlayerId;
   const totalDice = activePlayers.reduce((sum, p) => sum + p.diceCount, 0);
-  // Calza can only be called on YOUR turn (it's an alternative to Bid or Dudo)
-  const canCalza = !!gameState.currentBid && isMyTurn && myPlayer && !myPlayer.isEliminated;
+  // Calza can be called when it's NOT your turn (you're claiming the current bid is exactly right)
+  // Per Perudo rules: any player except the last bidder can call Calza to claim the bid is exact
+  const canCalza = !!gameState.currentBid && !isMyTurn && myPlayer && !myPlayer.isEliminated;
   const lastBidder = players.find(p => p.id === gameState.lastBidderId);
   const lastBidderColor = lastBidder?.color as PlayerColor | undefined;
   const lastBidderName = lastBidder?.name;
