@@ -163,6 +163,16 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
     timestamp: TimestampSchema,
   }),
 
+  // Room info (sent on initial connect before join)
+  z.object({
+    type: z.literal('ROOM_INFO'),
+    roomCode: z.string(),
+    playerCount: z.number(),
+    maxPlayers: z.number(),
+    gameInProgress: z.boolean(),
+    timestamp: TimestampSchema,
+  }),
+
   // Player events
   z.object({
     type: z.literal('PLAYER_JOINED'),
@@ -173,6 +183,12 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
     type: z.literal('PLAYER_LEFT'),
     playerId: z.string(),
     reason: z.enum(['left', 'kicked', 'disconnected']),
+    timestamp: TimestampSchema,
+  }),
+  z.object({
+    type: z.literal('PLAYER_RECONNECTED'),
+    playerId: z.string(),
+    playerName: z.string(),
     timestamp: TimestampSchema,
   }),
 
