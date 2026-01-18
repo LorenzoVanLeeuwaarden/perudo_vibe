@@ -4,9 +4,11 @@ import {
   type ClientMessage,
   type ServerMessage,
   type ServerRoomState,
+  type ServerPlayer,
   type GameSettings,
   STARTING_DICE,
   DEFAULT_TURN_TIMEOUT_MS,
+  MAX_PLAYERS,
 } from '../src/shared';
 
 // Default game settings
@@ -34,24 +36,19 @@ export default class GameServer implements Party.Server {
   // Called when a client connects
   async onConnect(
     connection: Party.Connection,
-    ctx: Party.ConnectionContext
+    _ctx: Party.ConnectionContext
   ): Promise<void> {
     // Store connection metadata
     connection.setState({ connectedAt: Date.now() });
 
-    // If room doesn't exist yet, don't send state
-    // Client must send JOIN_ROOM message to initialize
     if (this.roomState) {
-      // Check if this is a reconnecting player
-      const existingPlayer = this.roomState.players.find(
-        p => p.id === connection.id
-      );
+      // Check if returning player
+      const existingPlayer = this.roomState.players.find(p => p.id === connection.id);
       if (existingPlayer) {
-        // Reconnection - update connection status
+        // Returning user - update connection, send state
         existingPlayer.isConnected = true;
         await this.persistState();
 
-        // Send current state to reconnecting player
         this.sendToConnection(connection, {
           type: 'ROOM_STATE',
           state: this.getPublicRoomState(),
@@ -59,8 +56,30 @@ export default class GameServer implements Party.Server {
           yourHand: existingPlayer.hand,
           timestamp: Date.now(),
         });
+
+        // Notify others of reconnection
+        this.broadcast({
+          type: 'PLAYER_RECONNECTED',
+          playerId: connection.id,
+          playerName: existingPlayer.name,
+          timestamp: Date.now(),
+        }, [connection.id]);
+        return;
       }
     }
+
+    // New user - send room info for join form
+    const connectedCount = this.roomState?.players.filter(p => p.isConnected).length ?? 0;
+    const gameInProgress = this.roomState?.gameState !== null && this.roomState?.gameState?.phase !== 'lobby';
+
+    this.sendToConnection(connection, {
+      type: 'ROOM_INFO',
+      roomCode: this.room.id,
+      playerCount: connectedCount,
+      maxPlayers: MAX_PLAYERS,
+      gameInProgress: gameInProgress ?? false,
+      timestamp: Date.now(),
+    });
   }
 
   // Called when a message is received
@@ -144,9 +163,95 @@ export default class GameServer implements Party.Server {
     msg: Extract<ClientMessage, { type: 'JOIN_ROOM' }>,
     sender: Party.Connection
   ): Promise<void> {
-    // TODO: Implement in Phase 4 (Join Flow)
-    // For now, just log
-    console.log(`[JOIN_ROOM] ${msg.playerName} wants to join`);
+    const { playerName } = msg;
+
+    // Validate nickname on server (trust but verify)
+    if (playerName.length < 2 || playerName.length > 12) {
+      this.sendError(sender, 'INVALID_NAME', 'Nickname must be 2-12 characters.');
+      return;
+    }
+
+    if (!this.roomState) {
+      // First player creates room and becomes host
+      this.roomState = {
+        roomCode: this.room.id,
+        hostId: sender.id,
+        players: [],
+        gameState: null,
+        settings: DEFAULT_SETTINGS,
+        createdAt: Date.now(),
+      };
+    } else {
+      // Check if already joined (shouldn't happen but defensive)
+      if (this.roomState.players.some(p => p.id === sender.id && p.isConnected)) {
+        // Already in room - just resend state
+        this.sendToConnection(sender, {
+          type: 'ROOM_STATE',
+          state: this.getPublicRoomState(),
+          yourPlayerId: sender.id,
+          timestamp: Date.now(),
+        });
+        return;
+      }
+
+      // Check for duplicate nickname (case-insensitive)
+      const duplicateName = this.roomState.players.some(
+        p => p.name.toLowerCase() === playerName.toLowerCase() && p.isConnected
+      );
+      if (duplicateName) {
+        this.sendError(sender, 'INVALID_NAME', 'This name is taken. Choose another.');
+        return;
+      }
+
+      // Check room capacity
+      const connectedCount = this.roomState.players.filter(p => p.isConnected).length;
+      if (connectedCount >= MAX_PLAYERS) {
+        this.sendError(sender, 'ROOM_FULL', `Room is full (${MAX_PLAYERS}/${MAX_PLAYERS} players).`);
+        return;
+      }
+
+      // Check game state
+      if (this.roomState.gameState !== null && this.roomState.gameState.phase !== 'lobby') {
+        this.sendError(sender, 'INVALID_ACTION', 'Game in progress. Wait until it ends.');
+        return;
+      }
+    }
+
+    // Assign color (first available from list)
+    const usedColors = new Set(this.roomState.players.map(p => p.color));
+    const availableColors: Array<'blue' | 'green' | 'orange' | 'yellow' | 'black' | 'red'> =
+      ['blue', 'green', 'orange', 'yellow', 'black', 'red'];
+    const color = availableColors.find(c => !usedColors.has(c)) ?? 'blue';
+
+    // Create player
+    const newPlayer: ServerPlayer = {
+      id: sender.id,
+      name: playerName,
+      color,
+      diceCount: this.roomState.settings.startingDice,
+      hand: [],
+      isConnected: true,
+      isEliminated: false,
+      isHost: this.roomState.players.length === 0, // First player is host
+    };
+
+    this.roomState.players.push(newPlayer);
+    await this.persistState();
+
+    // Send full state to joiner
+    this.sendToConnection(sender, {
+      type: 'ROOM_STATE',
+      state: this.getPublicRoomState(),
+      yourPlayerId: sender.id,
+      timestamp: Date.now(),
+    });
+
+    // Notify others
+    this.broadcast({
+      type: 'PLAYER_JOINED',
+      player: { ...newPlayer, hand: [] }, // Don't leak hand
+      timestamp: Date.now(),
+    }, [sender.id]);
   }
 
   private async handleLeaveRoom(
@@ -274,6 +379,3 @@ export default class GameServer implements Party.Server {
     });
   }
 }
-
-// Suppress unused variable warnings for DEFAULT_SETTINGS (will be used in Phase 4)
-void DEFAULT_SETTINGS;
