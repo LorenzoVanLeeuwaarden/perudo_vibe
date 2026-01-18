@@ -310,7 +310,8 @@ export default function RoomPage() {
         setJoinState(prev => {
           if (prev.status === 'joined' && prev.roomState.gameState) {
             // Update dice counts from server-provided values (authoritative)
-            const updatedPlayers = prev.roomState.gameState.players.map(p => {
+            // Update both gameState.players AND roomState.players to ensure consistency
+            const updatedGamePlayers = prev.roomState.gameState.players.map(p => {
               const newDiceCount = message.playerDiceCounts[p.id] ?? p.diceCount;
               return {
                 ...p,
@@ -318,14 +319,26 @@ export default function RoomPage() {
                 isEliminated: newDiceCount <= 0,
               };
             });
+
+            // Also update the top-level roomState.players to stay in sync
+            const updatedRoomPlayers = prev.roomState.players.map(p => {
+              const newDiceCount = message.playerDiceCounts[p.id] ?? p.diceCount;
+              return {
+                ...p,
+                diceCount: newDiceCount,
+                isEliminated: newDiceCount <= 0,
+              };
+            });
+
             return {
               ...prev,
               roomState: {
                 ...prev.roomState,
+                players: updatedRoomPlayers,
                 gameState: {
                   ...prev.roomState.gameState,
                   phase: 'reveal',
-                  players: updatedPlayers,
+                  players: updatedGamePlayers,
                 },
               },
             };
@@ -358,11 +371,27 @@ export default function RoomPage() {
         // Full game state update from server
         setJoinState(prev => {
           if (prev.status === 'joined') {
+            // Sync roomState.players with gameState.players to ensure consistency
+            // Update dice counts in top-level players array from the incoming game state
+            const incomingPlayers = (message.state?.players || []) as Array<{ id: string; diceCount: number }>;
+            const playerDiceMap = new Map<string, number>(
+              incomingPlayers.map(p => [p.id, p.diceCount])
+            );
+            const updatedRoomPlayers = prev.roomState.players.map(p => {
+              const newDiceCount = playerDiceMap.get(p.id) ?? p.diceCount;
+              return {
+                ...p,
+                diceCount: newDiceCount,
+                isEliminated: newDiceCount <= 0,
+              };
+            });
+
             return {
               ...prev,
               myHand: message.yourHand ?? prev.myHand,
               roomState: {
                 ...prev.roomState,
+                players: updatedRoomPlayers,
                 gameState: message.state,
               },
             };
