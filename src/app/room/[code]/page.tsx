@@ -114,16 +114,25 @@ export default function RoomPage() {
                   toast.warning(`${player.name} disconnected`);
                 });
               }
-              // Just mark as disconnected with timestamp, don't remove - they might reconnect
+              // Mark as disconnected in BOTH roomState.players AND gameState.players
+              const disconnectedAt = Date.now();
+              const updatePlayer = (p: typeof player) =>
+                p && p.id === message.playerId
+                  ? { ...p, isConnected: false, disconnectedAt }
+                  : p;
+
               return {
                 ...prev,
                 roomState: {
                   ...prev.roomState,
-                  players: prev.roomState.players.map(p =>
-                    p.id === message.playerId
-                      ? { ...p, isConnected: false, disconnectedAt: Date.now() }
-                      : p
-                  ),
+                  players: prev.roomState.players.map(p => updatePlayer(p)!),
+                  // Also update gameState.players if game is in progress
+                  gameState: prev.roomState.gameState
+                    ? {
+                        ...prev.roomState.gameState,
+                        players: prev.roomState.gameState.players.map(p => updatePlayer(p)!),
+                      }
+                    : prev.roomState.gameState,
                 },
               };
             } else {
@@ -160,15 +169,23 @@ export default function RoomPage() {
               }
             });
 
+            // Update BOTH roomState.players AND gameState.players
+            const reconnectPlayer = <T extends { id: string; isConnected: boolean; disconnectedAt: number | null }>(p: T): T =>
+              p.id === message.playerId
+                ? { ...p, isConnected: true, disconnectedAt: null }
+                : p;
+
             return {
               ...prev,
               roomState: {
                 ...prev.roomState,
-                players: prev.roomState.players.map(p =>
-                  p.id === message.playerId
-                    ? { ...p, isConnected: true, disconnectedAt: null }
-                    : p
-                ),
+                players: prev.roomState.players.map(reconnectPlayer),
+                gameState: prev.roomState.gameState
+                  ? {
+                      ...prev.roomState.gameState,
+                      players: prev.roomState.gameState.players.map(reconnectPlayer),
+                    }
+                  : prev.roomState.gameState,
               },
             };
           }
