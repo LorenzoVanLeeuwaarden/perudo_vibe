@@ -10,6 +10,12 @@ interface RoundResult {
   isCalza: boolean;
 }
 
+interface ActiveEmote {
+  id: string;  // Unique ID for React key
+  playerId: string;
+  emote: string;
+}
+
 interface UIStore {
   // Animation state (not persisted)
   isRolling: boolean;
@@ -30,6 +36,9 @@ interface UIStore {
   // Connection state (not persisted)
   connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error';
   connectionError: string | null;
+
+  // Emote state (not persisted)
+  activeEmotes: ActiveEmote[];
 
   // Local preferences (persisted)
   soundEnabled: boolean;
@@ -54,6 +63,8 @@ interface UIStore {
   setRevealedHands: (hands: Record<string, number[]> | null) => void;
   setRoundResult: (result: RoundResult | null) => void;
   setDudoCaller: (callerId: string | null, callerName: string | null, type: 'dudo' | 'calza' | null) => void;
+  addEmote: (playerId: string, emote: string) => void;
+  removeEmote: (id: string) => void;
 }
 
 // Split into persisted and non-persisted state
@@ -79,6 +90,9 @@ export const useUIStore = create<UIStore>()(
       // Connection state - not persisted
       connectionStatus: 'disconnected',
       connectionError: null,
+
+      // Emote state - not persisted
+      activeEmotes: [],
 
       // Local preferences - persisted
       soundEnabled: true,
@@ -115,6 +129,7 @@ export const useUIStore = create<UIStore>()(
         dudoCallerId: null,
         dudoCallerName: null,
         dudoType: null,
+        activeEmotes: [],
       }),
       setRevealedHands: (hands) => set({ revealedHands: hands }),
       setRoundResult: (result) => set({ roundResult: result }),
@@ -123,6 +138,15 @@ export const useUIStore = create<UIStore>()(
         dudoCallerName: callerName,
         dudoType: type,
       }),
+      addEmote: (playerId, emote) => set((state) => ({
+        activeEmotes: [
+          ...state.activeEmotes.slice(-5), // Keep max 6 active (limit memory)
+          { id: `${Date.now()}-${playerId}`, playerId, emote }
+        ]
+      })),
+      removeEmote: (id) => set((state) => ({
+        activeEmotes: state.activeEmotes.filter(e => e.id !== id)
+      })),
     }),
     {
       name: 'perudo-ui-preferences',
