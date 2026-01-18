@@ -172,8 +172,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 1. Architecture Foundation | 3/3 | ✓ Complete | 2026-01-18 |
 | 2. Mode Selection | 1/1 | ✓ Complete | 2026-01-18 |
 | 3. Room Creation | 2/2 | ✓ Complete | 2026-01-18 |
-| 4. Join Flow | 2/2 | Complete | 2026-01-18 |
-| 5. Lobby Experience | 2/2 | Complete | 2026-01-18 |
+| 4. Join Flow | 2/2 | ✓ Complete | 2026-01-18 |
+| 5. Lobby Experience | 2/2 | ✓ Complete | 2026-01-18 |
 | 6. Game State Sync | 0/TBD | Not started | - |
 | 7. Turn Timers | 0/TBD | Not started | - |
 | 8. Disconnect and Reconnection | 0/TBD | Not started | - |

@@ -15,9 +15,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **ROOM-01**: User can create a room and receive a unique shareable link
 - [x] **ROOM-02**: User can join a room via link with a guest nickname
-- [ ] **ROOM-03**: User can see player list with host indicator in lobby
-- [ ] **ROOM-04**: Host can kick players from lobby before game starts
-- [ ] **ROOM-05**: Host can start game when 2-6 players are ready
+- [x] **ROOM-03**: User can see player list with host indicator in lobby
+- [x] **ROOM-04**: Host can kick players from lobby before game starts
+- [x] **ROOM-05**: Host can start game when 2-6 players are ready
 
 ### Game State Synchronization
 
@@ -46,7 +46,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Host Controls
 
-- [ ] **HOST-01**: Host can configure game settings (starting dice count, wild ones toggle)
+- [x] **HOST-01**: Host can configure game settings (starting dice count, wild ones toggle)
 
 ## v2 Requirements
 
@@ -97,9 +97,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MODE-01 | Phase 2 | Complete |
 | ROOM-01 | Phase 3 | Complete |
 | ROOM-02 | Phase 4 | Complete |
-| ROOM-03 | Phase 5 | Pending |
-| ROOM-04 | Phase 5 | Pending |
-| ROOM-05 | Phase 5 | Pending |
+| ROOM-03 | Phase 5 | Complete |
+| ROOM-04 | Phase 5 | Complete |
+| ROOM-05 | Phase 5 | Complete |
 | SYNC-01 | Phase 6 | Pending |
 | SYNC-02 | Phase 6 | Pending |
 | SYNC-03 | Phase 6 | Pending |
@@ -113,7 +113,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SOCL-01 | Phase 9 | Pending |
 | SOCL-02 | Phase 9 | Pending |
 | SOCL-03 | Phase 9 | Pending |
-| HOST-01 | Phase 5 | Pending |
+| HOST-01 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 20 total
@@ -122,4 +122,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-18*
-*Last updated: 2026-01-18 after roadmap creation*
+*Last updated: 2026-01-18 after Phase 5 completion*
