@@ -58,6 +58,7 @@ export interface ServerGameState {
   currentTurnPlayerId: string | null;
   roundStarterId: string | null;     // Who started this round (for turn order)
   lastBidderId: string | null;       // Who placed the last bid
+  lastRoundLoserId: string | null;   // Who lost the previous round (starts next round)
   isPalifico: boolean;               // True when round starter has exactly 1 die
   roundNumber: number;
   turnStartedAt: number | null;      // Timestamp for turn timer

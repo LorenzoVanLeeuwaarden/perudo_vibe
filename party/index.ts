@@ -344,6 +344,7 @@ export default class GameServer implements Party.Server {
       currentTurnPlayerId: firstPlayer?.id ?? null,
       roundStarterId: firstPlayer?.id ?? null,
       lastBidderId: null,
+      lastRoundLoserId: null,
       isPalifico: false,
       roundNumber: 1,
       turnStartedAt: Date.now(),
@@ -542,6 +543,9 @@ export default class GameServer implements Party.Server {
       }
     }
 
+    // Track loser for next round starter
+    gameState.lastRoundLoserId = loserId;
+
     await this.persistState();
 
     // Broadcast round result
@@ -626,6 +630,9 @@ export default class GameServer implements Party.Server {
       if (caller) {
         caller.diceCount = Math.min(caller.diceCount + 1, 5);
       }
+      // On calza success, the last bidder starts next round (convention varies)
+      // Using caller as the next starter since they "won" the round
+      gameState.lastRoundLoserId = null; // No loser on success
     } else {
       // Calza failed - caller loses 1 die
       loserId = sender.id;
@@ -635,6 +642,8 @@ export default class GameServer implements Party.Server {
           caller.isEliminated = true;
         }
       }
+      // Track loser for next round starter
+      gameState.lastRoundLoserId = loserId;
     }
 
     await this.persistState();
@@ -667,8 +676,90 @@ export default class GameServer implements Party.Server {
     msg: Extract<ClientMessage, { type: 'CONTINUE_ROUND' }>,
     sender: Party.Connection
   ): Promise<void> {
-    // TODO: Implement in Phase 6
-    console.log(`[CONTINUE_ROUND] by ${sender.id}`);
+    // Guard: game must exist
+    if (!this.roomState?.gameState) {
+      this.sendError(sender, 'GAME_NOT_STARTED', 'Game has not started');
+      return;
+    }
+
+    const gameState = this.roomState.gameState;
+
+    // Guard: game is over (check first since 'ended' is terminal)
+    if (gameState.phase === 'ended') {
+      return; // Silently ignore - game is over
+    }
+
+    // Guard: must be in reveal phase
+    if (gameState.phase !== 'reveal') {
+      this.sendError(sender, 'INVALID_ACTION', 'Not in reveal phase');
+      return;
+    }
+
+    // Reset for new round
+    gameState.currentBid = null;
+    gameState.lastBidderId = null;
+    gameState.roundNumber += 1;
+
+    // Get active (non-eliminated) players
+    const activePlayers = gameState.players.filter(p => !p.isEliminated);
+
+    // Determine next round starter:
+    // The loser of the previous round starts, if still in game
+    // If loser was eliminated or calza success (no loser), use last bidder then fallback to first player
+    let newStarterId: string | null = null;
+
+    if (gameState.lastRoundLoserId) {
+      // Check if loser is still active
+      const loserStillActive = activePlayers.find(p => p.id === gameState.lastRoundLoserId);
+      if (loserStillActive) {
+        newStarterId = gameState.lastRoundLoserId;
+      } else {
+        // Loser was eliminated - find next player in turn order after the loser
+        const allPlayers = gameState.players;
+        const loserIndex = allPlayers.findIndex(p => p.id === gameState.lastRoundLoserId);
+        // Search forward from loser for first active player
+        for (let i = 1; i <= allPlayers.length; i++) {
+          const nextPlayer = allPlayers[(loserIndex + i) % allPlayers.length];
+          if (!nextPlayer.isEliminated) {
+            newStarterId = nextPlayer.id;
+            break;
+          }
+        }
+      }
+    } else {
+      // Calza success case (no loser) - use last bidder or first active player
+      const lastBidder = activePlayers.find(p => p.id === gameState.lastBidderId);
+      newStarterId = lastBidder?.id ?? activePlayers[0]?.id ?? null;
+    }
+
+    // Fallback to first active player if somehow still null
+    if (!newStarterId && activePlayers.length > 0) {
+      newStarterId = activePlayers[0].id;
+    }
+
+    gameState.roundStarterId = newStarterId;
+    gameState.currentTurnPlayerId = newStarterId;
+
+    // Check palifico: round starter has exactly 1 die
+    const roundStarter = activePlayers.find(p => p.id === newStarterId);
+    if (roundStarter && roundStarter.diceCount === 1 && this.roomState.settings.palificoEnabled) {
+      gameState.isPalifico = true;
+    } else {
+      gameState.isPalifico = false;
+    }
+
+    // Transition to rolling phase
+    gameState.phase = 'rolling';
+    gameState.turnStartedAt = Date.now();
+
+    await this.persistState();
+
+    // Broadcast public game state - clients will trigger ROLL_DICE
+    this.broadcast({
+      type: 'GAME_STATE',
+      state: this.getPublicRoomState().gameState,
+      timestamp: Date.now(),
+    });
   }
 
   private async handleUpdateSettings(
