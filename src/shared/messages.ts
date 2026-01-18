@@ -245,6 +245,7 @@ export const ServerMessageSchema = z.discriminatedUnion('type', [
     type: z.literal('TURN_TIMEOUT'),
     playerId: z.string(),
     aiAction: z.enum(['bid', 'dudo']),
+    bid: BidSchema.optional(), // Only present when aiAction === 'bid'
     timestamp: TimestampSchema,
   }),
 

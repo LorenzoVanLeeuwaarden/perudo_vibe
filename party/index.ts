@@ -353,6 +353,7 @@ export default class GameServer implements Party.Server {
       isPalifico: false,
       roundNumber: 1,
       turnStartedAt: Date.now(),
+      lastActionWasTimeout: false,
     };
 
     await this.persistState();

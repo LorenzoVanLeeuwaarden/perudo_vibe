@@ -62,6 +62,7 @@ export interface ServerGameState {
   isPalifico: boolean;               // True when round starter has exactly 1 die
   roundNumber: number;
   turnStartedAt: number | null;      // Timestamp for turn timer
+  lastActionWasTimeout: boolean;     // True if last action was AI timeout (for UI badge)
 }
 
 /**
