@@ -422,8 +422,14 @@ export default class GameServer implements Party.Server {
       // Check if returning player
       const existingPlayer = this.roomState.players.find(p => p.id === connection.id);
       if (existingPlayer) {
-        // Returning user - update connection, send state
+        // Returning user - update connection state
         existingPlayer.isConnected = true;
+        existingPlayer.disconnectedAt = null;
+
+        // Cancel any scheduled elimination for this player
+        await this.room.storage.delete(`disconnect_${connection.id}`);
+        await this.scheduleNextAlarm();
+
         await this.persistState();
 
         // Ensure hand length matches diceCount (fixes stale hand after losing dice)
@@ -444,6 +450,8 @@ export default class GameServer implements Party.Server {
           playerName: existingPlayer.name,
           timestamp: Date.now(),
         }, [connection.id]);
+
+        console.log(`[RECONNECT] Player ${existingPlayer.name} reconnected`);
         return;
       }
     }
@@ -530,8 +538,11 @@ export default class GameServer implements Party.Server {
       // Check if disconnecting player was host
       const wasHost = this.roomState.hostId === connection.id;
 
-      // Mark player as disconnected
+      // Mark player as disconnected with timestamp
       player.isConnected = false;
+      player.disconnectedAt = Date.now();
+
+      console.log(`[DISCONNECT] Player ${player.name} disconnected`);
 
       // Handle host transfer if necessary
       if (wasHost) {
@@ -548,22 +559,45 @@ export default class GameServer implements Party.Server {
           newHost.isHost = true;
           this.roomState.hostId = newHost.id;
 
-          // Persist state before broadcasting
-          await this.persistState();
-
           // Broadcast HOST_CHANGED
           this.broadcast({
             type: 'HOST_CHANGED',
             newHostId: newHost.id,
             timestamp: Date.now(),
           }, [connection.id]);
-        } else {
-          // No players left, just persist
-          await this.persistState();
         }
-      } else {
-        await this.persistState();
       }
+
+      // Schedule 60-second elimination if game is in progress
+      const gameState = this.roomState.gameState;
+      const gameInProgress = gameState && gameState.phase !== 'lobby' && gameState.phase !== 'ended';
+
+      if (gameInProgress && !player.isEliminated) {
+        const GRACE_PERIOD_MS = 60000; // 60 seconds
+        const eliminateAt = Date.now() + GRACE_PERIOD_MS;
+
+        await this.room.storage.put(`disconnect_${connection.id}`, {
+          playerId: connection.id,
+          eliminateAt,
+        });
+
+        console.log(`[DISCONNECT] Scheduled elimination for ${player.name} at ${new Date(eliminateAt).toISOString()}`);
+
+        // If it's the disconnected player's turn, trigger AI immediately
+        if (gameState.phase === 'bidding' && gameState.currentTurnPlayerId === connection.id) {
+          console.log(`[DISCONNECT] It's ${player.name}'s turn - AI taking over immediately`);
+
+          // Mark that this action was a timeout (AI)
+          gameState.lastActionWasTimeout = true;
+
+          // Execute AI move
+          await this.executeTimeoutAIMove(player);
+        }
+
+        await this.scheduleNextAlarm();
+      }
+
+      await this.persistState();
 
       // Notify other players of disconnection
       this.broadcast({
