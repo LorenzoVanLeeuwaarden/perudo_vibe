@@ -380,7 +380,7 @@ export default function RoomPage() {
         }
         break;
     }
-  }, [router]);
+  }, [router, wsRef]);
 
   // Connection hook - only connect when we have clientId
   const { ws, status } = useRoomConnection({
