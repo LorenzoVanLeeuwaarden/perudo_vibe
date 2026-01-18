@@ -14,7 +14,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Room/Lobby
 
 - [x] **ROOM-01**: User can create a room and receive a unique shareable link
-- [ ] **ROOM-02**: User can join a room via link with a guest nickname
+- [x] **ROOM-02**: User can join a room via link with a guest nickname
 - [ ] **ROOM-03**: User can see player list with host indicator in lobby
 - [ ] **ROOM-04**: Host can kick players from lobby before game starts
 - [ ] **ROOM-05**: Host can start game when 2-6 players are ready
@@ -96,7 +96,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | MODE-01 | Phase 2 | Complete |
 | ROOM-01 | Phase 3 | Complete |
-| ROOM-02 | Phase 4 | Pending |
+| ROOM-02 | Phase 4 | Complete |
 | ROOM-03 | Phase 5 | Pending |
 | ROOM-04 | Phase 5 | Pending |
 | ROOM-05 | Phase 5 | Pending |
