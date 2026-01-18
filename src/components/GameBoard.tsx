@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useUIStore } from '@/stores/uiStore';
 import { PlayerDiceBadge } from './PlayerDiceBadge';
@@ -101,6 +101,11 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
     // Send continue message to server
     sendMessage({ type: 'CONTINUE_ROUND', timestamp: Date.now() });
   };
+
+  // Memoized callback for DudoOverlay completion to prevent effect restarts
+  const handleDudoComplete = useCallback(() => {
+    setDudoOverlay(false);
+  }, [setDudoOverlay]);
 
   // Check if we're in reveal phase
   const isRevealPhase = gameState.phase === 'reveal';
@@ -237,7 +242,7 @@ export function GameBoard({ roomState, myPlayerId, myHand, sendMessage }: GameBo
         type={dudoType ?? 'dudo'}
         callerName={dudoCallerName ?? 'Unknown'}
         callerColor={dudoCallerColor}
-        onComplete={() => setDudoOverlay(false)}
+        onComplete={handleDudoComplete}
       />
 
       {/* Reveal phase overlay */}
