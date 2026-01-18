@@ -111,11 +111,12 @@ Plans:
   5. Turn order is visible showing who plays next
   6. Players see visual confirmation when their action (bid, dudo, calza) is received
   7. On reveal (Dudo/Calza), all dice are shown to all players simultaneously
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
+- [ ] 06-01-PLAN.md — Server-side game handlers (ROLL_DICE, PLACE_BID, CALL_DUDO, CALL_CALZA, CONTINUE_ROUND)
+- [ ] 06-02-PLAN.md — Client message handling and GameBoard component
+- [ ] 06-03-PLAN.md — Reveal animation sequence and full game loop verification
 
 ### Phase 7: Turn Timers
 **Goal**: Each turn has a visible timer and AI takes over if player times out
@@ -174,7 +175,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 3. Room Creation | 2/2 | ✓ Complete | 2026-01-18 |
 | 4. Join Flow | 2/2 | ✓ Complete | 2026-01-18 |
 | 5. Lobby Experience | 2/2 | ✓ Complete | 2026-01-18 |
-| 6. Game State Sync | 0/TBD | Not started | - |
+| 6. Game State Sync | 0/3 | Not started | - |
 | 7. Turn Timers | 0/TBD | Not started | - |
 | 8. Disconnect and Reconnection | 0/TBD | Not started | - |
 | 9. Social and Polish | 0/TBD | Not started | - |
