@@ -10,28 +10,29 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 Phase: 2 of 9 (Mode Selection)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-01-18 - Phase 1 complete (3 plans executed, goal verified)
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-01-18 - Completed 02-01-PLAN.md (mode selection UI)
 
-Progress: [█---------] 11%
+Progress: [██--------] 22%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 1 min 40 sec
-- Total execution time: 0.08 hours
+- Total plans completed: 4
+- Average duration: ~5 min
+- Total execution time: ~0.3 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-architecture-foundation | 3 | 5 min | 1.7 min |
+| 02-mode-selection | 1 | 15 min | 15 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (1 min), 01-02 (2 min), 01-03 (2 min)
-- Trend: Stable
+- Last 5 plans: 01-01 (1 min), 01-02 (2 min), 01-03 (2 min), 02-01 (15 min)
+- Trend: Longer due to user feedback iteration
 
 *Updated after each plan completion*
 
@@ -54,6 +55,9 @@ Recent decisions affecting current work:
 - [01-03]: uiStore separates animation state from persisted preferences via partialize
 - [01-03]: PartyKit server uses class syntax with Party.Server interface
 - [01-03]: Private hand data never exposed in broadcasts for security
+- [02-01]: ModeSelection as initial GameState, auto-skips if preferredMode set
+- [02-01]: clearPreferredMode clears preference when navigating back
+- [02-01]: Back button added to Lobby per user feedback
 
 ### Pending Todos
 
@@ -65,6 +69,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-18T12:36:45Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-01-18
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
