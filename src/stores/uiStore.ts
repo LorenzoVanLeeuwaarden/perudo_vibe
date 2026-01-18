@@ -20,6 +20,7 @@ interface UIStore {
   soundEnabled: boolean;
   playerColor: PlayerColor;
   playerName: string;
+  preferredMode: 'ai' | 'multiplayer' | null;
 
   // Actions
   setRolling: (isRolling: boolean) => void;
@@ -32,6 +33,7 @@ interface UIStore {
   setSoundEnabled: (enabled: boolean) => void;
   setPlayerColor: (color: PlayerColor) => void;
   setPlayerName: (name: string) => void;
+  setPreferredMode: (mode: 'ai' | 'multiplayer') => void;
   resetAnimationState: () => void;
 }
 
@@ -56,6 +58,7 @@ export const useUIStore = create<UIStore>()(
       soundEnabled: true,
       playerColor: 'blue',
       playerName: '',
+      preferredMode: null,
 
       // Actions
       setRolling: (isRolling) => set({ isRolling }),
@@ -71,6 +74,7 @@ export const useUIStore = create<UIStore>()(
       setSoundEnabled: (enabled) => set({ soundEnabled: enabled }),
       setPlayerColor: (color) => set({ playerColor: color }),
       setPlayerName: (name) => set({ playerName: name }),
+      setPreferredMode: (mode) => set({ preferredMode: mode }),
       resetAnimationState: () => set({
         isRolling: false,
         showDudoOverlay: false,
@@ -88,6 +92,7 @@ export const useUIStore = create<UIStore>()(
         soundEnabled: state.soundEnabled,
         playerColor: state.playerColor,
         playerName: state.playerName,
+        preferredMode: state.preferredMode,
       }),
     }
   )

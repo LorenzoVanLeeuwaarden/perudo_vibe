@@ -17,6 +17,8 @@ import { SpawningDie } from '@/components/SpawningDie';
 import { PlayerDiceBadge } from '@/components/PlayerDiceBadge';
 import { PlayerRevealCard } from '@/components/PlayerRevealCard';
 import { SortedDiceDisplay } from '@/components/SortedDiceDisplay';
+import { ModeSelection } from '@/components/ModeSelection';
+import { useUIStore } from '@/stores/uiStore';
 import {
   rollDice,
   countMatching,
@@ -116,8 +118,11 @@ interface Opponent {
 const COLOR_OPTIONS: PlayerColor[] = ['blue', 'green', 'orange', 'yellow', 'black', 'red'];
 
 export default function PerudoGame() {
+  // UI store for preferences
+  const { preferredMode, setPreferredMode, playerColor: storedPlayerColor } = useUIStore();
+
   // Game state
-  const [gameState, setGameState] = useState<GameState>('Lobby');
+  const [gameState, setGameState] = useState<GameState>('ModeSelection');
   const [playerHand, setPlayerHand] = useState<number[]>([]);
   const [opponents, setOpponents] = useState<Opponent[]>([]);
   const [opponentCount, setOpponentCount] = useState(1);
@@ -180,6 +185,28 @@ export default function PerudoGame() {
   useEffect(() => {
     roundStarterRef.current = roundStarter;
   }, [roundStarter]);
+
+  // Auto-skip mode selection if user has a preferred mode (after hydration)
+  useEffect(() => {
+    // Only auto-skip for AI mode after hydration, not on initial server render
+    if (preferredMode === 'ai' && gameState === 'ModeSelection') {
+      setGameState('Lobby');
+    }
+    // Don't auto-skip multiplayer yet - that flow doesn't exist
+  }, [preferredMode, gameState]);
+
+  // Mode selection handlers
+  const handleSelectAI = useCallback(() => {
+    setPreferredMode('ai');
+    setGameState('Lobby');
+  }, [setPreferredMode]);
+
+  const handleSelectMultiplayer = useCallback(() => {
+    setPreferredMode('multiplayer');
+    // For now, show alert - multiplayer flow built in Phase 3
+    alert('Multiplayer coming soon! Building room creation next.');
+    // Reset will happen in ModeSelection component after callback
+  }, [setPreferredMode]);
 
   // Calculate total dice
   const totalDice = playerDiceCount + opponents.reduce((sum, o) => sum + o.diceCount, 0);
@@ -812,7 +839,7 @@ export default function PerudoGame() {
     setGameState('Lobby');
   }, []);
 
-  // Quit to main menu
+  // Quit to main menu (mode selection)
   const quitGame = useCallback(() => {
     setPlayerDiceCount(5);
     setOpponents([]);
@@ -827,7 +854,7 @@ export default function PerudoGame() {
     setLastBidder(null);
     setLoser(null);
     setRoundStarter('player');
-    setGameState('Lobby');
+    setGameState('ModeSelection');
   }, []);
 
   // Calculate all matching dice for the reveal animation
@@ -1194,7 +1221,7 @@ export default function PerudoGame() {
 
   return (
     <main className={`h-screen overflow-hidden flex flex-col items-center justify-center relative crt-screen crt-flicker ${
-      gameState === 'Lobby' ? 'p-8' : 'p-0'
+      (gameState === 'ModeSelection' || gameState === 'Lobby') ? 'p-8' : 'p-0'
     }`}>
       {/* Animated shader background */}
       <ShaderBackground />
@@ -1202,8 +1229,8 @@ export default function PerudoGame() {
       {/* Scanlines & Vignette overlay */}
       <div className="scanlines-overlay" />
 
-      {/* Quit button - top right corner (only during game, not on end screens) */}
-      {gameState !== 'Lobby' && gameState !== 'Victory' && gameState !== 'Defeat' && (
+      {/* Quit button - top right corner (only during game, not on mode selection or end screens) */}
+      {gameState !== 'ModeSelection' && gameState !== 'Lobby' && gameState !== 'Victory' && gameState !== 'Defeat' && (
         <motion.button
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -1254,7 +1281,7 @@ export default function PerudoGame() {
       )}
 
       {/* Dice count display - fixed at top (only for non-Bidding game states) */}
-      {gameState !== 'Lobby' && gameState !== 'Bidding' && (
+      {gameState !== 'ModeSelection' && gameState !== 'Lobby' && gameState !== 'Bidding' && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -1300,6 +1327,23 @@ export default function PerudoGame() {
       {/* Main game area */}
       <div className="relative z-10 flex flex-col items-center">
         <AnimatePresence mode="wait">
+          {/* MODE SELECTION */}
+          {gameState === 'ModeSelection' && (
+            <motion.div
+              key="mode-selection"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="flex items-center justify-center"
+            >
+              <ModeSelection
+                onSelectAI={handleSelectAI}
+                onSelectMultiplayer={handleSelectMultiplayer}
+                playerColor={playerColor}
+              />
+            </motion.div>
+          )}
+
           {/* LOBBY */}
           {gameState === 'Lobby' && (
             <motion.div
