@@ -262,12 +262,16 @@ export default function RoomPage() {
 
       case 'DUDO_CALLED': {
         // Show DudoOverlay for dudo call
+        // Get UI store actions and update outside of setState to avoid React warning
         const { setDudoOverlay, setDudoCaller } = useUIStore.getState();
         setJoinState(prev => {
           if (prev.status === 'joined') {
             const callerName = prev.roomState.players.find(p => p.id === message.callerId)?.name ?? 'Unknown';
-            setDudoCaller(message.callerId, callerName, 'dudo');
-            setDudoOverlay(true);
+            // Schedule UI updates for after render cycle completes
+            queueMicrotask(() => {
+              setDudoCaller(message.callerId, callerName, 'dudo');
+              setDudoOverlay(true);
+            });
           }
           return prev;
         });
@@ -276,12 +280,16 @@ export default function RoomPage() {
 
       case 'CALZA_CALLED': {
         // Show DudoOverlay for calza call
+        // Get UI store actions and update outside of setState to avoid React warning
         const { setDudoOverlay, setDudoCaller } = useUIStore.getState();
         setJoinState(prev => {
           if (prev.status === 'joined') {
             const callerName = prev.roomState.players.find(p => p.id === message.callerId)?.name ?? 'Unknown';
-            setDudoCaller(message.callerId, callerName, 'calza');
-            setDudoOverlay(true);
+            // Schedule UI updates for after render cycle completes
+            queueMicrotask(() => {
+              setDudoCaller(message.callerId, callerName, 'calza');
+              setDudoOverlay(true);
+            });
           }
           return prev;
         });
