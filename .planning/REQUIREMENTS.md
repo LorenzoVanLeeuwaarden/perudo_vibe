@@ -9,9 +9,9 @@ Requirements for Cloudflare deployment. Each maps to roadmap phases.
 
 ### Backend Deployment
 
-- [ ] **BACK-01**: Cloudflare account created and configured for deployment
-- [ ] **BACK-02**: PartyKit backend deployed to Cloudflare Workers
-- [ ] **BACK-03**: Backend WebSocket endpoint accessible via public URL
+- [x] **BACK-01**: Cloudflare account created and configured for deployment
+- [x] **BACK-02**: PartyKit backend deployed to Cloudflare Workers
+- [x] **BACK-03**: Backend WebSocket endpoint accessible via public URL
 
 ### Frontend Deployment
 
@@ -45,9 +45,9 @@ Requirements for Cloudflare deployment. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BACK-01 | Phase 10 | Pending |
-| BACK-02 | Phase 10 | Pending |
-| BACK-03 | Phase 10 | Pending |
+| BACK-01 | Phase 10 | Complete |
+| BACK-02 | Phase 10 | Complete |
+| BACK-03 | Phase 10 | Complete |
 | FRONT-01 | Phase 11 | Pending |
 | FRONT-02 | Phase 11 | Pending |
 | FRONT-03 | Phase 11 | Pending |
@@ -66,4 +66,4 @@ Requirements for Cloudflare deployment. Each maps to roadmap phases.
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-19 after roadmap creation*
+*Last updated: 2026-01-19 after Phase 10 completion*

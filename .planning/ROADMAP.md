@@ -52,7 +52,7 @@
 
 **Milestone Goal:** Deploy Perudo Vibe to Cloudflare so anyone can access and play via public URL.
 
-- [ ] **Phase 10: Backend Deployment** - PartyKit backend live on Cloudflare Workers
+- [x] **Phase 10: Backend Deployment** - PartyKit backend live on Cloudflare Workers (completed 2026-01-19)
 - [ ] **Phase 11: Frontend & Configuration** - Next.js deployed with production config
 - [ ] **Phase 12: Production Verification** - End-to-end multiplayer verified
 
