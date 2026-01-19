@@ -67,10 +67,10 @@
   2. PartyKit server code deploys successfully to Cloudflare Workers
   3. WebSocket endpoint responds to connections at public URL
   4. Backend URL is known and ready for frontend configuration
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 10-01: TBD
+- [ ] 10-01-PLAN.md — Deploy PartyKit backend to Cloudflare Workers
 
 ### Phase 11: Frontend & Configuration
 **Goal**: Next.js frontend deployed to Cloudflare Pages, configured to connect to production backend
@@ -109,7 +109,7 @@ Phases execute in numeric order: 10 -> 11 -> 12
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 10. Backend Deployment | v2.0 | 0/TBD | Not started | - |
+| 10. Backend Deployment | v2.0 | 0/1 | Ready to execute | - |
 | 11. Frontend & Configuration | v2.0 | 0/TBD | Not started | - |
 | 12. Production Verification | v2.0 | 0/TBD | Not started | - |
 
