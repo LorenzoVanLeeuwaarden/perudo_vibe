@@ -98,10 +98,10 @@ Plans:
   3. Complete game playable: bidding, Dudo, Calza all work
   4. Disconnected player reconnects and resumes game
   5. Game ends correctly with winner/statistics displayed
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 12-01: TBD
+- [ ] 12-01-PLAN.md — End-to-end production verification (infrastructure checks + manual testing)
 
 ## Progress
 
@@ -112,7 +112,7 @@ Phases execute in numeric order: 10 -> 11 -> 12
 |-------|-----------|----------------|--------|-----------|
 | 10. Backend Deployment | v2.0 | 1/1 | Complete | 2026-01-19 |
 | 11. Frontend & Configuration | v2.0 | 2/2 | Complete | 2026-01-19 |
-| 12. Production Verification | v2.0 | 0/TBD | Not started | - |
+| 12. Production Verification | v2.0 | 0/1 | Not started | - |
 
 ---
 *Created: 2026-01-19 for v2.0 Cloudflare Deployment milestone*
