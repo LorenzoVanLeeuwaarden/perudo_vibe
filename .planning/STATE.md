@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 
 ## Current Position
 
-Phase: 10 of 12 (Backend Deployment)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-01-19 — Completed 10-01-PLAN.md
+Phase: 11 of 12 (Frontend & Configuration)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-19 - Completed 11-01-PLAN.md
 
-Progress: [#-------] 1/3 v2.0 phases complete (33%)
+Progress: [##------] 2/3 v2.0 phases complete (66%)
 
 ## Performance Metrics
 
@@ -25,9 +25,9 @@ Progress: [#-------] 1/3 v2.0 phases complete (33%)
 - Git commits: 56 feature commits
 
 **v2.0 Metrics:**
-- Plans completed: 1
-- Phases complete: 1 of 3
-- Total execution time: 7min
+- Plans completed: 2
+- Phases complete: 1 of 3 (Phase 11 in progress)
+- Total execution time: 13min
 - Backend URL: perudo-vibe.lorenzovanleeuwaarden.partykit.dev
 
 ## Accumulated Context
@@ -37,6 +37,9 @@ Progress: [#-------] 1/3 v2.0 phases complete (33%)
 | Phase | Decision | Rationale |
 |-------|----------|-----------|
 | 10 | PartyKit managed deployment | No direct Cloudflare account needed, handles infrastructure |
+| 11-01 | Server/client component split for room page | generateStaticParams requires server component, room UI uses client hooks |
+| 11-01 | PLACEHOLDER param + _redirects for SPA routing | Static export needs known params; SPA fallback handles actual room codes |
+| 11-01 | build:production script | .env.local overrides .env.production; explicit env var ensures correct host |
 
 ### Pending Todos
 
@@ -49,13 +52,13 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-19T14:41:10Z
-Stopped at: Completed 10-01-PLAN.md (Phase 10 complete)
+Last session: 2026-01-19T15:14:54Z
+Stopped at: Completed 11-01-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:plan-phase 11` to plan Frontend & Configuration phase.
+Run `/gsd:execute-plan` to deploy frontend to Cloudflare Pages (11-02-PLAN.md).
 
 ---
-*Updated: 2026-01-19 after Phase 10 completion*
+*Updated: 2026-01-19 after 11-01-PLAN.md completion*
