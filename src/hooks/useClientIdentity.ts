@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { nanoid } from 'nanoid';
 
-const CLIENT_ID_KEY = 'perudo-client-id';
+const CLIENT_ID_KEY = 'faroleo-client-id';
 
 /**
  * Hook for persistent client identity across sessions.

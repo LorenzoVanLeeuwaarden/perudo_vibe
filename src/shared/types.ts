@@ -1,5 +1,5 @@
 /**
- * Server-authoritative types for Perudo multiplayer
+ * Server-authoritative types for Faroleo multiplayer
  *
  * These types represent the canonical state that lives on the PartyKit server.
  * The server is the source of truth - clients receive state updates and send intentions.

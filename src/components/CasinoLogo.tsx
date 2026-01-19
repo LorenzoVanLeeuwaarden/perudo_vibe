@@ -121,7 +121,7 @@ export function CasinoLogo({ color }: CasinoLogoProps) {
             }}
           >
             {/* Animated letters */}
-            {'PERUDO'.split('').map((letter, i) => (
+            {'FAROLEO'.split('').map((letter, i) => (
               <motion.span
                 key={i}
                 className="inline-block"

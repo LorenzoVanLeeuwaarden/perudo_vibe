@@ -30,7 +30,7 @@ import {
 } from '@/lib/gameLogic';
 
 // Game name
-const GAME_NAME = 'PERUDO';
+const GAME_NAME = 'FAROLEO';
 
 // AI thinking prompts - varied and fun
 const AI_THINKING_PROMPTS = [
@@ -119,7 +119,7 @@ interface Opponent {
 
 const COLOR_OPTIONS: PlayerColor[] = ['blue', 'green', 'orange', 'yellow', 'black', 'red'];
 
-export default function PerudoGame() {
+export default function FaroleoGame() {
   // Router for navigation
   const router = useRouter();
 

@@ -33,7 +33,7 @@ export function RoomShare({ roomCode, playerColor }: RoomShareProps) {
 
   const handleShare = useCallback(async () => {
     const shareData = {
-      title: 'Join my Perudo game!',
+      title: 'Join my Faroleo game!',
       text: `Join room ${roomCode}`,
       url,
     };
@@ -68,7 +68,7 @@ export function RoomShare({ roomCode, playerColor }: RoomShareProps) {
       <div className="flex justify-center">
         <div className="p-4 rounded-xl bg-white">
           <QRCodeSVG
-            value={url || `https://perudo.app/room/${roomCode}`}
+            value={url || `https://faroleo.pages.dev/room/${roomCode}`}
             size={160}
             bgColor="#ffffff"
             fgColor="#000000"

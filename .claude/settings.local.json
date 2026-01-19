@@ -7,7 +7,25 @@
       "Bash(npm run build:*)",
       "Bash(curl:*)",
       "Bash(npx tsc:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs\\(02\\): capture phase context\n\nPhase 02: Mode Selection\n- Implementation decisions documented\n- Phase boundary established\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "WebSearch",
+      "Bash(timeout 10 npm run dev)",
+      "Bash(git commit:*)",
+      "Bash(cat:*)",
+      "Skill(gsd:execute-phase)",
+      "Bash(wc:*)",
+      "Skill(gsd:discuss-phase)",
+      "Skill(gsd:plan-phase)",
+      "Bash(npm ls:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(find:*)",
+      "Bash(git diff:*)",
+      "Skill(gsd:audit-milestone)",
+      "Bash(npx partykit:*)",
+      "Bash(gtimeout 5 npx partykit:*)",
+      "Bash(npx wrangler whoami)"
     ]
   }
 }

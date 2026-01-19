@@ -149,7 +149,7 @@ export const useUIStore = create<UIStore>()(
       })),
     }),
     {
-      name: 'perudo-ui-preferences',
+      name: 'faroleo-ui-preferences',
       // Only persist preferences, not animation/connection state
       partialize: (state) => ({
         soundEnabled: state.soundEnabled,
