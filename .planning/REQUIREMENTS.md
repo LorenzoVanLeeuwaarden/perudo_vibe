@@ -45,25 +45,25 @@ Requirements for Cloudflare deployment. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BACK-01 | TBD | Pending |
-| BACK-02 | TBD | Pending |
-| BACK-03 | TBD | Pending |
-| FRONT-01 | TBD | Pending |
-| FRONT-02 | TBD | Pending |
-| FRONT-03 | TBD | Pending |
-| CONF-01 | TBD | Pending |
-| CONF-02 | TBD | Pending |
-| CONF-03 | TBD | Pending |
-| VERF-01 | TBD | Pending |
-| VERF-02 | TBD | Pending |
-| VERF-03 | TBD | Pending |
-| VERF-04 | TBD | Pending |
+| BACK-01 | Phase 10 | Pending |
+| BACK-02 | Phase 10 | Pending |
+| BACK-03 | Phase 10 | Pending |
+| FRONT-01 | Phase 11 | Pending |
+| FRONT-02 | Phase 11 | Pending |
+| FRONT-03 | Phase 11 | Pending |
+| CONF-01 | Phase 11 | Pending |
+| CONF-02 | Phase 11 | Pending |
+| CONF-03 | Phase 11 | Pending |
+| VERF-01 | Phase 12 | Pending |
+| VERF-02 | Phase 12 | Pending |
+| VERF-03 | Phase 12 | Pending |
+| VERF-04 | Phase 12 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 13 total
-- Mapped to phases: 0
-- Unmapped: 13 (pending roadmap)
+- Mapped to phases: 13
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-19 after initial definition*
+*Last updated: 2026-01-19 after roadmap creation*
