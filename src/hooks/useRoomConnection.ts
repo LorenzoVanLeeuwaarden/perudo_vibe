@@ -31,10 +31,10 @@ export function useRoomConnection({ roomCode, clientId, onMessage, onStatusChang
     onStatusChangeRef.current = onStatusChange;
   }, [onMessage, onStatusChange]);
 
-  // Only connect when clientId is available
+  // Only connect when clientId and roomCode are available
   useEffect(() => {
-    // Don't connect until we have the clientId
-    if (!clientId) {
+    // Don't connect until we have the clientId and a valid roomCode
+    if (!clientId || !roomCode) {
       return;
     }
 

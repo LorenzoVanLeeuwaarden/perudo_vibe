@@ -27,8 +27,28 @@ type JoinState =
 export default function RoomPage() {
   const params = useParams();
   const router = useRouter();
+
+  // Extract room code from URL pathname (handles SPA fallback routing on Cloudflare Pages)
+  // The URL will be like /room/ABC123/ but useParams might return 'PLACEHOLDER' from static build
+  const [roomCode, setRoomCode] = useState<string>('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      // pathname is /room/CODE or /room/CODE/
+      if (pathParts.length >= 2 && pathParts[0] === 'room') {
+        setRoomCode(normalizeRoomCode(pathParts[1]));
+      }
+    }
+  }, []);
+
+  // Fallback to params if available (for normal Next.js routing)
   const code = params.code as string;
-  const roomCode = normalizeRoomCode(code || '');
+  useEffect(() => {
+    if (code && code !== 'PLACEHOLDER' && !roomCode) {
+      setRoomCode(normalizeRoomCode(code));
+    }
+  }, [code, roomCode]);
 
   const clientId = useClientIdentity();
   const { playerColor, clearPreferredMode, addEmote } = useUIStore();
