@@ -19,27 +19,38 @@ interface DyingDieProps {
   value: number;
   color: PlayerColor;
   onComplete?: () => void;
+  size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
-export function DyingDie({ value, color, onComplete }: DyingDieProps) {
+// Size to pixel mapping for container
+const sizeToPixels = {
+  xs: 28,
+  sm: 44,
+  md: 56,
+  lg: 80,
+};
+
+export function DyingDie({ value, color, onComplete, size = 'sm' }: DyingDieProps) {
   const [phase, setPhase] = useState<'vibrate' | 'explode' | 'done'>('vibrate');
   const [particles, setParticles] = useState<Particle[]>([]);
+  const containerSize = sizeToPixels[size];
 
   useEffect(() => {
     // Phase 1: Vibrate for 800ms
     const vibrateTimeout = setTimeout(() => {
-      // Generate particles for explosion
+      // Generate particles for explosion - scale with container size
+      const scale = containerSize / 44; // 44 is the default "sm" size
       const newParticles: Particle[] = [];
       for (let i = 0; i < 20; i++) {
         const angle = (Math.random() * Math.PI * 2);
-        const distance = 30 + Math.random() * 50;
+        const distance = (30 + Math.random() * 50) * scale;
         newParticles.push({
           id: i,
-          x: 20 + Math.random() * 10, // Center of die
-          y: 20 + Math.random() * 10,
+          x: (containerSize / 2) + Math.random() * (10 * scale) - (5 * scale),
+          y: (containerSize / 2) + Math.random() * (10 * scale) - (5 * scale),
           dx: Math.cos(angle) * distance,
           dy: Math.sin(angle) * distance,
-          size: 3 + Math.random() * 5,
+          size: (3 + Math.random() * 5) * scale,
           delay: Math.random() * 0.1,
         });
       }
@@ -57,12 +68,12 @@ export function DyingDie({ value, color, onComplete }: DyingDieProps) {
       clearTimeout(vibrateTimeout);
       clearTimeout(explodeTimeout);
     };
-  }, [onComplete]);
+  }, [onComplete, containerSize]);
 
   const colorConfig = PLAYER_COLORS[color];
 
   return (
-    <div className="relative w-[44px] h-[44px]">
+    <div className="relative" style={{ width: containerSize, height: containerSize }}>
       <AnimatePresence>
         {phase === 'vibrate' && (
           <motion.div
@@ -78,7 +89,7 @@ export function DyingDie({ value, color, onComplete }: DyingDieProps) {
             transition={{ duration: 0.8 }}
             exit={{ scale: 0, opacity: 0 }}
           >
-            <Dice value={value} size="sm" color={color} />
+            <Dice value={value} size={size} color={color} />
           </motion.div>
         )}
 
@@ -90,7 +101,7 @@ export function DyingDie({ value, color, onComplete }: DyingDieProps) {
             transition={{ duration: 0.3 }}
           >
             <div className="relative w-full h-full" style={{ filter: 'saturate(0) brightness(0.3) sepia(1) hue-rotate(-50deg) saturate(8)' }}>
-              <Dice value={value} size="sm" color={color} />
+              <Dice value={value} size={size} color={color} />
             </div>
           </motion.div>
         )}

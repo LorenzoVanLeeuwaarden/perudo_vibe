@@ -7,7 +7,7 @@ interface DiceProps {
   value: number;
   index?: number;
   isRevealing?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   isPalifico?: boolean;
   color?: PlayerColor;
   highlighted?: boolean;
@@ -15,8 +15,8 @@ interface DiceProps {
 }
 
 // Cool skull-style joker symbol
-function JokerSymbol({ size }: { size: 'sm' | 'md' | 'lg' }) {
-  const sizeMap = { sm: 22, md: 32, lg: 48 };
+function JokerSymbol({ size }: { size: 'xs' | 'sm' | 'md' | 'lg' }) {
+  const sizeMap = { xs: 16, sm: 22, md: 32, lg: 48 };
   const s = sizeMap[size];
 
   return (
@@ -98,6 +98,7 @@ const dotPositions: Record<number, { top: string; left: string }[]> = {
 };
 
 const sizeClasses = {
+  xs: { container: 'w-7 h-7', dot: 'w-1 h-1' },
   sm: { container: 'w-10 h-10', dot: 'w-1.5 h-1.5' },
   md: { container: 'w-14 h-14', dot: 'w-2.5 h-2.5' },
   lg: { container: 'w-20 h-20', dot: 'w-4 h-4' },

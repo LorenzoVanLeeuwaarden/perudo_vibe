@@ -1359,9 +1359,9 @@ export default function FaroleoGame() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="text-center"
+              className="text-center px-2 sm:px-0"
             >
-              <div className="retro-panel p-8 mb-6 relative">
+              <div className="retro-panel p-5 sm:p-8 mb-4 sm:mb-6 relative">
                 {/* Back button */}
                 <motion.button
                   initial={{ opacity: 0, x: -10 }}
@@ -1369,66 +1369,66 @@ export default function FaroleoGame() {
                   whileHover={{ scale: 1.05, x: -2 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={quitGame}
-                  className="absolute top-4 left-4 px-3 py-2 rounded-lg bg-purple-deep/80 border border-purple-mid text-white-soft/70 text-sm flex items-center gap-2 hover:bg-purple-mid/50 transition-colors"
+                  className="absolute top-3 left-3 sm:top-4 sm:left-4 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-purple-deep/80 border border-purple-mid text-white-soft/70 text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-purple-mid/50 transition-colors"
                 >
-                  <ArrowLeft className="w-4 h-4" />
+                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                   Back
                 </motion.button>
 
-                <Dices className="w-16 h-16 mx-auto mb-4" style={{ color: colorConfig.bg }} />
+                <Dices className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4" style={{ color: colorConfig.bg }} />
 
                 {/* Opponent count selection */}
-                <div className="mb-6">
-                  <h2 className="text-xl font-bold text-white-soft mb-3 flex items-center justify-center gap-2">
-                    <Users className="w-5 h-5" />
+                <div className="mb-4 sm:mb-6">
+                  <h2 className="text-lg sm:text-xl font-bold text-white-soft mb-2 sm:mb-3 flex items-center justify-center gap-2">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                     Opponents
                   </h2>
-                  <div className="flex items-center justify-center gap-4">
+                  <div className="flex items-center justify-center gap-3 sm:gap-4">
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setOpponentCount(c => Math.max(1, c - 1))}
                       disabled={opponentCount <= 1}
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition-colors ${
                         opponentCount <= 1
                           ? 'bg-purple-deep border border-purple-mid opacity-50 cursor-not-allowed'
                           : 'bg-purple-mid hover:bg-purple-light border border-purple-glow'
                       }`}
                     >
-                      <Minus className="w-5 h-5 text-white-soft" />
+                      <Minus className="w-4 h-4 sm:w-5 sm:h-5 text-white-soft" />
                     </motion.button>
                     <div
-                      className="w-16 h-16 rounded-lg flex items-center justify-center"
+                      className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center"
                       style={{
                         background: colorConfig.bgGradient,
                         border: `3px solid ${colorConfig.border}`,
                         boxShadow: `0 4px 0 0 ${colorConfig.shadow}`,
                       }}
                     >
-                      <span className="text-3xl font-bold text-white">{opponentCount}</span>
+                      <span className="text-2xl sm:text-3xl font-bold text-white">{opponentCount}</span>
                     </div>
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setOpponentCount(c => Math.min(5, c + 1))}
                       disabled={opponentCount >= 5}
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition-colors ${
                         opponentCount >= 5
                           ? 'bg-purple-deep border border-purple-mid opacity-50 cursor-not-allowed'
                           : 'bg-purple-mid hover:bg-purple-light border border-purple-glow'
                       }`}
                     >
-                      <Plus className="w-5 h-5 text-white-soft" />
+                      <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-white-soft" />
                     </motion.button>
                   </div>
-                  <p className="text-xs text-white-soft/50 mt-2">
+                  <p className="text-[10px] sm:text-xs text-white-soft/50 mt-2">
                     {opponentCount === 1 ? '1 opponent' : `${opponentCount} opponents`} • {(opponentCount + 1) * 5} total dice
                   </p>
                 </div>
 
                 {/* Preview dice with settings button */}
-                <div className="flex items-center justify-center gap-4 mb-6">
-                  <div className="flex gap-2">
+                <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                  <div className="flex gap-1.5 sm:gap-2 scale-90 sm:scale-100">
                     {[3, 5, 1, 2, 6].map((val, i) => (
                       <Dice key={i} value={val} index={i} size="sm" color={playerColor} />
                     ))}
@@ -1437,9 +1437,9 @@ export default function FaroleoGame() {
                     whileHover={{ scale: 1.1, rotate: 90 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setShowSettings(true)}
-                    className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-mid hover:bg-purple-light border border-purple-glow transition-colors"
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center bg-purple-mid hover:bg-purple-light border border-purple-glow transition-colors"
                   >
-                    <Settings className="w-5 h-5 text-white-soft" />
+                    <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-white-soft" />
                   </motion.button>
                 </div>
 
@@ -1447,7 +1447,7 @@ export default function FaroleoGame() {
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.98, y: 0 }}
                   onClick={startGame}
-                  className="retro-button flex items-center gap-2 mx-auto"
+                  className="retro-button flex items-center gap-2 mx-auto text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3"
                   style={{
                     background: colorConfig.bgGradient,
                     border: `2px solid ${colorConfig.border}`,
@@ -1455,7 +1455,7 @@ export default function FaroleoGame() {
                     boxShadow: `0 4px 0 0 ${colorConfig.shadowDark}, 0 6px 10px 0 rgba(0, 0, 0, 0.5)`,
                   }}
                 >
-                  <Play className="w-5 h-5" />
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5" />
                   START GAME
                 </motion.button>
               </div>
@@ -1488,10 +1488,10 @@ export default function FaroleoGame() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="h-screen w-screen flex flex-col justify-between overflow-hidden p-6"
+              className="h-screen w-screen flex flex-col justify-between overflow-hidden p-3 sm:p-6"
             >
               {/* ZONE A: Player Chips Row (Top) */}
-              <div className="flex-none flex flex-wrap justify-center gap-3 pt-2">
+              <div className="flex-none flex flex-wrap justify-center gap-2 sm:gap-3 pt-2">
                 <PlayerDiceBadge
                   playerName="You"
                   diceCount={getDisplayPlayerDiceCount()}
@@ -1630,8 +1630,8 @@ export default function FaroleoGame() {
                   )}
                 </div>
 
-                {/* Action/Input Menu - scaled down slightly */}
-                <div className="transform scale-90">
+                {/* Action/Input Menu - responsive, no scaling */}
+                <div className="w-full max-w-sm sm:max-w-md mx-auto px-2 sm:px-0">
                   <BidUI
                     currentBid={currentBid}
                     onBid={handleBid}
@@ -1677,7 +1677,8 @@ export default function FaroleoGame() {
                   }}
                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 >
-                  <div className="flex gap-3" style={{ transform: 'scale(1.2)' }}>
+                  {/* Responsive dice: md size on mobile, lg on larger screens */}
+                  <div className="flex gap-2 sm:gap-3">
                     {playerHand.map((value, i) => (
                       <motion.div
                         key={i}
@@ -1690,13 +1691,25 @@ export default function FaroleoGame() {
                           delay: i * 0.06,
                         }}
                       >
-                        <Dice
-                          value={value}
-                          index={i}
-                          size="lg"
-                          isPalifico={isPalifico}
-                          color={playerColor}
-                        />
+                        {/* Show medium dice on mobile, large on desktop */}
+                        <div className="block sm:hidden">
+                          <Dice
+                            value={value}
+                            index={i}
+                            size="md"
+                            isPalifico={isPalifico}
+                            color={playerColor}
+                          />
+                        </div>
+                        <div className="hidden sm:block">
+                          <Dice
+                            value={value}
+                            index={i}
+                            size="lg"
+                            isPalifico={isPalifico}
+                            color={playerColor}
+                          />
+                        </div>
                       </motion.div>
                     ))}
                   </div>
@@ -1712,12 +1725,12 @@ export default function FaroleoGame() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="text-center"
+              className="text-center px-2 sm:px-0"
             >
-              <div className="retro-panel p-6 max-w-4xl">
-                {/* Bid vs Actual comparison */}
+              <div className="retro-panel p-3 sm:p-6 max-w-4xl">
+                {/* Bid vs Actual comparison - stacks on mobile */}
                 {currentBid && (
-                  <div className="flex items-stretch justify-center gap-4 mb-6">
+                  <div className="flex flex-col sm:flex-row items-stretch justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
                     {/* BID block - uses last bidder's color */}
                     {(() => {
                       const bidderColor = getLastBidderColor();
@@ -1726,16 +1739,16 @@ export default function FaroleoGame() {
                         <motion.div
                           initial={{ x: -50, opacity: 0 }}
                           animate={{ x: 0, opacity: 1 }}
-                          className="flex-1 p-4 rounded-lg bg-purple-deep/70 border-2 max-w-[200px]"
+                          className="flex-1 p-2 sm:p-4 rounded-lg bg-purple-deep/70 border-2 max-w-none sm:max-w-[200px] mx-auto sm:mx-0"
                           style={{ borderColor: bidderConfig.border }}
                         >
-                          <p className="text-xs uppercase font-bold mb-3 tracking-wider" style={{ color: bidderConfig.bg }}>
+                          <p className="text-[10px] sm:text-xs uppercase font-bold mb-2 sm:mb-3 tracking-wider" style={{ color: bidderConfig.bg }}>
                             The Bid
-                            <span className="ml-2 opacity-70">
+                            <span className="ml-1 sm:ml-2 opacity-70">
                               ({lastBidder === 'player' ? 'You' : opponents.find(o => o.id === lastBidder)?.name})
                             </span>
                           </p>
-                          <div className="flex flex-wrap justify-center gap-1 mb-2">
+                          <div className="flex flex-wrap justify-center gap-1 mb-1 sm:mb-2">
                             {Array.from({ length: currentBid.count }).map((_, i) => (
                               <motion.div
                                 key={i}
@@ -1746,24 +1759,24 @@ export default function FaroleoGame() {
                                 <Dice
                                   value={currentBid.value}
                                   index={i}
-                                  size="sm"
+                                  size="xs"
                                   isPalifico={isPalifico}
                                   color={bidderColor}
                                 />
                               </motion.div>
                             ))}
                           </div>
-                          <p className="text-2xl font-bold" style={{ color: bidderConfig.bg }}>{currentBid.count}×</p>
+                          <p className="text-xl sm:text-2xl font-bold" style={{ color: bidderConfig.bg }}>{currentBid.count}×</p>
                         </motion.div>
                       );
                     })()}
 
-                    {/* VS divider */}
-                    <div className="flex items-center">
+                    {/* VS divider - horizontal on mobile */}
+                    <div className="flex items-center justify-center py-1 sm:py-0">
                       <motion.div
                         animate={{ scale: [1, 1.2, 1] }}
                         transition={{ duration: 1, repeat: Infinity }}
-                        className="text-white-soft/40 font-bold text-lg"
+                        className="text-white-soft/40 font-bold text-sm sm:text-lg"
                       >
                         VS
                       </motion.div>
@@ -1778,7 +1791,7 @@ export default function FaroleoGame() {
                         <motion.div
                           initial={{ x: 50, opacity: 0 }}
                           animate={{ x: 0, opacity: 1 }}
-                          className={`flex-1 p-4 rounded-lg bg-purple-deep/70 border-2 max-w-[250px] ${
+                          className={`flex-1 p-2 sm:p-4 rounded-lg bg-purple-deep/70 border-2 max-w-none sm:max-w-[250px] mx-auto sm:mx-0 ${
                             countingComplete
                               ? (calzaCaller
                                   ? (actualCount === currentBid.count ? 'border-green-crt' : 'border-red-danger')
@@ -1786,7 +1799,7 @@ export default function FaroleoGame() {
                               : 'border-purple-glow'
                           }`}
                         >
-                          <p className={`text-xs uppercase font-bold mb-3 tracking-wider ${
+                          <p className={`text-[10px] sm:text-xs uppercase font-bold mb-2 sm:mb-3 tracking-wider ${
                             countingComplete
                               ? (calzaCaller
                                   ? (actualCount === currentBid.count ? 'text-green-crt' : 'text-red-danger')
@@ -1795,7 +1808,7 @@ export default function FaroleoGame() {
                           }`}>
                             Actual
                           </p>
-                          <div className="flex flex-wrap justify-center gap-1 mb-2 min-h-[40px]">
+                          <div className="flex flex-wrap justify-center gap-1 mb-1 sm:mb-2 min-h-[28px] sm:min-h-[40px]">
                             {isCountingStarted ? (
                               <>
                                 {/* Show matching dice incrementally as they're counted */}
@@ -1809,7 +1822,7 @@ export default function FaroleoGame() {
                                     <Dice
                                       value={match.value}
                                       index={i}
-                                      size="sm"
+                                      size="xs"
                                       isPalifico={isPalifico && !match.isJoker}
                                       color={match.color}
                                       highlighted
@@ -1821,7 +1834,7 @@ export default function FaroleoGame() {
                               <motion.div
                                 animate={{ opacity: [0.3, 1, 0.3] }}
                                 transition={{ duration: 1.5, repeat: Infinity }}
-                                className="text-purple-glow text-2xl"
+                                className="text-purple-glow text-xl sm:text-2xl"
                               >
                                 ?
                               </motion.div>
@@ -1831,7 +1844,7 @@ export default function FaroleoGame() {
                             key={currentCount}
                             initial={{ scale: 1.3, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            className={`text-2xl font-bold ${
+                            className={`text-xl sm:text-2xl font-bold ${
                               countingComplete
                                 ? (calzaCaller
                                     ? (actualCount === currentBid.count ? 'text-green-crt' : 'text-red-danger')
@@ -1847,8 +1860,8 @@ export default function FaroleoGame() {
                   </div>
                 )}
 
-                {/* Horizontal dice reveal grid */}
-                <div className="flex flex-wrap justify-center gap-4 mb-6 max-w-4xl">
+                {/* Dice reveal grid - 2-column on mobile, flexible on larger screens */}
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-4 mb-4 sm:mb-6 max-w-4xl mx-auto">
                   {/* Player's dice */}
                   <PlayerRevealCard
                     playerName="You"
@@ -1898,12 +1911,12 @@ export default function FaroleoGame() {
                   })}
                 </div>
 
-                {/* Action button - Día de los Muertos style */}
+                {/* Action button - Día de los Muertos style, full width on mobile */}
                 <motion.button
                   whileHover={{ scale: 1.05, y: -3 }}
                   whileTap={{ scale: 0.98, y: 0 }}
                   onClick={startNewRound}
-                  className="group relative flex items-center gap-3 mx-auto px-8 py-4 rounded-xl font-bold uppercase tracking-wider overflow-hidden"
+                  className="group relative flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto mx-auto px-6 py-3 sm:px-8 sm:py-4 rounded-xl font-bold uppercase tracking-wider overflow-hidden"
                   style={{
                     background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
                     border: '3px solid #fcd34d',

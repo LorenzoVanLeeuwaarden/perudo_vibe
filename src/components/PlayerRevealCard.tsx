@@ -32,6 +32,9 @@ interface PlayerRevealCardProps {
 
   // Player identifier (for matching dying/spawning die owner)
   playerId: string;
+
+  // Optional: use compact size for mobile
+  compactSize?: boolean;
 }
 
 export function PlayerRevealCard({
@@ -52,6 +55,7 @@ export function PlayerRevealCard({
   spawningDieOwner,
   spawningDieValue,
   playerId,
+  compactSize = false,
 }: PlayerRevealCardProps) {
   const colorConfig = PLAYER_COLORS[color];
 
@@ -65,6 +69,9 @@ export function PlayerRevealCard({
     return false;
   };
 
+  // Use xs size on mobile (via compactSize prop or default for grid layout)
+  const diceSize = compactSize ? 'xs' : 'xs';
+
   return (
     <AnimatePresence>
       {isRevealed && (
@@ -72,15 +79,15 @@ export function PlayerRevealCard({
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          className={`flex flex-col items-center p-3 rounded-lg bg-purple-deep/50 border ${
+          className={`flex flex-col items-center p-2 sm:p-3 rounded-lg bg-purple-deep/50 border min-w-0 ${
             isEliminated ? 'border-red-danger/50 opacity-50' : 'border-purple-mid'
           }`}
         >
-          <p className="text-xs text-white-soft/60 uppercase mb-2 font-semibold">
+          <p className="text-[10px] sm:text-xs text-white-soft/60 uppercase mb-1 sm:mb-2 font-semibold truncate max-w-full">
             <span style={{ color: colorConfig.bg }}>{playerName}</span>
             {isEliminated && <span className="ml-1 text-red-danger">✗</span>}
           </p>
-          <div className="flex gap-1">
+          <div className="flex flex-wrap justify-center gap-0.5 sm:gap-1">
             {hand.map((value, i) => {
               const globalIdx = baseIdx + i;
               const isHighlighted = isDieHighlighted(globalIdx);
@@ -95,12 +102,12 @@ export function PlayerRevealCard({
                   transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                 >
                   {isDying ? (
-                    <DyingDie value={value} color={color} />
+                    <DyingDie value={value} color={color} size={diceSize} />
                   ) : (
                     <Dice
                       value={value}
                       index={baseIdx + i}
-                      size="sm"
+                      size={diceSize}
                       isPalifico={isPalifico}
                       color={color}
                       highlighted={isHighlighted}
@@ -117,7 +124,7 @@ export function PlayerRevealCard({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.3 }}
               >
-                <SpawningDie value={spawningDieValue} color={color} />
+                <SpawningDie value={spawningDieValue} color={color} size={diceSize} />
               </motion.div>
             )}
           </div>

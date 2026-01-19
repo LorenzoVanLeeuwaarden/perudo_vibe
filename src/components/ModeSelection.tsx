@@ -43,13 +43,13 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, playerColor }: 
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="mb-10"
+        className="mb-8 sm:mb-10 scale-90 sm:scale-100"
       >
         <CasinoLogo color={playerColor} />
       </motion.div>
 
       {/* Mode buttons container */}
-      <div className="flex flex-col gap-6 w-full">
+      <div className="flex flex-col gap-4 sm:gap-6 w-full">
         {/* Play vs AI Button */}
         <motion.button
           initial={{ opacity: 0, y: 50 }}
@@ -69,7 +69,7 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, playerColor }: 
           whileTap={selectedMode === null ? { scale: 0.98, y: 0 } : undefined}
           onClick={handleSelectAI}
           disabled={selectedMode !== null}
-          className="retro-panel p-6 w-full text-left transition-all disabled:cursor-default"
+          className="retro-panel p-4 sm:p-6 w-full text-left transition-all disabled:cursor-default"
           style={{
             background: `linear-gradient(135deg, rgba(3, 15, 15, 0.95) 0%, rgba(10, 31, 31, 0.9) 100%)`,
             border: `3px solid ${colorConfig.border}`,
@@ -78,9 +78,9 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, playerColor }: 
               : `0 6px 0 0 ${colorConfig.shadow}`,
           }}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <motion.div
-              className="w-14 h-14 rounded-xl flex items-center justify-center"
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center"
               style={{
                 background: colorConfig.bgGradient,
                 boxShadow: `0 4px 0 0 ${colorConfig.shadowDark}`,
@@ -88,11 +88,11 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, playerColor }: 
               animate={selectedMode === 'ai' ? { rotate: [0, -10, 10, 0] } : undefined}
               transition={{ duration: 0.5 }}
             >
-              <Bot className="w-7 h-7 text-white" />
+              <Bot className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </motion.div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-white-soft mb-1">Play vs AI</h2>
-              <p className="text-sm text-white-soft/60">Challenge computer opponents</p>
+              <h2 className="text-lg sm:text-xl font-bold text-white-soft mb-0.5 sm:mb-1">Play vs AI</h2>
+              <p className="text-xs sm:text-sm text-white-soft/60">Challenge computer opponents</p>
             </div>
           </div>
         </motion.button>
@@ -116,7 +116,7 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, playerColor }: 
           whileTap={selectedMode === null ? { scale: 0.98, y: 0 } : undefined}
           onClick={handleSelectMultiplayer}
           disabled={selectedMode !== null}
-          className="retro-panel p-6 w-full text-left transition-all disabled:cursor-default"
+          className="retro-panel p-4 sm:p-6 w-full text-left transition-all disabled:cursor-default"
           style={{
             background: `linear-gradient(135deg, rgba(3, 15, 15, 0.95) 0%, rgba(10, 31, 31, 0.9) 100%)`,
             border: `3px solid ${colorConfig.border}`,
@@ -125,9 +125,9 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, playerColor }: 
               : `0 6px 0 0 ${colorConfig.shadow}`,
           }}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <motion.div
-              className="w-14 h-14 rounded-xl flex items-center justify-center"
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center"
               style={{
                 background: colorConfig.bgGradient,
                 boxShadow: `0 4px 0 0 ${colorConfig.shadowDark}`,
@@ -135,11 +135,11 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, playerColor }: 
               animate={selectedMode === 'multiplayer' ? { rotate: [0, -10, 10, 0] } : undefined}
               transition={{ duration: 0.5 }}
             >
-              <Users className="w-7 h-7 text-white" />
+              <Users className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </motion.div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-white-soft mb-1">Play with Friends</h2>
-              <p className="text-sm text-white-soft/60">Create or join a room</p>
+              <h2 className="text-lg sm:text-xl font-bold text-white-soft mb-0.5 sm:mb-1">Play with Friends</h2>
+              <p className="text-xs sm:text-sm text-white-soft/60">Create or join a room</p>
             </div>
           </div>
         </motion.button>

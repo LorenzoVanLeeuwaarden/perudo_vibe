@@ -17,23 +17,35 @@ interface SpawningDieProps {
   value: number;
   color: PlayerColor;
   onComplete?: () => void;
+  size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
-export function SpawningDie({ value, color, onComplete }: SpawningDieProps) {
+// Size to pixel mapping for container
+const sizeToPixels = {
+  xs: 28,
+  sm: 44,
+  md: 56,
+  lg: 80,
+};
+
+export function SpawningDie({ value, color, onComplete, size = 'sm' }: SpawningDieProps) {
   const [phase, setPhase] = useState<'converge' | 'materialize' | 'done'>('converge');
   const [particles, setParticles] = useState<Particle[]>([]);
+  const containerSize = sizeToPixels[size];
+  const centerPos = containerSize / 2;
 
   useEffect(() => {
-    // Generate particles that will converge
+    // Generate particles that will converge - scale with container size
+    const scale = containerSize / 44; // 44 is the default "sm" size
     const newParticles: Particle[] = [];
     for (let i = 0; i < 16; i++) {
       const angle = (i / 16) * Math.PI * 2;
-      const distance = 80 + Math.random() * 40;
+      const distance = (80 + Math.random() * 40) * scale;
       newParticles.push({
         id: i,
         startX: Math.cos(angle) * distance,
         startY: Math.sin(angle) * distance,
-        size: 4 + Math.random() * 4,
+        size: (4 + Math.random() * 4) * scale,
         delay: Math.random() * 0.15,
       });
     }
@@ -54,12 +66,14 @@ export function SpawningDie({ value, color, onComplete }: SpawningDieProps) {
       clearTimeout(materializeTimeout);
       clearTimeout(doneTimeout);
     };
-  }, [onComplete]);
+  }, [onComplete, containerSize]);
 
   const colorConfig = PLAYER_COLORS[color];
 
+  const scale = containerSize / 44; // Scale factor based on default "sm" size
+
   return (
-    <div className="relative w-[44px] h-[44px]">
+    <div className="relative" style={{ width: containerSize, height: containerSize }}>
       {/* Converging particles */}
       {phase === 'converge' && (
         <div className="absolute inset-0 pointer-events-none">
@@ -71,8 +85,8 @@ export function SpawningDie({ value, color, onComplete }: SpawningDieProps) {
                 width: p.size,
                 height: p.size,
                 backgroundColor: '#22c55e',
-                left: 22,
-                top: 22,
+                left: centerPos,
+                top: centerPos,
                 marginLeft: -p.size / 2,
                 marginTop: -p.size / 2,
                 boxShadow: '0 0 8px #22c55e, 0 0 16px #4ade80',
@@ -133,7 +147,7 @@ export function SpawningDie({ value, color, onComplete }: SpawningDieProps) {
               ease: 'easeOut',
             }}
           >
-            <Dice value={value} size="sm" color={color} />
+            <Dice value={value} size={size} color={color} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -143,19 +157,20 @@ export function SpawningDie({ value, color, onComplete }: SpawningDieProps) {
         <div className="absolute inset-0 pointer-events-none">
           {[...Array(8)].map((_, i) => {
             const angle = (i / 8) * Math.PI * 2;
-            const distance = 25;
+            const distance = 25 * scale;
+            const sparkleSize = 4 * scale;
             return (
               <motion.div
                 key={i}
                 className="absolute rounded-full"
                 style={{
-                  width: 4,
-                  height: 4,
+                  width: sparkleSize,
+                  height: sparkleSize,
                   backgroundColor: '#ffd700',
-                  left: 22,
-                  top: 22,
-                  marginLeft: -2,
-                  marginTop: -2,
+                  left: centerPos,
+                  top: centerPos,
+                  marginLeft: -sparkleSize / 2,
+                  marginTop: -sparkleSize / 2,
                   boxShadow: '0 0 6px #ffd700, 0 0 12px #ffb800',
                 }}
                 initial={{

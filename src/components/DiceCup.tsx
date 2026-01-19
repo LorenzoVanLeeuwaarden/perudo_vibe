@@ -13,36 +13,37 @@ interface DiceCupProps {
 }
 
 // Ghost dice component - just outlines bouncing around wildly
+// Uses percentage-based positioning for responsive container
 function GhostDie({ index }: { index: number }) {
-  const dieSize = 44;
-
   // Each die has its own random animation pattern
   const randomDuration = 0.8 + Math.random() * 0.6;
   const randomDelay = index * 0.1;
 
+  // Use percentages for responsive positioning (relative to container width/height)
+  // Container is roughly 380px x 180px at max, so we use % values
   return (
     <motion.div
-      className="absolute rounded-lg"
+      className="absolute rounded-lg w-[11%] aspect-square"
       style={{
-        width: dieSize,
-        height: dieSize,
         border: '2px dashed rgba(45, 212, 191, 0.25)',
         background: 'rgba(45, 212, 191, 0.03)',
       }}
       animate={{
-        x: [
-          50 + Math.sin(index * 1.5) * 80,
-          150 + Math.cos(index * 2.1) * 100,
-          80 + Math.sin(index * 0.8) * 120,
-          200 + Math.cos(index * 1.3) * 60,
-          50 + Math.sin(index * 1.5) * 80,
+        // X positions as percentages (0-75% to keep dice in view)
+        left: [
+          `${15 + Math.sin(index * 1.5) * 20}%`,
+          `${40 + Math.cos(index * 2.1) * 25}%`,
+          `${25 + Math.sin(index * 0.8) * 30}%`,
+          `${55 + Math.cos(index * 1.3) * 15}%`,
+          `${15 + Math.sin(index * 1.5) * 20}%`,
         ],
-        y: [
-          30 + Math.cos(index * 1.2) * 40,
-          80 + Math.sin(index * 1.8) * 50,
-          20 + Math.cos(index * 2.5) * 30,
-          60 + Math.sin(index * 0.9) * 45,
-          30 + Math.cos(index * 1.2) * 40,
+        // Y positions as percentages (0-60% to keep dice in view)
+        top: [
+          `${20 + Math.cos(index * 1.2) * 20}%`,
+          `${45 + Math.sin(index * 1.8) * 25}%`,
+          `${15 + Math.cos(index * 2.5) * 15}%`,
+          `${35 + Math.sin(index * 0.9) * 22}%`,
+          `${20 + Math.cos(index * 1.2) * 20}%`,
         ],
         rotate: [0, 180, 360, 540, 720],
         scale: [1, 1.1, 0.95, 1.05, 1],
@@ -137,7 +138,7 @@ function SlamParticles({ isActive, color }: { isActive: boolean; color: PlayerCo
   );
 }
 
-// Revealed dice component
+// Revealed dice component - uses percentage-based positioning for responsive container
 function RevealedDie({
   value,
   index,
@@ -162,17 +163,21 @@ function RevealedDie({
   };
 
   const dots = dotPatterns[value] || [];
-  const spacing = 62;
-  const totalWidth = (totalDice - 1) * spacing;
-  const startX = -totalWidth / 2;
-  const xPos = startX + index * spacing;
+
+  // Calculate spacing as percentage of container width
+  // Each die is ~14% of container width, with ~2.5% gap between them
+  const dieWidthPercent = 14;
+  const gapPercent = 2.5;
+  const totalWidthPercent = totalDice * dieWidthPercent + (totalDice - 1) * gapPercent;
+  const startPercent = (100 - totalWidthPercent) / 2;
+  const xPosPercent = startPercent + index * (dieWidthPercent + gapPercent);
 
   return (
     <motion.div
-      className="absolute"
-      style={{ width: 52, height: 52 }}
-      initial={{ opacity: 0, scale: 0, y: -60, rotate: -180 + Math.random() * 360 }}
-      animate={{ opacity: 1, scale: 1, y: 0, x: xPos, rotate: 0 }}
+      className="absolute w-[14%] aspect-square"
+      style={{ left: `${xPosPercent}%`, top: '50%', transform: 'translateY(-50%)' }}
+      initial={{ opacity: 0, scale: 0, y: '-150%', rotate: -180 + Math.random() * 360 }}
+      animate={{ opacity: 1, scale: 1, y: '-50%', rotate: 0 }}
       transition={{
         type: 'spring',
         stiffness: 500,
@@ -196,7 +201,7 @@ function RevealedDie({
       >
         {isJoker ? (
           <div className="w-full h-full flex items-center justify-center">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <svg className="w-[60%] h-[60%]" viewBox="0 0 32 32" fill="none">
               <path
                 d="M16 4C10 4 6 9 6 14C6 17 7 19 8 21L8 24C8 25 9 26 10 26H22C23 26 24 25 24 24L24 21C25 19 26 17 26 14C26 9 22 4 16 4Z"
                 fill="#ffd700"
@@ -225,7 +230,7 @@ function RevealedDie({
           dots.map((dot, i) => (
             <div
               key={i}
-              className="absolute w-2 h-2 rounded-full bg-white"
+              className="absolute w-[15%] aspect-square rounded-full bg-white"
               style={{
                 left: `${dot.x}%`,
                 top: `${dot.y}%`,
@@ -239,7 +244,7 @@ function RevealedDie({
 
       {/* Shadow */}
       <div
-        className="absolute left-1/2 -bottom-2 w-10 h-2 rounded-full -translate-x-1/2"
+        className="absolute left-1/2 -bottom-[15%] w-[80%] h-[15%] rounded-full -translate-x-1/2"
         style={{
           background: 'radial-gradient(ellipse, rgba(0,0,0,0.35) 0%, transparent 70%)',
           filter: 'blur(2px)',
@@ -294,14 +299,12 @@ export function DiceCup({
   }, [phase, onComplete]);
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      {/* Main cup container - clickable */}
+    <div className="flex flex-col items-center gap-4 w-full px-4 sm:px-0">
+      {/* Main cup container - clickable, responsive width */}
       <motion.div
         onClick={handleSlam}
-        className="relative rounded-2xl overflow-hidden select-none"
+        className="relative rounded-2xl overflow-hidden select-none w-full max-w-[380px] aspect-[380/180]"
         style={{
-          width: 380,
-          height: 180,
           cursor: phase === 'waiting' ? 'pointer' : 'default',
           background: 'linear-gradient(180deg, rgba(15, 46, 46, 0.85) 0%, rgba(3, 15, 15, 0.95) 100%)',
           border: '3px solid',
