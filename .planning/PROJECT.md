@@ -33,7 +33,11 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 
 ### Active
 
-(Next milestone requirements would go here)
+**v2.0 Cloudflare Deployment:**
+- [ ] PartyKit backend deployed to Cloudflare Workers
+- [ ] Next.js frontend deployed to Cloudflare Pages
+- [ ] Environment variables configured for production
+- [ ] End-to-end multiplayer verified in production
 
 ### Out of Scope
 
@@ -43,13 +47,23 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - Matchmaking/random lobbies — private rooms via link sharing only
 - Mobile app — web-only, but responsive design works on mobile browsers
 
+## Current Milestone: v2.0 Cloudflare Deployment
+
+**Goal:** Deploy Perudo Vibe to Cloudflare so anyone can access and play via public URL.
+
+**Target features:**
+- PartyKit backend running on Cloudflare Workers
+- Next.js frontend running on Cloudflare Pages
+- Production environment configuration
+- Live multiplayer verification
+
 ## Context
 
 **Current State (v1.0 shipped 2026-01-18):**
 - ~30,700 lines of TypeScript across 56 files
 - Tech stack: Next.js 16, React 19, PartyKit, Zustand, Framer Motion, Tailwind CSS 4
 - Server-authoritative multiplayer with WebSocket real-time sync
-- Deployed on Vercel (frontend) + PartyKit (backend)
+- **Not yet deployed** — runs locally only
 
 **Known Issues:**
 - `npm run lint` / `next lint` failing with directory error (using tsc --noEmit instead)
@@ -57,8 +71,9 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 
 ## Constraints
 
-- **Cost**: Must work on free tier for backend services — PartyKit free tier used
+- **Cost**: Must work on free tier — Cloudflare free tier (100K requests/day, unlimited Pages bandwidth)
 - **Stack**: Must integrate with existing Next.js 16 / React 19 codebase
+- **Platform**: Cloudflare ecosystem (Pages + Workers) for unified deployment
 - **UX**: Polished experience required — smooth animations and clear feedback
 - **Latency**: Real-time gameplay requires low-latency sync (sub-200ms achieved)
 
@@ -75,6 +90,7 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 | 60-second grace period for reconnection | Allows page refresh without losing position | ✓ Good |
 | Turn-based Calza (not interrupt) | Matches standard Perudo rules, cleaner implementation | ✓ Good |
 | 8-second celebration before results | Ensures winner celebration is properly seen | ✓ Good |
+| Cloudflare for deployment | Single platform for frontend + backend, generous free tier, PartyKit now native to Cloudflare | — Pending |
 
 ---
-*Last updated: 2026-01-18 after v1.0 milestone*
+*Last updated: 2026-01-19 after starting v2.0 milestone*
