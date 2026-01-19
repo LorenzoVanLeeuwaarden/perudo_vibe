@@ -82,10 +82,11 @@ Plans:
   3. Static assets (CSS, JS, images) load correctly
   4. NEXT_PUBLIC_PARTYKIT_HOST points to production backend
   5. Frontend successfully establishes WebSocket connection to backend
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 11-01: TBD
+- [ ] 11-01-PLAN.md — Configure Next.js for static export with production environment
+- [ ] 11-02-PLAN.md — Deploy static build to Cloudflare Pages
 
 ### Phase 12: Production Verification
 **Goal**: Full multiplayer experience verified working in production environment
@@ -110,7 +111,7 @@ Phases execute in numeric order: 10 -> 11 -> 12
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 10. Backend Deployment | v2.0 | 1/1 | Complete | 2026-01-19 |
-| 11. Frontend & Configuration | v2.0 | 0/TBD | Not started | - |
+| 11. Frontend & Configuration | v2.0 | 0/2 | Planned | - |
 | 12. Production Verification | v2.0 | 0/TBD | Not started | - |
 
 ---
