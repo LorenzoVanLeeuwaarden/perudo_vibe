@@ -1763,9 +1763,9 @@ export default function FaroleoGame() {
                           ))}
                         </div>
 
-                        {/* Bid count indicator */}
-                        <p className="text-center text-lg font-bold text-white-soft/60 mt-1">
-                          {currentBid.count}× {currentBid.value === 1 ? 'Jokers' : `${currentBid.value}s`}
+                        {/* Current bid label */}
+                        <p className="text-center text-[10px] font-mono uppercase tracking-[0.2em] text-white-soft/40 mt-2">
+                          Current bid
                         </p>
                       </motion.div>
                     </motion.div>

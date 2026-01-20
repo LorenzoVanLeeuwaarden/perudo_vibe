@@ -2,7 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { ChevronUp, ChevronDown, AlertTriangle, Send, Target, Bot } from 'lucide-react';
+import { ChevronUp, ChevronDown, AlertTriangle, Send, Target, Bot, Lock } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { Bid, PlayerColor } from '@/lib/types';
 import { isValidBid } from '@/lib/gameLogic';
 import { Dice } from './Dice';
@@ -55,6 +56,8 @@ export function BidUI({
 
   const [count, setCount] = useState(getInitialCount);
   const [value, setValue] = useState(getInitialValue);
+  const [countDirection, setCountDirection] = useState<'up' | 'down'>('up');
+  const [valueDirection, setValueDirection] = useState<'up' | 'down'>('up');
 
   useEffect(() => {
     if (isMyTurn) {
@@ -98,27 +101,39 @@ export function BidUI({
     }
   };
 
-  const incrementCount = () => setCount((c) => Math.min(c + 1, totalDice));
-  const decrementCount = () => setCount((c) => Math.max(c - 1, 1));
+  const incrementCount = () => {
+    setCountDirection('up');
+    setCount((c) => Math.min(c + 1, totalDice));
+  };
+  const decrementCount = () => {
+    setCountDirection('down');
+    setCount((c) => Math.max(c - 1, 1));
+  };
   // In palifico, value is only locked AFTER first bid is made
   const isValueLocked = isPalifico && currentBid !== null;
   // Opening bid cannot be jokers (value=1), so skip it when cycling
   const isOpeningBid = !currentBid;
   const incrementValue = () => {
-    if (!isValueLocked) setValue((v) => {
-      const next = v === 6 ? 1 : v + 1;
-      // Skip jokers for opening bid
-      if (isOpeningBid && next === 1) return 2;
-      return next;
-    });
+    if (!isValueLocked) {
+      setValueDirection('up');
+      setValue((v) => {
+        const next = v === 6 ? 1 : v + 1;
+        // Skip jokers for opening bid
+        if (isOpeningBid && next === 1) return 2;
+        return next;
+      });
+    }
   };
   const decrementValue = () => {
-    if (!isValueLocked) setValue((v) => {
-      const next = v === 1 ? 6 : v - 1;
-      // Skip jokers for opening bid
-      if (isOpeningBid && next === 1) return 6;
-      return next;
-    });
+    if (!isValueLocked) {
+      setValueDirection('down');
+      setValue((v) => {
+        const next = v === 1 ? 6 : v - 1;
+        // Skip jokers for opening bid
+        if (isOpeningBid && next === 1) return 6;
+        return next;
+      });
+    }
   };
 
   return (
@@ -178,8 +193,8 @@ export function BidUI({
               </motion.div>
             ))}
           </div>
-          <p className="text-lg font-bold text-white-soft/80 mt-2 text-center">
-            {currentBid.count}×
+          <p className="text-center text-[10px] font-mono uppercase tracking-[0.2em] text-white-soft/40 mt-2">
+            Current bid
           </p>
         </div>
       )}
@@ -188,12 +203,8 @@ export function BidUI({
         <>
           <div className="flex items-center justify-center gap-3 sm:gap-6 mb-4 sm:mb-6">
             {/* COUNT selector */}
-            <div className="flex flex-col items-center relative">
-              {/* Micro-label tucked into top */}
-              <span className="text-[9px] sm:text-[10px] font-mono text-white-soft/40 uppercase tracking-[0.2em] absolute -top-1 left-1/2 -translate-x-1/2 bg-purple-deep px-1">
-                cnt
-              </span>
-              <div className="flex flex-col items-center gap-1 pt-2">
+            <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center gap-1">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
@@ -203,15 +214,32 @@ export function BidUI({
                   <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-white-soft" />
                 </motion.button>
                 <div
-                  className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg border-2 border-turquoise-dark"
+                  className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg border-2 border-turquoise-dark overflow-hidden"
                   style={{
                     background: 'linear-gradient(135deg, var(--purple-mid) 0%, var(--bg-dark) 100%)',
                     boxShadow: '0 4px 0 0 #061212, 0 6px 10px 0 rgba(0, 0, 0, 0.5)',
                   }}
                 >
-                  <span className="text-4xl sm:text-5xl font-black text-marigold-glow" style={{ textShadow: '0 0 20px var(--marigold), 0 2px 0 var(--marigold)' }}>
-                    {count}
-                  </span>
+                  {/* Tumbler animation container */}
+                  <AnimatePresence mode="popLayout" initial={false} custom={countDirection}>
+                    <motion.span
+                      key={count}
+                      custom={countDirection}
+                      variants={{
+                        enter: (dir: 'up' | 'down') => ({ y: dir === 'up' ? 40 : -40, opacity: 0 }),
+                        center: { y: 0, opacity: 1, pointerEvents: 'auto' as const },
+                        exit: (dir: 'up' | 'down') => ({ y: dir === 'up' ? -40 : 40, opacity: 0, pointerEvents: 'none' as const }),
+                      }}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                      className="text-4xl sm:text-5xl font-black text-marigold-glow absolute"
+                      style={{ textShadow: '0 0 20px var(--marigold), 0 2px 0 var(--marigold)' }}
+                    >
+                      {count}
+                    </motion.span>
+                  </AnimatePresence>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -229,11 +257,13 @@ export function BidUI({
 
             {/* VALUE selector */}
             <div className="flex flex-col items-center relative">
-              {/* Micro-label tucked into top */}
-              <span className="text-[9px] sm:text-[10px] font-mono text-white-soft/40 uppercase tracking-[0.2em] absolute -top-1 left-1/2 -translate-x-1/2 bg-purple-deep px-1">
-                {isValueLocked ? 'lock' : 'val'}
-              </span>
-              <div className="flex flex-col items-center gap-1 pt-2">
+              {/* Icon label - Lock when value is locked, or empty (dice visual is self-explanatory) */}
+              {isValueLocked && (
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 bg-purple-deep px-1.5 py-0.5 rounded-sm z-10">
+                  <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-danger/70" />
+                </div>
+              )}
+              <div className="flex flex-col items-center gap-1 pt-3">
                 <motion.button
                   whileHover={!isValueLocked ? { scale: 1.1 } : {}}
                   whileTap={!isValueLocked ? { scale: 0.95 } : {}}
@@ -247,8 +277,26 @@ export function BidUI({
                 >
                   <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-white-soft" />
                 </motion.button>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-                  <Dice value={value} size="md" isPalifico={isPalifico} color={playerColor} />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center overflow-hidden relative">
+                  {/* Tumbler animation for dice */}
+                  <AnimatePresence mode="popLayout" initial={false} custom={valueDirection}>
+                    <motion.div
+                      key={value}
+                      custom={valueDirection}
+                      variants={{
+                        enter: (dir: 'up' | 'down') => ({ y: dir === 'up' ? 50 : -50, opacity: 0 }),
+                        center: { y: 0, opacity: 1, pointerEvents: 'auto' as const },
+                        exit: (dir: 'up' | 'down') => ({ y: dir === 'up' ? -50 : 50, opacity: 0, pointerEvents: 'none' as const }),
+                      }}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                      className="absolute"
+                    >
+                      <Dice value={value} size="md" isPalifico={isPalifico} color={playerColor} />
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
                 <motion.button
                   whileHover={!isValueLocked ? { scale: 1.1 } : {}}
