@@ -1,9 +1,17 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Skull, X, Frown, AlertTriangle } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
+
+// Detect Firefox browser for simplified animations
+function useIsFirefox(): boolean {
+  return useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    return navigator.userAgent.toLowerCase().includes('firefox');
+  }, []);
+}
 
 interface Ember {
   id: number;
@@ -25,9 +33,12 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
   const [embers, setEmbers] = useState<Ember[]>([]);
   const [shakeIntensity, setShakeIntensity] = useState(20);
   const colorConfig = PLAYER_COLORS[playerColor];
+  const isFirefox = useIsFirefox();
 
-  // Create floating embers
+  // Create floating embers - skip on Firefox for performance
   useEffect(() => {
+    if (isFirefox) return; // Skip ember system on Firefox
+
     const createEmber = () => {
       const ember: Ember = {
         id: Date.now() + Math.random() * 100000,
@@ -44,10 +55,12 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
 
     const interval = setInterval(createEmber, 50);
     return () => clearInterval(interval);
-  }, []);
+  }, [isFirefox]);
 
-  // Ember physics
+  // Ember physics - skip on Firefox for performance
   useEffect(() => {
+    if (isFirefox) return; // Skip ember system on Firefox
+
     const interval = setInterval(() => {
       setEmbers(prev =>
         prev
@@ -63,7 +76,7 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
     }, 16);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isFirefox]);
 
   // Initial shake that calms down
   useEffect(() => {
@@ -89,10 +102,11 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
         }}
       />
 
-      {/* Pulsing red vignette */}
+      {/* Pulsing red vignette - static on Firefox */}
       <motion.div
         className="absolute inset-0"
-        animate={{
+        style={isFirefox ? { background: 'radial-gradient(ellipse at center, transparent 30%, rgba(255, 0, 0, 0.3) 100%)' } : {}}
+        animate={isFirefox ? {} : {
           background: [
             'radial-gradient(ellipse at center, transparent 30%, rgba(255, 0, 0, 0.3) 100%)',
             'radial-gradient(ellipse at center, transparent 40%, rgba(255, 0, 0, 0.5) 100%)',
@@ -124,20 +138,22 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
         ))}
       </div>
 
-      {/* Floating embers */}
-      <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
-        {embers.map(e => (
-          <circle
-            key={e.id}
-            cx={e.x}
-            cy={e.y}
-            r={e.size * e.life}
-            fill={e.color}
-            opacity={e.life * 0.8}
-            style={{ filter: `blur(${(1 - e.life) * 2}px)` }}
-          />
-        ))}
-      </svg>
+      {/* Floating embers - skip on Firefox */}
+      {!isFirefox && (
+        <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
+          {embers.map(e => (
+            <circle
+              key={e.id}
+              cx={e.x}
+              cy={e.y}
+              r={e.size * e.life}
+              fill={e.color}
+              opacity={e.life * 0.8}
+              style={{ filter: `blur(${(1 - e.life) * 2}px)` }}
+            />
+          ))}
+        </svg>
+      )}
 
       {/* Cracked overlay effect */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
@@ -179,7 +195,8 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
           className="mb-6"
         >
           <motion.div
-            animate={{
+            // Skip animated filter on Firefox - it causes frame drops
+            animate={isFirefox ? { scale: [1, 1.05, 1] } : {
               scale: [1, 1.05, 1],
               filter: [
                 'drop-shadow(0 0 20px #ff3366)',
@@ -189,6 +206,7 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
             }}
             transition={{ duration: 2, repeat: Infinity }}
             className="relative inline-block"
+            style={isFirefox ? { filter: 'drop-shadow(0 0 20px #ff3366)' } : {}}
           >
             <svg width="160" height="160" viewBox="0 0 64 64" fill="none" className="mx-auto">
               {/* Skull shape */}
@@ -245,10 +263,11 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
               color: '#ff3366',
               textShadow: '0 0 20px #ff3366, 0 0 40px #ff0000, 0 4px 0 #8b0000',
             }}
-            animate={{
+            // Skip animated text-shadow on Firefox - it causes frame drops
+            animate={isFirefox ? {} : {
               textShadow: [
                 '0 0 20px #ff3366, 0 0 40px #ff0000, 0 4px 0 #8b0000',
-                '0 0 40px #ff3366, 0 0 80px #ff0000, 0 4px 0 #8b0000',
+                '0 0 40px #ff3366, 0 0 60px #ff0000, 0 4px 0 #8b0000',
                 '0 0 20px #ff3366, 0 0 40px #ff0000, 0 4px 0 #8b0000',
               ],
             }}

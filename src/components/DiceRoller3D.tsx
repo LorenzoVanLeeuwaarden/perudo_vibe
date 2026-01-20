@@ -1,8 +1,16 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
+
+// Detect Firefox browser for simplified animations
+function useIsFirefox(): boolean {
+  return useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    return navigator.userAgent.toLowerCase().includes('firefox');
+  }, []);
+}
 
 interface DiceRoller3DProps {
   dice: number[];
@@ -99,12 +107,14 @@ function Dice3D({
   phase,
   color,
   totalDice = 5,
+  isFirefox = false,
 }: {
   finalValue: number;
   index: number;
   phase: DicePhase;
   color: PlayerColor;
   totalDice?: number;
+  isFirefox?: boolean;
 }) {
   const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -121,6 +131,13 @@ function Dice3D({
 
   useEffect(() => {
     if (phase === 'rolling') {
+      // Firefox: Skip the expensive rAF loop, just show final position
+      if (isFirefox) {
+        setPosition(getFinalPosition());
+        setRotation({ x: 0, y: 0, z: 0 });
+        return;
+      }
+
       startTime.current = Date.now();
 
       const animate = () => {
@@ -155,7 +172,8 @@ function Dice3D({
       const final = faceRotations[finalValue] || { rotateX: 0, rotateY: 0 };
 
       // Add some full rotations before settling to make it look like it tumbled there
-      const extraSpins = 2;
+      // Firefox: Skip extra spins for performance
+      const extraSpins = isFirefox ? 0 : 2;
       setRotation({
         x: final.rotateX + (phase === 'settling' ? extraSpins * 360 : 0),
         y: final.rotateY + (phase === 'settling' ? extraSpins * 360 : 0),
@@ -163,7 +181,7 @@ function Dice3D({
       });
       setPosition(getFinalPosition());
     }
-  }, [phase, finalValue, index, totalDice]);
+  }, [phase, finalValue, index, totalDice, isFirefox]);
 
   const colorConfig = PLAYER_COLORS[color];
 
@@ -192,16 +210,21 @@ function Dice3D({
       <motion.div
         className="w-full h-full relative"
         style={{
-          transformStyle: 'preserve-3d',
+          // Firefox: Skip preserve-3d for performance, show flat 2D dice
+          transformStyle: isFirefox ? 'flat' : 'preserve-3d',
         }}
-        animate={{
+        animate={isFirefox ? {
+          // Firefox: Simple 2D shake during rolling, then settle
+          rotate: phase === 'rolling' ? [0, 10, -10, 5, -5, 0] : 0,
+          scale: phase === 'rolling' ? [1, 1.1, 0.95, 1] : 1,
+        } : {
           rotateX: rotation.x,
           rotateY: rotation.y,
           rotateZ: rotation.z,
         }}
         transition={
           phase === 'rolling'
-            ? { duration: 0.05 }
+            ? isFirefox ? { duration: 0.3, repeat: Infinity } : { duration: 0.05 }
             : { type: 'spring', stiffness: 60, damping: 12, delay: index * 0.1 }
         }
       >
@@ -267,6 +290,7 @@ export function DiceRoller3D({
   const [phase, setPhase] = useState<DicePhase>('waiting');
   const [showButton, setShowButton] = useState(true);
   const colorConfig = PLAYER_COLORS[playerColor];
+  const isFirefox = useIsFirefox();
 
   const handleRoll = () => {
     if (phase !== 'waiting') return;
@@ -341,6 +365,7 @@ export function DiceRoller3D({
               phase={phase}
               color={playerColor}
               totalDice={dice.length}
+              isFirefox={isFirefox}
             />
           ))}
 

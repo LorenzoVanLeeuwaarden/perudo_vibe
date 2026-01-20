@@ -37,10 +37,10 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
         setTimeout(() => setShowGlitch(false), 150);
       }, 200);
 
-      // Call onComplete after animation
+      // Call onComplete after animation - reduced from 1500ms for better responsiveness
       const completeTimeout = setTimeout(() => {
         onComplete?.();
-      }, 1500);
+      }, 800);
 
       return () => {
         clearTimeout(glitchTimeout);
@@ -50,7 +50,7 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
   }, [isVisible, onComplete]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="popLayout">
       {isVisible && (
         <motion.div
           initial={{ opacity: 0 }}

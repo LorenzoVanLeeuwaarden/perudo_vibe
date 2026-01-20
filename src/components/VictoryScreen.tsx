@@ -1,11 +1,19 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Trophy, Star, Crown, Sparkles } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { DiceExplosion } from './DiceExplosion';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+
+// Detect Firefox browser for simplified animations
+function useIsFirefox(): boolean {
+  return useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    return navigator.userAgent.toLowerCase().includes('firefox');
+  }, []);
+}
 
 interface Particle {
   id: number;
@@ -37,6 +45,7 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
   const [canSkip, setCanSkip] = useState(false);
   const colorConfig = PLAYER_COLORS[playerColor];
   const { playVictory, playDiceRattle } = useSoundEffects();
+  const isFirefox = useIsFirefox();
 
   // Play sounds on mount
   useEffect(() => {
@@ -98,8 +107,10 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
     return newParticles;
   }, []);
 
-  // Firework launcher
+  // Firework launcher - skip on Firefox for performance
   useEffect(() => {
+    if (isFirefox) return; // Skip particle system on Firefox
+
     const launchFirework = () => {
       const x = 100 + Math.random() * (window.innerWidth - 200);
       const y = 100 + Math.random() * (window.innerHeight * 0.4);
@@ -119,19 +130,23 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
     }, 800);
 
     return () => clearInterval(interval);
-  }, [createFirework]);
+  }, [createFirework, isFirefox]);
 
-  // Confetti spawner
+  // Confetti spawner - skip on Firefox for performance
   useEffect(() => {
+    if (isFirefox) return; // Skip particle system on Firefox
+
     const interval = setInterval(() => {
       setParticles(prev => [...prev, ...createConfetti()]);
     }, 100);
 
     return () => clearInterval(interval);
-  }, [createConfetti]);
+  }, [createConfetti, isFirefox]);
 
-  // Particle physics
+  // Particle physics - skip on Firefox for performance
   useEffect(() => {
+    if (isFirefox) return; // Skip particle system on Firefox
+
     const interval = setInterval(() => {
       setParticles(prev => {
         return prev
@@ -149,7 +164,7 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
     }, 16);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isFirefox]);
 
   const handleClick = useCallback(() => {
     if (canSkip) {
@@ -191,34 +206,36 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
         transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
       />
 
-      {/* Particles */}
-      <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
-        {particles.map(p => (
-          <g key={p.id} transform={`translate(${p.x}, ${p.y}) rotate(${p.rotation})`}>
-            {p.type === 'firework' ? (
-              <circle
-                r={p.size * p.life}
-                fill={p.color}
-                opacity={p.life}
-                style={{
-                  filter: `blur(${(1 - p.life) * 2}px)`,
-                  boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
-                }}
-              />
-            ) : (
-              <rect
-                x={-p.size / 2}
-                y={-p.size / 4}
-                width={p.size}
-                height={p.size / 2}
-                fill={p.color}
-                opacity={p.life}
-                rx={1}
-              />
-            )}
-          </g>
-        ))}
-      </svg>
+      {/* Particles - skip on Firefox */}
+      {!isFirefox && (
+        <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
+          {particles.map(p => (
+            <g key={p.id} transform={`translate(${p.x}, ${p.y}) rotate(${p.rotation})`}>
+              {p.type === 'firework' ? (
+                <circle
+                  r={p.size * p.life}
+                  fill={p.color}
+                  opacity={p.life}
+                  style={{
+                    filter: `blur(${(1 - p.life) * 2}px)`,
+                    boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
+                  }}
+                />
+              ) : (
+                <rect
+                  x={-p.size / 2}
+                  y={-p.size / 4}
+                  width={p.size}
+                  height={p.size / 2}
+                  fill={p.color}
+                  opacity={p.life}
+                  rx={1}
+                />
+              )}
+            </g>
+          ))}
+        </svg>
+      )}
 
       {/* Golden rays */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -322,13 +339,14 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
             className="text-6xl md:text-8xl font-black mb-4 uppercase tracking-wider"
             style={{
               color: '#ffd700',
-              textShadow: '0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 60px #ffd700, 0 4px 0 #b8860b',
+              textShadow: '0 0 20px #ffd700, 0 0 40px #ffd700, 0 4px 0 #b8860b',
             }}
-            animate={{
+            // Skip animated text-shadow on Firefox - it causes frame drops
+            animate={isFirefox ? {} : {
               textShadow: [
-                '0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 60px #ffd700, 0 4px 0 #b8860b',
-                '0 0 40px #ffd700, 0 0 80px #ffd700, 0 0 120px #ffd700, 0 4px 0 #b8860b',
-                '0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 60px #ffd700, 0 4px 0 #b8860b',
+                '0 0 20px #ffd700, 0 0 40px #ffd700, 0 4px 0 #b8860b',
+                '0 0 40px #ffd700, 0 0 60px #ffd700, 0 4px 0 #b8860b',
+                '0 0 20px #ffd700, 0 0 40px #ffd700, 0 4px 0 #b8860b',
               ],
             }}
             transition={{ duration: 2, repeat: Infinity }}

@@ -123,25 +123,22 @@ body {
   );
 }
 
-/* Retro glow effect for text */
+/* Retro glow effect for text - simplified to 2 shadows for better Firefox performance */
 .text-glow-orange {
   text-shadow:
-    0 0 5px var(--orange-neon),
-    0 0 10px var(--orange-neon),
+    0 0 8px var(--orange-neon),
     0 0 20px var(--orange-bright);
 }
 
 .text-glow-green {
   text-shadow:
-    0 0 5px var(--green-crt),
-    0 0 10px var(--green-crt),
+    0 0 8px var(--green-crt),
     0 0 20px var(--green-dim);
 }
 
 .text-glow-purple {
   text-shadow:
-    0 0 5px var(--purple-glow),
-    0 0 10px var(--purple-glow),
+    0 0 8px var(--purple-glow),
     0 0 20px var(--purple-light);
 }
 
@@ -602,31 +599,26 @@ body {
 }
 
 /* ========== NEON GLOW TEXT UTILITIES - Día de los Muertos ========== */
+/* Simplified to 2 shadows for better Firefox performance */
 .neon-red {
   color: var(--magenta-bright);
   text-shadow:
-    0 0 5px var(--magenta-bright),
-    0 0 10px var(--magenta-bright),
-    0 0 20px var(--magenta-bright),
-    0 0 40px #be185d;
+    0 0 8px var(--magenta-bright),
+    0 0 25px #be185d;
 }
 
 .neon-green {
   color: var(--turquoise);
   text-shadow:
-    0 0 5px var(--turquoise),
-    0 0 10px var(--turquoise),
-    0 0 20px var(--turquoise),
-    0 0 40px var(--turquoise-dark);
+    0 0 8px var(--turquoise),
+    0 0 25px var(--turquoise-dark);
 }
 
 .neon-gold {
   color: var(--marigold-glow);
   text-shadow:
-    0 0 5px var(--marigold-glow),
-    0 0 10px var(--marigold-glow),
-    0 0 20px var(--marigold),
-    0 0 40px #b45309;
+    0 0 8px var(--marigold-glow),
+    0 0 25px #b45309;
 }
 
 /* ========== DICE DEATH ANIMATION ========== */

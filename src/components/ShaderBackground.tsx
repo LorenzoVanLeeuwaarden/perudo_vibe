@@ -1,11 +1,23 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
+
+// Detect Firefox browser for static fallback
+function useIsFirefox(): boolean {
+  return useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    return navigator.userAgent.toLowerCase().includes('firefox');
+  }, []);
+}
 
 export function ShaderBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isFirefox = useIsFirefox();
 
   useEffect(() => {
+    // Skip canvas animation entirely on Firefox - use CSS fallback
+    if (isFirefox) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -135,7 +147,24 @@ export function ShaderBackground() {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animationId);
     };
-  }, []);
+  }, [isFirefox]);
+
+  // Firefox gets a static CSS gradient background instead of canvas animation
+  if (isFirefox) {
+    return (
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: -1,
+          background: `
+            radial-gradient(ellipse at 30% 20%, rgba(45, 212, 191, 0.08) 0%, transparent 50%),
+            radial-gradient(ellipse at 70% 80%, rgba(236, 72, 153, 0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at center, hsl(175, 50%, 10%) 0%, hsl(175, 40%, 4%) 70%, hsl(175, 35%, 2%) 100%)
+          `,
+        }}
+      />
+    );
+  }
 
   return (
     <canvas
