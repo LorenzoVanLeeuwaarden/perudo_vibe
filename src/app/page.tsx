@@ -31,6 +31,8 @@ import {
   shouldAICallDudo,
   shouldAICallCalza
 } from '@/lib/gameLogic';
+import { GameResultsScreen } from '@/components/GameResultsScreen';
+import type { PlayerStats, GameStats } from '@/shared/types';
 
 // Game name
 const GAME_NAME = 'FAROLEO';
@@ -176,6 +178,15 @@ export default function FaroleoGame() {
   const [calzaSuccess, setCalzaSuccess] = useState(false);
   const [spawningDieValue, setSpawningDieValue] = useState<number>(1);
 
+  // Stats tracking for end game
+  const [gameStats, setGameStats] = useState<{
+    player: PlayerStats;
+    opponents: Record<number, PlayerStats>;
+    roundsPlayed: number;
+    totalBids: number;
+  } | null>(null);
+  const [showStats, setShowStats] = useState(false);
+
   // Refs to track latest state for AI turns (avoids stale closures)
   const opponentsRef = useRef(opponents);
   const currentBidRef = useRef(currentBid);
@@ -273,6 +284,32 @@ export default function FaroleoGame() {
     const anyPalifico = palificoEnabled && (playerDiceCount === 1 || newOpponents.some(o => o.diceCount === 1));
     setIsPalifico(anyPalifico);
     isPalificoRef.current = anyPalifico; // Sync update
+
+    // Initialize stats tracking
+    const emptyStats: PlayerStats = {
+      bidsPlaced: 0,
+      dudosCalled: 0,
+      dudosSuccessful: 0,
+      calzasCalled: 0,
+      calzasSuccessful: 0,
+      diceLost: 0,
+      diceGained: 0,
+    };
+    const initialStats: {
+      player: PlayerStats;
+      opponents: Record<number, PlayerStats>;
+      roundsPlayed: number;
+      totalBids: number;
+    } = {
+      player: { ...emptyStats },
+      opponents: {},
+      roundsPlayed: 0,
+      totalBids: 0,
+    };
+    for (let i = 0; i < opponentCount; i++) {
+      initialStats.opponents[i] = { ...emptyStats };
+    }
+    setGameStats(initialStats);
   }, [playerDiceCount, opponentCount, initializeOpponents, palificoEnabled]);
 
   const handleRoll = useCallback(() => {
@@ -475,6 +512,93 @@ export default function FaroleoGame() {
           setRoundStarter(roundLoser);
         }
       }
+
+      // Track round outcomes in stats
+      setGameStats(prev => {
+        if (!prev) return prev;
+
+        const updates = { ...prev, roundsPlayed: prev.roundsPlayed + 1 };
+
+        if (isCalza) {
+          const exactMatch = matchingCount === bid.count;
+          if (exactMatch) {
+            // Calza success - caller gains a die
+            if (isPlayerCaller) {
+              updates.player = {
+                ...updates.player,
+                calzasSuccessful: updates.player.calzasSuccessful + 1,
+                diceGained: updates.player.diceGained + 1,
+              };
+            } else {
+              const oppIdx = caller as number;
+              updates.opponents = {
+                ...updates.opponents,
+                [oppIdx]: {
+                  ...updates.opponents[oppIdx],
+                  calzasSuccessful: updates.opponents[oppIdx].calzasSuccessful + 1,
+                  diceGained: updates.opponents[oppIdx].diceGained + 1,
+                },
+              };
+            }
+          } else {
+            // Calza fail - caller loses a die
+            if (isPlayerCaller) {
+              updates.player = {
+                ...updates.player,
+                diceLost: updates.player.diceLost + 1,
+              };
+            } else {
+              const oppIdx = caller as number;
+              updates.opponents = {
+                ...updates.opponents,
+                [oppIdx]: {
+                  ...updates.opponents[oppIdx],
+                  diceLost: updates.opponents[oppIdx].diceLost + 1,
+                },
+              };
+            }
+          }
+        } else {
+          // Dudo outcomes
+          const bidWasCorrect = matchingCount >= bid.count;
+          if (!bidWasCorrect) {
+            // Dudo was successful (caller caught a bluff)
+            if (isPlayerCaller) {
+              updates.player = {
+                ...updates.player,
+                dudosSuccessful: updates.player.dudosSuccessful + 1,
+              };
+            } else {
+              const oppIdx = caller as number;
+              updates.opponents = {
+                ...updates.opponents,
+                [oppIdx]: {
+                  ...updates.opponents[oppIdx],
+                  dudosSuccessful: updates.opponents[oppIdx].dudosSuccessful + 1,
+                },
+              };
+            }
+          }
+
+          // Track dice lost
+          if (roundLoser === 'player') {
+            updates.player = {
+              ...updates.player,
+              diceLost: updates.player.diceLost + 1,
+            };
+          } else if (typeof roundLoser === 'number') {
+            updates.opponents = {
+              ...updates.opponents,
+              [roundLoser]: {
+                ...updates.opponents[roundLoser],
+                diceLost: updates.opponents[roundLoser].diceLost + 1,
+              },
+            };
+          }
+        }
+
+        return updates;
+      });
     },
     [playerHand, playerDiceCount]
   );
@@ -503,6 +627,14 @@ export default function FaroleoGame() {
     if (lastBidderValue !== opponentIdx) {
       const wantsCalza = shouldAICallCalza(bidValue, opponent.hand, currentTotalDice, palifico);
       if (wantsCalza) {
+        // Track AI calza call
+        setGameStats(prev => prev ? {
+          ...prev,
+          opponents: {
+            ...prev.opponents,
+            [opponentIdx]: { ...prev.opponents[opponentIdx], calzasCalled: prev.opponents[opponentIdx].calzasCalled + 1 },
+          },
+        } : prev);
         handleReveal(opponent.id, true);
         return true; // Round ended
       }
@@ -512,6 +644,14 @@ export default function FaroleoGame() {
     // Check if AI wants to call Dudo
     const wantsDudo = shouldAICallDudo(bidValue, opponent.hand, currentTotalDice, palifico);
     if (wantsDudo) {
+      // Track AI dudo call
+      setGameStats(prev => prev ? {
+        ...prev,
+        opponents: {
+          ...prev.opponents,
+          [opponentIdx]: { ...prev.opponents[opponentIdx], dudosCalled: prev.opponents[opponentIdx].dudosCalled + 1 },
+        },
+      } : prev);
       handleReveal(opponent.id, false);
       return true; // Round ended
     }
@@ -519,11 +659,28 @@ export default function FaroleoGame() {
     // Generate a bid
     const aiBid = generateAIBid(bidValue, opponent.hand, currentTotalDice, palifico);
     if (aiBid === null) {
+      // Track AI dudo call (forced dudo when can't bid)
+      setGameStats(prev => prev ? {
+        ...prev,
+        opponents: {
+          ...prev.opponents,
+          [opponentIdx]: { ...prev.opponents[opponentIdx], dudosCalled: prev.opponents[opponentIdx].dudosCalled + 1 },
+        },
+      } : prev);
       handleReveal(opponent.id, false);
       return true; // Round ended
     }
 
-    // AI makes a bid
+    // AI makes a bid - track stats
+    setGameStats(prev => prev ? {
+      ...prev,
+      totalBids: prev.totalBids + 1,
+      opponents: {
+        ...prev.opponents,
+        [opponentIdx]: { ...prev.opponents[opponentIdx], bidsPlaced: prev.opponents[opponentIdx].bidsPlaced + 1 },
+      },
+    } : prev);
+
     onContinue(aiBid, opponent.id);
     return false; // Continue to next opponent
   }, [playerDiceCount, handleReveal]);
@@ -782,6 +939,13 @@ export default function FaroleoGame() {
       lastBidderRef.current = 'player'; // Sync update to avoid stale closure
       setIsMyTurn(false);
 
+      // Track player bid stats
+      setGameStats(prev => prev ? {
+        ...prev,
+        totalBids: prev.totalBids + 1,
+        player: { ...prev.player, bidsPlaced: prev.player.bidsPlaced + 1 },
+      } : prev);
+
       // Start AI turns from first opponent
       runAITurns(bid, 'player');
     },
@@ -789,10 +953,20 @@ export default function FaroleoGame() {
   );
 
   const handleDudo = useCallback(() => {
+    // Track player dudo call
+    setGameStats(prev => prev ? {
+      ...prev,
+      player: { ...prev.player, dudosCalled: prev.player.dudosCalled + 1 },
+    } : prev);
     handleReveal('player', false);
   }, [handleReveal]);
 
   const handleCalza = useCallback(() => {
+    // Track player calza call
+    setGameStats(prev => prev ? {
+      ...prev,
+      player: { ...prev.player, calzasCalled: prev.player.calzasCalled + 1 },
+    } : prev);
     handleReveal('player', true);
   }, [handleReveal]);
 
@@ -868,6 +1042,8 @@ export default function FaroleoGame() {
     setRoundStarter('player');
     setIsPalifico(false);
     isPalificoRef.current = false;
+    setGameStats(null);
+    setShowStats(false);
     setGameState('Lobby');
   }, []);
 
@@ -888,6 +1064,8 @@ export default function FaroleoGame() {
     setRoundStarter('player');
     setIsPalifico(false);
     isPalificoRef.current = false;
+    setGameStats(null);
+    setShowStats(false);
     // Clear preferred mode so user sees mode selection again
     clearPreferredMode();
     setGameState('ModeSelection');
