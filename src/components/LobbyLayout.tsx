@@ -7,7 +7,7 @@ import { CasinoLogo } from './CasinoLogo';
 import { LeaveConfirmDialog } from './LeaveConfirmDialog';
 
 interface LobbyLayoutProps {
-  title: string;
+  title?: string;
   onBack: () => void;
   confirmBack?: boolean;
   backConfirmTitle?: string;
@@ -80,9 +80,11 @@ export function LobbyLayout({
               Back
             </motion.button>
 
-            <h1 className="text-lg sm:text-xl font-bold text-white-soft">
-              {title}
-            </h1>
+            {title && (
+              <h1 className="text-lg sm:text-xl font-bold text-white-soft">
+                {title}
+              </h1>
+            )}
 
             {/* Header right slot (or empty spacer for centering) */}
             <div className="min-w-[60px] sm:min-w-[72px] flex justify-end">

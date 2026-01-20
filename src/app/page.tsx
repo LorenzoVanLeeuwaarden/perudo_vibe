@@ -1608,7 +1608,6 @@ export default function FaroleoGame() {
           {/* LOBBY */}
           {gameState === 'Lobby' && (
             <LobbyLayout
-              title="Single Player"
               onBack={quitGame}
               confirmBack={false}
               footer={
