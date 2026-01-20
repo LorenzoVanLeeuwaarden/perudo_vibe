@@ -111,10 +111,11 @@ Plans:
   2. PlayerDiceBadge looks identical in both single-player and multiplayer
   3. BidUI component uses consistent styling regardless of game mode
   4. RevealPhase animation and styling matches between both modes
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 17-01: TBD
+- [ ] 17-01-PLAN.md — Unify GameBoard bidding phase styling (bid display + player dice shelf)
+- [ ] 17-02-PLAN.md — Unify RevealPhase styling (bid vs actual comparison)
 
 ### Phase 18: Lobby Unification
 **Goal**: Both lobby types share styling foundation with mode-specific features
@@ -155,10 +156,10 @@ Phases 1-15 complete. v2.2 starts at Phase 16.
 | 10-12 | v2.0 | 4/4 | Complete | 2026-01-19 |
 | 13-15 | v2.1 | 3/3 | Complete | 2026-01-20 |
 | 16. Shared Hooks | v2.2 | 1/1 | Complete | 2026-01-20 |
-| 17. Game UI | v2.2 | 0/TBD | Not started | - |
+| 17. Game UI | v2.2 | 0/2 | Planned | - |
 | 18. Lobby UI | v2.2 | 0/TBD | Not started | - |
 | 19. End Game & Tooling | v2.2 | 0/TBD | Not started | - |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-20 after Phase 16 execution*
+*Last updated: 2026-01-20 after Phase 17 planning*
