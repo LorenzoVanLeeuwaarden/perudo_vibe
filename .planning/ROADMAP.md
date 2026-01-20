@@ -125,10 +125,11 @@ Plans:
   1. A shared lobby layout/styling foundation exists that both lobbies use
   2. Single-player lobby renders using the unified styling system
   3. Multiplayer lobby renders using the unified styling with its mode-specific features (player list, share link, kick)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 18-01: TBD
+- [ ] 18-01-PLAN.md — Create LobbyLayout foundation and integrate single-player lobby
+- [ ] 18-02-PLAN.md — Integrate multiplayer lobby with LobbyLayout
 
 ### Phase 19: End Game & Tooling
 **Goal**: Single-player has stats, multiplayer has celebration, lint works
@@ -157,9 +158,9 @@ Phases 1-15 complete. v2.2 starts at Phase 16.
 | 13-15 | v2.1 | 3/3 | Complete | 2026-01-20 |
 | 16. Shared Hooks | v2.2 | 1/1 | Complete | 2026-01-20 |
 | 17. Game UI | v2.2 | 2/2 | Complete | 2026-01-20 |
-| 18. Lobby UI | v2.2 | 0/TBD | Not started | - |
+| 18. Lobby UI | v2.2 | 0/2 | Not started | - |
 | 19. End Game & Tooling | v2.2 | 0/TBD | Not started | - |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-20 after Phase 17 execution*
+*Last updated: 2026-01-20 after Phase 18 planning*
