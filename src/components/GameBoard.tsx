@@ -277,6 +277,8 @@ export function GameBoard({
                   color={myColor}
                   isPalifico={gameState.isPalifico}
                   size="md"
+                  highlightValue={!isMyTurn ? gameState.currentBid?.value ?? null : null}
+                  draggable={true}
                 />
               </div>
             </div>

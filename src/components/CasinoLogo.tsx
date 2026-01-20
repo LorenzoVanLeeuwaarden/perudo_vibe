@@ -1,19 +1,96 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
+import { useState, useEffect } from 'react';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
-interface CasinoLogoProps {
-  color: PlayerColor;
+// Color stops for smooth cycling (ordered by hue for smooth transitions)
+// Red -> Orange -> Yellow -> Green -> Blue -> Purple -> Red
+const COLOR_CYCLE = [
+  { hue: 0, sat: 70, light: 55, name: 'red' },      // Red
+  { hue: 25, sat: 90, light: 55, name: 'orange' },  // Orange
+  { hue: 45, sat: 90, light: 55, name: 'yellow' },  // Yellow
+  { hue: 140, sat: 60, light: 45, name: 'green' },  // Green
+  { hue: 210, sat: 70, light: 55, name: 'blue' },   // Blue
+  { hue: 270, sat: 60, light: 55, name: 'purple' }, // Purple
+];
+
+// Interpolate between two values
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
 }
 
-export function CasinoLogo({ color }: CasinoLogoProps) {
-  const colorConfig = PLAYER_COLORS[color];
+// Generate color config from HSL values
+function generateColorConfig(hue: number, sat: number, light: number) {
+  const bg = `hsl(${hue}, ${sat}%, ${light}%)`;
+  const border = `hsl(${hue}, ${sat}%, ${light + 15}%)`;
+  const shadow = `hsl(${hue}, ${sat}%, ${light - 20}%)`;
+  const glow = `hsla(${hue}, ${sat}%, ${light}%, 0.6)`;
+  return { bg, border, shadow, glow };
+}
+
+interface CasinoLogoProps {
+  color?: string; // Optional - ignored, we cycle through all colors
+}
+
+export function CasinoLogo({ color: _color }: CasinoLogoProps) {
   const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
   const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
+
+  // Animated color state
+  const [colorConfig, setColorConfig] = useState(() => generateColorConfig(45, 90, 55)); // Start with yellow/gold
+
+  // Smooth color cycling animation
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      // For reduced motion, just use a static gold color
+      setColorConfig(generateColorConfig(45, 90, 55));
+      return;
+    }
+
+    let animationFrame: number;
+    let startTime: number | null = null;
+    const cycleDuration = 12000; // 12 seconds for full cycle
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = (elapsed % cycleDuration) / cycleDuration;
+
+      // Calculate which two colors we're between
+      const totalStops = COLOR_CYCLE.length;
+      const scaledProgress = progress * totalStops;
+      const currentIndex = Math.floor(scaledProgress);
+      const nextIndex = (currentIndex + 1) % totalStops;
+      const localProgress = scaledProgress - currentIndex;
+
+      const current = COLOR_CYCLE[currentIndex];
+      const next = COLOR_CYCLE[nextIndex];
+
+      // Handle hue wrapping (e.g., purple to red)
+      let hueFrom = current.hue;
+      let hueTo = next.hue;
+      if (Math.abs(hueTo - hueFrom) > 180) {
+        if (hueTo > hueFrom) {
+          hueFrom += 360;
+        } else {
+          hueTo += 360;
+        }
+      }
+
+      const hue = lerp(hueFrom, hueTo, localProgress) % 360;
+      const sat = lerp(current.sat, next.sat, localProgress);
+      const light = lerp(current.light, next.light, localProgress);
+
+      setColorConfig(generateColorConfig(hue, sat, light));
+      animationFrame = requestAnimationFrame(animate);
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [prefersReducedMotion]);
 
   return (
     <div className="relative">

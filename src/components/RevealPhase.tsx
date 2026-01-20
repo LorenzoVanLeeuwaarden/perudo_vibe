@@ -37,15 +37,30 @@ export function RevealPhase({
 }: RevealPhaseProps) {
   const [step, setStep] = useState<RevealStep>(0);
   const [dyingDieVisible, setDyingDieVisible] = useState(false);
+  const [skipped, setSkipped] = useState(false);
   const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
   const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
+
+  const handleSkip = () => {
+    setSkipped(true);
+    setStep(7);
+    // Also show dying die immediately if there's a loser
+    if (roundResult.loserId && !roundResult.isCalza) {
+      setDyingDieVisible(true);
+    }
+  };
 
   // Animation sequence timing
   useEffect(() => {
     // Wait for overlay to dismiss before starting reveal sequence
     if (showOverlay) {
       setStep(0);
+      return;
+    }
+
+    // If skipped, don't run timers
+    if (skipped) {
       return;
     }
 
@@ -84,7 +99,7 @@ export function RevealPhase({
       clearTimeout(step6);
       clearTimeout(step7);
     };
-  }, [showOverlay, roundResult.loserId, roundResult.isCalza]);
+  }, [showOverlay, roundResult.loserId, roundResult.isCalza, skipped]);
 
   const { bid, actualCount, loserId, winnerId, isCalza } = roundResult;
   const loser = players.find((p) => p.id === loserId);
@@ -125,8 +140,8 @@ export function RevealPhase({
           {/* Players' revealed hands */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: step >= 2 ? 1 : 0 }}
-            transition={{ duration: 0.5 }}
+            animate={{ opacity: (step >= 2 || skipped) ? 1 : 0 }}
+            transition={{ duration: skipped ? 0 : 0.5 }}
             className="w-full max-w-lg space-y-3 mb-6"
           >
             {activePlayers.map((player, index) => {
@@ -160,8 +175,8 @@ export function RevealPhase({
                   <div className="flex-1 flex items-center gap-1 flex-wrap">
                     {hand.map((value, dieIndex) => {
                       const isMatching = value === bid.value || (!isCalza && value === 1);
-                      const showHighlight = step >= 3 && isMatching;
-                      const showDim = step >= 3 && !isMatching;
+                      const showHighlight = (step >= 3 || skipped) && isMatching;
+                      const showDim = (step >= 3 || skipped) && !isMatching;
                       const isDying = dyingDieVisible && isLoser && dieIndex === hand.length - 1;
 
                       if (isDying) {
@@ -223,9 +238,9 @@ export function RevealPhase({
                   </div>
 
                   {/* Matching count badge */}
-                  {step >= 3 && matchingCount > 0 && (
+                  {(step >= 3 || skipped) && matchingCount > 0 && (
                     <motion.span
-                      initial={{ opacity: 0, scale: 0 }}
+                      initial={skipped ? false : { opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
                       className="text-xs px-2 py-1 rounded bg-gold-accent/20 text-gold-accent font-bold"
                     >
@@ -239,9 +254,9 @@ export function RevealPhase({
 
           {/* Count comparison */}
           <AnimatePresence>
-            {step >= 4 && (
+            {(step >= 4 || skipped) && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={skipped ? false : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 className="text-center mb-6"
@@ -250,7 +265,7 @@ export function RevealPhase({
                   Bid: {bid.count}x {bid.value}s
                 </p>
                 <motion.p
-                  initial={{ scale: 0.8 }}
+                  initial={skipped ? false : { scale: 0.8 }}
                   animate={{ scale: 1 }}
                   className="text-3xl font-bold"
                 >
@@ -263,9 +278,9 @@ export function RevealPhase({
 
           {/* Result */}
           <AnimatePresence>
-            {step >= 5 && (
+            {(step >= 5 || skipped) && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={skipped ? false : { opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 className="text-center mb-8"
@@ -344,11 +359,28 @@ export function RevealPhase({
             )}
           </AnimatePresence>
 
+          {/* Skip button - shown during animation steps 1-6 */}
+          <AnimatePresence>
+            {step >= 1 && step < 7 && !skipped && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSkip}
+                className="fixed bottom-6 right-6 px-4 py-2 bg-purple-mid/80 text-white-soft/70 font-medium rounded-lg text-sm uppercase tracking-wider border border-purple-light/30 hover:bg-purple-light/50 hover:text-white-soft transition-colors"
+              >
+                Skip
+              </motion.button>
+            )}
+          </AnimatePresence>
+
           {/* Continue button */}
           <AnimatePresence>
             {step >= 7 && (
               <motion.button
-                initial={{ opacity: 0, y: 20 }}
+                initial={skipped ? false : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 whileHover={{ scale: 1.02 }}

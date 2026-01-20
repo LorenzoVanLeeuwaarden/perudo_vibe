@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useMemo } from 'react';
-
-// Detect Firefox browser for static fallback
-function useIsFirefox(): boolean {
-  return useMemo(() => {
-    if (typeof navigator === 'undefined') return false;
-    return navigator.userAgent.toLowerCase().includes('firefox');
-  }, []);
-}
+import { useEffect, useRef, useState } from 'react';
 
 export function ShaderBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isFirefox = useIsFirefox();
+  // Start with false to match SSR, then detect on client after hydration
+  const [isFirefox, setIsFirefox] = useState(false);
+
+  // Detect Firefox after mount to avoid hydration mismatch
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      setIsFirefox(navigator.userAgent.toLowerCase().includes('firefox'));
+    }
+  }, []);
 
   useEffect(() => {
     // Skip canvas animation entirely on Firefox - use CSS fallback

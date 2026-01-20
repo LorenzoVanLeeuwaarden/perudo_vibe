@@ -14,6 +14,15 @@ interface DiceCupProps {
   diceCount?: number;
 }
 
+// Dot patterns for dice values 2-6 (no 1/joker)
+const GHOST_DOT_PATTERNS: Record<number, { x: number; y: number }[]> = {
+  2: [{ x: 25, y: 25 }, { x: 75, y: 75 }],
+  3: [{ x: 25, y: 25 }, { x: 50, y: 50 }, { x: 75, y: 75 }],
+  4: [{ x: 25, y: 25 }, { x: 75, y: 25 }, { x: 25, y: 75 }, { x: 75, y: 75 }],
+  5: [{ x: 25, y: 25 }, { x: 75, y: 25 }, { x: 50, y: 50 }, { x: 25, y: 75 }, { x: 75, y: 75 }],
+  6: [{ x: 25, y: 25 }, { x: 75, y: 25 }, { x: 25, y: 50 }, { x: 75, y: 50 }, { x: 25, y: 75 }, { x: 75, y: 75 }],
+};
+
 // Ghost dice component - just outlines bouncing around wildly
 function GhostDie({ index }: { index: number }) {
   const dieSize = 44;
@@ -21,6 +30,10 @@ function GhostDie({ index }: { index: number }) {
   // Each die has its own random animation pattern
   const randomDuration = 0.8 + Math.random() * 0.6;
   const randomDelay = index * 0.1;
+
+  // Random value 2-6 based on index (deterministic so it doesn't change on re-render)
+  const dieValue = (index % 5) + 2; // Values 2, 3, 4, 5, 6
+  const dots = GHOST_DOT_PATTERNS[dieValue];
 
   return (
     <motion.div
@@ -56,9 +69,19 @@ function GhostDie({ index }: { index: number }) {
         delay: randomDelay,
       }}
     >
-      {/* Faint dot pattern hint */}
-      <div className="w-full h-full flex items-center justify-center opacity-30">
-        <div className="w-2 h-2 rounded-full bg-turquoise/40" />
+      {/* Faint dot pattern showing dice value */}
+      <div className="w-full h-full relative opacity-30">
+        {dots.map((dot, i) => (
+          <div
+            key={i}
+            className="absolute w-2 h-2 rounded-full bg-turquoise/60"
+            style={{
+              left: `${dot.x}%`,
+              top: `${dot.y}%`,
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
+        ))}
       </div>
     </motion.div>
   );

@@ -215,8 +215,11 @@ export function isValidBid(
     return { valid: false, reason: 'Invalid value' };
   }
 
-  // First bid of the round - anything goes (except aces can't be first in some variants)
+  // First bid of the round - anything except jokers (aces)
   if (!currentBid) {
+    if (newBid.value === 1) {
+      return { valid: false, reason: 'Opening bid cannot be jokers' };
+    }
     return { valid: true };
   }
 
@@ -419,9 +422,10 @@ export function generateAIBid(
 
   // Calculate aggression based on game state
   // More aggressive when: we have good dice, fewer total dice, AI is confident
+  // Reduced aggression rates to make AI bluff less frequently
   const confidenceBoost = Math.random();
-  const shouldBeAggressive = confidenceBoost > 0.5;
-  const shouldBeSuperAggressive = confidenceBoost > 0.75;
+  const shouldBeAggressive = confidenceBoost > 0.65;      // Was 0.5 (50%) -> now 35%
+  const shouldBeSuperAggressive = confidenceBoost > 0.88; // Was 0.75 (25%) -> now 12%
 
   // Option 1: Conservative - Increase count by 1, same value
   strategies.push({ count: currentBid.count + 1, value: currentBid.value });
@@ -447,9 +451,10 @@ export function generateAIBid(
     strategies.push({ count: currentBid.count + 1, value: bestValue });
   }
 
-  // Option 4: RISKY - Jump up count aggressively (2-3 more)
-  if (shouldBeAggressive) {
-    const riskIncrease = Math.floor(Math.random() * 3) + 2; // 2-4 more
+  // Option 4: RISKY - Jump up count aggressively (1-2 more)
+  // Additional 50% gate to reduce frequency of risky jumps
+  if (shouldBeAggressive && Math.random() > 0.5) {
+    const riskIncrease = Math.floor(Math.random() * 2) + 1; // 1-2 instead of 2-4
     strategies.push({ count: currentBid.count + riskIncrease, value: currentBid.value });
   }
 
@@ -491,8 +496,9 @@ export function generateAIBid(
   }
 
   // Option 8: Bluff - bid on something we have none of!
-  if (shouldBeSuperAggressive && Math.random() > 0.7) {
-    // Find a value we have zero of
+  // Only bluff when AI has joker backup (more conservative bluffing)
+  if (shouldBeSuperAggressive && jokerCount >= 1 && Math.random() > 0.75) {
+    // Smaller bluff - only jump one value with joker support
     for (let v = 2; v <= 6; v++) {
       if (pureValueCounts[v] === 0 && v > currentBid.value) {
         strategies.push({ count: currentBid.count, value: v });
@@ -522,6 +528,11 @@ export function generateAIBid(
     // Slight penalty for very high counts (risky)
     if (bid.count > totalDice * 0.5) {
       weight -= 1;
+    }
+
+    // Penalize bidding on values we have none of (bluffing penalty)
+    if (pureValueCounts[bid.value] === 0 && bid.value !== 1) {
+      weight -= 2;
     }
 
     // Bonus for switching from aces (adds variety)

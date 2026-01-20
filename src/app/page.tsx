@@ -153,6 +153,7 @@ export default function FaroleoGame() {
   const [palificoEnabled, setPalificoEnabled] = useState(false);
   const [lastBidder, setLastBidder] = useState<'player' | number | null>(null);
   const [highlightedDiceIndex, setHighlightedDiceIndex] = useState<number>(-1);
+  const [selectedBidValue, setSelectedBidValue] = useState<number | null>(null); // Track bid value being selected
   const [countingComplete, setCountingComplete] = useState(false);
   const [roundStarter, setRoundStarter] = useState<'player' | number>('player'); // Who starts each round
   const [loser, setLoser] = useState<'player' | number | null>(null); // Who loses a die this round
@@ -197,6 +198,13 @@ export default function FaroleoGame() {
   useEffect(() => {
     roundStarterRef.current = roundStarter;
   }, [roundStarter]);
+
+  // Clear selected bid value when turn changes away from player
+  useEffect(() => {
+    if (!isMyTurn) {
+      setSelectedBidValue(null);
+    }
+  }, [isMyTurn]);
 
   // Auto-skip mode selection if user has a preferred mode (after hydration)
   useEffect(() => {
@@ -785,6 +793,15 @@ export default function FaroleoGame() {
   const handleCalza = useCallback(() => {
     handleReveal('player', true);
   }, [handleReveal]);
+
+  // Skip the reveal animation and show final state immediately
+  const handleSkipReveal = useCallback(() => {
+    const totalDice = playerHand.length + opponents.reduce((sum, o) => sum + o.hand.length, 0);
+    setRevealProgress(totalDice);
+    setRevealComplete(true);
+    setCountingComplete(true);
+    setHighlightedDiceIndex(-1);
+  }, [playerHand.length, opponents]);
 
   const startNewRound = useCallback(() => {
     const allOpponentsEliminated = opponents.every(o => o.isEliminated || o.diceCount === 0);
@@ -1652,6 +1669,7 @@ export default function FaroleoGame() {
                     lastBidderColor={getLastBidderColor()}
                     lastBidderName={lastBidder === 'player' ? 'You' : lastBidder !== null ? opponents.find(o => o.id === lastBidder)?.name : undefined}
                     hideBidDisplay={true}
+                    onValueChange={setSelectedBidValue}
                   />
                 </div>
               </div>
@@ -1687,42 +1705,16 @@ export default function FaroleoGame() {
                   }}
                   transition={useSimplifiedAnimations ? undefined : { duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 >
-                  {/* Responsive dice: md size on mobile, lg on larger screens */}
-                  <div className="flex gap-2 sm:gap-3">
-                    {playerHand.map((value, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ y: 30, opacity: 0, rotate: -15 }}
-                        animate={{ y: 0, opacity: 1, rotate: 0 }}
-                        transition={{
-                          type: 'spring',
-                          stiffness: 400,
-                          damping: 20,
-                          delay: i * 0.06,
-                        }}
-                      >
-                        {/* Show medium dice on mobile, large on desktop */}
-                        <div className="block sm:hidden">
-                          <Dice
-                            value={value}
-                            index={i}
-                            size="md"
-                            isPalifico={isPalifico}
-                            color={playerColor}
-                          />
-                        </div>
-                        <div className="hidden sm:block">
-                          <Dice
-                            value={value}
-                            index={i}
-                            size="lg"
-                            isPalifico={isPalifico}
-                            color={playerColor}
-                          />
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+                  {/* Player's dice with sorting and drag-to-reorder */}
+                  <SortedDiceDisplay
+                    dice={playerHand}
+                    color={playerColor}
+                    isPalifico={isPalifico}
+                    size="lg"
+                    animateSort={true}
+                    highlightValue={isMyTurn ? selectedBidValue : (currentBid ? currentBid.value : null)}
+                    draggable={true}
+                  />
                 </motion.div>
               </motion.div>
             </motion.div>
@@ -1921,44 +1913,65 @@ export default function FaroleoGame() {
                   })}
                 </div>
 
-                {/* Action button - Día de los Muertos style, full width on mobile */}
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -3 }}
-                  whileTap={{ scale: 0.98, y: 0 }}
-                  onClick={startNewRound}
-                  className="group relative flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto mx-auto px-6 py-3 sm:px-8 sm:py-4 rounded-xl font-bold uppercase tracking-wider overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
-                    border: '3px solid #fcd34d',
-                    borderBottom: '5px solid #92400e',
-                    color: '#1f2937',
-                    boxShadow: '0 6px 0 0 #78350f, 0 8px 20px 0 rgba(0,0,0,0.4), 0 0 30px rgba(245, 158, 11, 0.3)',
-                  }}
-                >
-                  {/* Animated shine effect */}
-                  <motion.div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100"
-                    style={{
-                      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
-                      transform: 'skewX(-20deg)',
-                    }}
-                    animate={{ x: ['-100%', '200%'] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                  />
-                  {/* Icon */}
-                  <motion.div
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                  >
-                    {playerDiceCount === 0 || opponents.every(o => o.isEliminated || o.diceCount === 0)
-                      ? <Trophy className="w-6 h-6" />
-                      : <Dices className="w-6 h-6" />
-                    }
-                  </motion.div>
-                  <span className="text-lg relative z-10">
-                    {playerDiceCount === 0 || opponents.every(o => o.isEliminated || o.diceCount === 0) ? 'SEE RESULTS' : 'CONTINUE'}
-                  </span>
-                </motion.button>
+                {/* Action buttons */}
+                <div className="flex flex-col items-center gap-3">
+                  {/* Skip button - shown while animation is running */}
+                  {!countingComplete && (
+                    <motion.button
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleSkipReveal}
+                      className="px-6 py-2 bg-purple-mid/80 text-white-soft/70 font-medium rounded-lg text-sm uppercase tracking-wider border border-purple-light/30 hover:bg-purple-light/50 hover:text-white-soft transition-colors"
+                    >
+                      Skip
+                    </motion.button>
+                  )}
+
+                  {/* Continue button - Día de los Muertos style, full width on mobile */}
+                  {countingComplete && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      whileHover={{ scale: 1.05, y: -3 }}
+                      whileTap={{ scale: 0.98, y: 0 }}
+                      onClick={startNewRound}
+                      className="group relative flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto mx-auto px-6 py-3 sm:px-8 sm:py-4 rounded-xl font-bold uppercase tracking-wider overflow-hidden"
+                      style={{
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
+                        border: '3px solid #fcd34d',
+                        borderBottom: '5px solid #92400e',
+                        color: '#1f2937',
+                        boxShadow: '0 6px 0 0 #78350f, 0 8px 20px 0 rgba(0,0,0,0.4), 0 0 30px rgba(245, 158, 11, 0.3)',
+                      }}
+                    >
+                      {/* Animated shine effect */}
+                      <motion.div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100"
+                        style={{
+                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                          transform: 'skewX(-20deg)',
+                        }}
+                        animate={{ x: ['-100%', '200%'] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                      />
+                      {/* Icon */}
+                      <motion.div
+                        animate={{ rotate: [0, 360] }}
+                        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                      >
+                        {playerDiceCount === 0 || opponents.every(o => o.isEliminated || o.diceCount === 0)
+                          ? <Trophy className="w-6 h-6" />
+                          : <Dices className="w-6 h-6" />
+                        }
+                      </motion.div>
+                      <span className="text-lg relative z-10">
+                        {playerDiceCount === 0 || opponents.every(o => o.isEliminated || o.diceCount === 0) ? 'SEE RESULTS' : 'CONTINUE'}
+                      </span>
+                    </motion.button>
+                  )}
+                </div>
               </div>
             </motion.div>
           )}

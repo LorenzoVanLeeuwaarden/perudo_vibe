@@ -21,6 +21,7 @@ interface BidUIProps {
   lastBidderName?: string;
   hideBidDisplay?: boolean;
   wasAutoPlayed?: boolean;  // True if current bid was made by timeout AI
+  onValueChange?: (value: number) => void;  // Called when selected bid value changes
 }
 
 export function BidUI({
@@ -37,6 +38,7 @@ export function BidUI({
   lastBidderName,
   hideBidDisplay = false,
   wasAutoPlayed = false,
+  onValueChange,
 }: BidUIProps) {
   const getInitialCount = () => {
     if (!currentBid) return 1;
@@ -61,6 +63,13 @@ export function BidUI({
     }
   }, [isMyTurn, currentBid]);
 
+  // Notify parent of value changes for dice highlighting
+  useEffect(() => {
+    if (isMyTurn && onValueChange) {
+      onValueChange(value);
+    }
+  }, [value, isMyTurn, onValueChange]);
+
   const validation = isValidBid({ count, value }, currentBid, totalDice, isPalifico);
 
   // Don't render empty panel when there's nothing to show
@@ -81,11 +90,23 @@ export function BidUI({
   const decrementCount = () => setCount((c) => Math.max(c - 1, 1));
   // In palifico, value is only locked AFTER first bid is made
   const isValueLocked = isPalifico && currentBid !== null;
+  // Opening bid cannot be jokers (value=1), so skip it when cycling
+  const isOpeningBid = !currentBid;
   const incrementValue = () => {
-    if (!isValueLocked) setValue((v) => v === 6 ? 1 : v + 1);
+    if (!isValueLocked) setValue((v) => {
+      const next = v === 6 ? 1 : v + 1;
+      // Skip jokers for opening bid
+      if (isOpeningBid && next === 1) return 2;
+      return next;
+    });
   };
   const decrementValue = () => {
-    if (!isValueLocked) setValue((v) => v === 1 ? 6 : v - 1);
+    if (!isValueLocked) setValue((v) => {
+      const next = v === 1 ? 6 : v - 1;
+      // Skip jokers for opening bid
+      if (isOpeningBid && next === 1) return 6;
+      return next;
+    });
   };
 
   return (
@@ -289,15 +310,6 @@ export function BidUI({
             )}
           </div>
 
-          {value === 1 && !isPalifico && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-3 text-xs text-gold-accent text-center"
-            >
-              Jokers are wild!
-            </motion.p>
-          )}
         </>
       )}
 
