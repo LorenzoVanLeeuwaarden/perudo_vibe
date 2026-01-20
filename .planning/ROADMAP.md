@@ -4,7 +4,7 @@
 
 - [x] **v1.0 MVP** - Phases 1-9 (shipped 2026-01-18)
 - [x] **v2.0 Cloudflare Deployment** - Phases 10-12 (shipped 2026-01-19)
-- [ ] **v2.1 Animation Performance** - Phases 13-15 (in progress)
+- [x] **v2.1 Animation Performance** - Phases 13-15 (shipped 2026-01-20)
 
 ## Phases
 
@@ -66,13 +66,14 @@
 
 </details>
 
-### v2.1 Animation Performance (In Progress)
+### v2.1 Animation Performance (Complete)
 
 **Milestone Goal:** Optimize animations for smooth 60fps performance across all browsers, especially Firefox.
+**Status:** SHIPPED 2026-01-20
 
 - [x] **Phase 13: DudoOverlay Optimization** - Fix the main performance culprits
 - [x] **Phase 14: Other Component Optimization** - Victory, Defeat, RevealPhase + accessibility
-- [ ] **Phase 15: Performance Verification** - Verify 60fps across browsers
+- [x] **Phase 15: Performance Verification** - Verify 60fps across browsers
 
 ## Phase Details
 
@@ -118,7 +119,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 15-01-PLAN.md — Cross-browser performance verification and testing
+- [x] 15-01-PLAN.md — Cross-browser performance verification and testing (complete)
 
 ## Progress
 
@@ -129,7 +130,7 @@ Phases execute in numeric order: 13 -> 14 -> 15
 |-------|-----------|----------------|--------|-----------|
 | 13. DudoOverlay Optimization | v2.1 | 1/1 | ✓ Complete | 2026-01-20 |
 | 14. Other Component Optimization | v2.1 | 1/1 | ✓ Complete | 2026-01-20 |
-| 15. Performance Verification | v2.1 | 0/1 | Not started | - |
+| 15. Performance Verification | v2.1 | 1/1 | ✓ Complete | 2026-01-20 |
 
 ---
 *Created: 2026-01-20 for v2.1 Animation Performance milestone*
