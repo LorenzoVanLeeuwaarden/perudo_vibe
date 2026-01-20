@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.1 Animation Performance - Ready for Phase 13
+**Current focus:** v2.1 Animation Performance - Phase 13 complete
 
 ## Current Position
 
-Phase: 13 of 15 (DudoOverlay Optimization) - Not started
-Plan: —
-Status: Ready to plan
-Last activity: 2026-01-20 — Milestone v2.1 roadmap created
+Phase: 13 of 15 (DudoOverlay Optimization) - Complete
+Plan: 01 of 01
+Status: Phase complete
+Last activity: 2026-01-20 - Completed 13-01-PLAN.md
 
-Progress: [--------] 0/3 v2.1 phases complete (0%)
+Progress: [###-----] 1/3 v2.1 phases complete (33%)
 
 ## Production URLs
 
@@ -36,6 +36,11 @@ Progress: [--------] 0/3 v2.1 phases complete (0%)
 - Backend URL: perudo-vibe.lorenzovanleeuwaarden.partykit.dev
 - Frontend URL: faroleo.pages.dev
 
+**v2.1 Metrics:**
+- Plans completed: 1
+- Phases complete: 1 of 3 (Phase 13 complete)
+- Total execution time: ~45min
+
 ## Accumulated Context
 
 ### Decisions
@@ -49,6 +54,9 @@ Progress: [--------] 0/3 v2.1 phases complete (0%)
 | 11-02 | 404.html SPA fallback | _redirects wasn't sufficient; 404.html serves index.html content for SPA routing |
 | 11-02 | Client-side room code extraction | useParams returns PLACEHOLDER; extract from window.location.pathname |
 | 11-02 | Connection guard in useRoomConnection | Prevent WebSocket before valid room code is extracted |
+| 13-01 | Firefox simplified mode | Solid backgrounds instead of backdrop-blur for Firefox performance |
+| 13-01 | Particle systems disabled on Firefox | Prevents frame drops while maintaining visual experience |
+| 13-01 | useFirefox hook pattern | Reusable browser detection for conditional rendering |
 
 ### Pending Todos
 
@@ -61,15 +69,15 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-19T15:40:00Z
-Stopped at: Completed 11-02-PLAN.md
+Last session: 2026-01-20T12:00:00Z
+Stopped at: Completed 13-01-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-Phase 11 complete! Frontend deployed to Cloudflare Pages and verified working.
+Phase 13 complete! DudoOverlay and all animation-heavy components optimized for 60fps on both Chrome and Firefox.
 
-Next: Run `/gsd:plan-phase` for Phase 12 (Production Verification) to perform final end-to-end testing.
+Next: Run `/gsd:plan-phase` for Phase 14 (Phase Animations) to optimize remaining phase transitions.
 
 ---
-*Updated: 2026-01-19 after 11-02-PLAN.md completion*
+*Updated: 2026-01-20 after 13-01-PLAN.md completion*
