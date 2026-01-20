@@ -1,19 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Trophy, Star, Crown, Sparkles } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { DiceExplosion } from './DiceExplosion';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
-
-// Detect Firefox browser for simplified animations
-function useIsFirefox(): boolean {
-  return useMemo(() => {
-    if (typeof navigator === 'undefined') return false;
-    return navigator.userAgent.toLowerCase().includes('firefox');
-  }, []);
-}
+import { useIsFirefox } from '@/hooks/useIsFirefox';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Particle {
   id: number;
@@ -46,6 +40,8 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
   const colorConfig = PLAYER_COLORS[playerColor];
   const { playVictory, playDiceRattle } = useSoundEffects();
   const isFirefox = useIsFirefox();
+  const prefersReducedMotion = useReducedMotion();
+  const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
 
   // Play sounds on mount
   useEffect(() => {
@@ -109,7 +105,7 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
 
   // Firework launcher - skip on Firefox for performance
   useEffect(() => {
-    if (isFirefox) return; // Skip particle system on Firefox
+    if (useSimplifiedAnimations) return; // Skip particle system on Firefox/reduced motion
 
     const launchFirework = () => {
       const x = 100 + Math.random() * (window.innerWidth - 200);
@@ -134,7 +130,7 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
 
   // Confetti spawner - skip on Firefox for performance
   useEffect(() => {
-    if (isFirefox) return; // Skip particle system on Firefox
+    if (useSimplifiedAnimations) return; // Skip particle system on Firefox/reduced motion
 
     const interval = setInterval(() => {
       setParticles(prev => [...prev, ...createConfetti()]);
@@ -145,7 +141,7 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
 
   // Particle physics - skip on Firefox for performance
   useEffect(() => {
-    if (isFirefox) return; // Skip particle system on Firefox
+    if (useSimplifiedAnimations) return; // Skip particle system on Firefox/reduced motion
 
     const interval = setInterval(() => {
       setParticles(prev => {
@@ -191,10 +187,13 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
         />
       )}
 
-      {/* Animated background glow */}
+      {/* Animated background glow - static on Firefox/reduced motion */}
       <motion.div
         className="absolute inset-0"
-        animate={{
+        style={useSimplifiedAnimations ? {
+          background: `radial-gradient(circle at 50% 50%, ${colorConfig.glow} 0%, transparent 50%)`,
+        } : undefined}
+        animate={useSimplifiedAnimations ? {} : {
           background: [
             `radial-gradient(circle at 30% 30%, ${colorConfig.glow} 0%, transparent 50%)`,
             `radial-gradient(circle at 70% 70%, ${colorConfig.glow} 0%, transparent 50%)`,
@@ -203,11 +202,11 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
             `radial-gradient(circle at 30% 30%, ${colorConfig.glow} 0%, transparent 50%)`,
           ],
         }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+        transition={useSimplifiedAnimations ? undefined : { duration: 8, repeat: Infinity, ease: 'linear' }}
       />
 
-      {/* Particles - skip on Firefox */}
-      {!isFirefox && (
+      {/* Particles - skip on Firefox/reduced motion */}
+      {!useSimplifiedAnimations && (
         <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
           {particles.map(p => (
             <g key={p.id} transform={`translate(${p.x}, ${p.y}) rotate(${p.rotation})`}>
@@ -341,8 +340,8 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
               color: '#ffd700',
               textShadow: '0 0 20px #ffd700, 0 0 40px #ffd700, 0 4px 0 #b8860b',
             }}
-            // Skip animated text-shadow on Firefox - it causes frame drops
-            animate={isFirefox ? {} : {
+            // Skip animated text-shadow on Firefox/reduced motion - it causes frame drops
+            animate={useSimplifiedAnimations ? {} : {
               textShadow: [
                 '0 0 20px #ffd700, 0 0 40px #ffd700, 0 4px 0 #b8860b',
                 '0 0 40px #ffd700, 0 0 60px #ffd700, 0 4px 0 #b8860b',
