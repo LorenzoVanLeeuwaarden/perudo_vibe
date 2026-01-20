@@ -65,8 +65,8 @@ export function LobbyLayout({
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="retro-panel p-5 sm:p-8 w-full max-w-md flex flex-col relative"
-          style={title ? { maxHeight: 'calc(100vh - 180px)' } : undefined}
+          className="retro-panel p-5 sm:p-8 w-full max-w-md flex flex-col relative overflow-hidden"
+          style={{ maxHeight: 'calc(100vh - 180px)' }}
         >
           {/* Back button - absolute when no title, in header row when title exists */}
           {title ? (
@@ -101,8 +101,8 @@ export function LobbyLayout({
             </motion.button>
           )}
 
-          {/* Content zone - scrollable only when title exists (multiplayer) */}
-          <div className={title ? "flex-1 overflow-y-auto min-h-0" : ""}>
+          {/* Content zone - scrollable for multiplayer (has title), static for single-player */}
+          <div className={title ? "flex-1 overflow-y-auto min-h-0" : "flex-1"}>
             {children}
           </div>
 
