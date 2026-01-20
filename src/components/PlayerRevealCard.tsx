@@ -85,13 +85,10 @@ export function PlayerRevealCard({
 
   return (
     <div
-      className={`flex flex-col items-center p-2 sm:p-3 rounded-lg bg-purple-deep/50 border ${
-        isEliminated ? 'border-red-danger/50 opacity-50' : 'border-purple-mid'
-      }`}
+      className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-purple-deep/50 border border-purple-mid"
     >
       <p className="text-[10px] sm:text-xs text-white-soft/60 uppercase mb-1 sm:mb-2 font-semibold truncate max-w-full">
         <span style={{ color: colorConfig.bg }}>{playerName}</span>
-        {isEliminated && <span className="ml-1 text-red-danger">✗</span>}
       </p>
       {/* Dice container with fixed min-width for 5 dice: 5 * w-7 (28px) + 4 * gap-1 (4px) = 156px */}
       <div className="flex flex-wrap justify-center gap-0.5 sm:gap-1 min-w-[148px] sm:min-w-[156px]">
