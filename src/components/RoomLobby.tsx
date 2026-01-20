@@ -2,16 +2,15 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Wifi, WifiOff, Loader2, Settings } from 'lucide-react';
+import { Wifi, WifiOff, Loader2, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { RoomShare } from '@/components/RoomShare';
 import { PlayerList } from '@/components/PlayerList';
 import { KickConfirmDialog } from '@/components/KickConfirmDialog';
 import { GameSettingsModal } from '@/components/GameSettingsModal';
+import { LobbyLayout } from '@/components/LobbyLayout';
 import { type ConnectionStatus } from '@/hooks/useRoomConnection';
 import { useUIStore } from '@/stores/uiStore';
-import { CasinoLogo } from '@/components/CasinoLogo';
-import { ShaderBackground } from '@/components/ShaderBackground';
 import type { ServerRoomState, ClientMessage, GameSettings } from '@/shared';
 
 interface RoomLobbyProps {
@@ -56,24 +55,8 @@ export function RoomLobby({ roomCode, roomState, myPlayerId, connectionStatus, s
   const playerToKick = roomState.players.find(p => p.id === showKickDialog);
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-8 relative">
-      <ShaderBackground />
-      <div className="scanlines-overlay" />
-
-      {/* Back button */}
-      <motion.button
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        whileHover={{ scale: 1.05, x: -2 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={handleBack}
-        className="fixed top-4 left-4 z-50 px-4 py-2 rounded-lg bg-purple-deep/90 border border-purple-mid text-white-soft/70 flex items-center gap-2 hover:bg-purple-mid/50 transition-colors backdrop-blur-sm"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back
-      </motion.button>
-
-      {/* Connection status indicator */}
+    <>
+      {/* Connection status indicator - fixed position outside LobbyLayout */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -105,51 +88,41 @@ export function RoomLobby({ roomCode, roomState, myPlayerId, connectionStatus, s
         )}
       </motion.div>
 
-      {/* Main content */}
-      <div className="relative z-10 flex flex-col items-center max-w-md w-full">
-        {/* Logo */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <CasinoLogo color={playerColor} />
-        </motion.div>
-
-        {/* Lobby panel */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="retro-panel p-6 w-full"
-        >
-          {/* Start Game section (at top per CONTEXT.md) */}
-          <div className="mb-6">
-            {isHost ? (
-              <motion.button
-                whileHover={canStart ? { scale: 1.02 } : {}}
-                whileTap={canStart ? { scale: 0.98 } : {}}
-                onClick={handleStartGame}
-                disabled={!canStart}
-                className={`w-full py-4 rounded-lg font-bold text-lg transition-colors ${
-                  canStart
-                    ? 'bg-gold-accent text-purple-deep hover:bg-gold-accent/90'
-                    : 'bg-purple-mid/50 text-white-soft/50 cursor-not-allowed'
-                }`}
-              >
-                Start Game
-              </motion.button>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-white-soft/60">
-                  Waiting for host... ({connectedCount}/6 players)
-                </p>
-              </div>
-            )}
-          </div>
-
+      <LobbyLayout
+        title={`Room: ${roomCode}`}
+        onBack={handleBack}
+        confirmBack={true}
+        backConfirmTitle="Leave Lobby?"
+        backConfirmMessage="You will be removed from the game room."
+        headerRight={null}
+        footer={
+          isHost ? (
+            <motion.button
+              whileHover={canStart ? { scale: 1.02 } : {}}
+              whileTap={canStart ? { scale: 0.98 } : {}}
+              onClick={handleStartGame}
+              disabled={!canStart}
+              className={`w-full py-4 rounded-lg font-bold text-lg transition-colors ${
+                canStart
+                  ? 'bg-gold-accent text-purple-deep hover:bg-gold-accent/90'
+                  : 'bg-purple-mid/50 text-white-soft/50 cursor-not-allowed'
+              }`}
+            >
+              Start Game
+            </motion.button>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-white-soft/60">
+                Waiting for host to start... ({connectedCount}/6 players)
+              </p>
+            </div>
+          )
+        }
+      >
+        {/* Content: Player list, settings button, share section */}
+        <div className="space-y-6">
           {/* Player List section */}
-          <div className="mb-6">
+          <div>
             <h3 className="text-sm font-bold text-white-soft/80 uppercase tracking-wider mb-3">
               Players ({connectedCount}/6)
             </h3>
@@ -162,7 +135,7 @@ export function RoomLobby({ roomCode, roomState, myPlayerId, connectionStatus, s
           </div>
 
           {/* Settings section */}
-          <div className="mb-6">
+          <div>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -178,8 +151,8 @@ export function RoomLobby({ roomCode, roomState, myPlayerId, connectionStatus, s
           <div className="pt-4 border-t border-purple-mid">
             <RoomShare roomCode={roomCode} playerColor={playerColor} />
           </div>
-        </motion.div>
-      </div>
+        </div>
+      </LobbyLayout>
 
       {/* Kick Confirm Dialog */}
       <KickConfirmDialog
@@ -197,6 +170,6 @@ export function RoomLobby({ roomCode, roomState, myPlayerId, connectionStatus, s
         isHost={isHost}
         onSave={handleSaveSettings}
       />
-    </main>
+    </>
   );
 }
