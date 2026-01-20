@@ -1,69 +1,69 @@
-# Requirements: Perudo Vibe v2.0
+# Requirements: Perudo Vibe v2.1
 
-**Defined:** 2026-01-19
+**Defined:** 2026-01-20
 **Core Value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction — just share a link and play.
 
-## v2.0 Requirements
+## v2.1 Requirements
 
-Requirements for Cloudflare deployment. Each maps to roadmap phases.
+Requirements for animation performance optimization. Each maps to roadmap phases.
 
-### Backend Deployment
+### DudoOverlay Optimization
 
-- [x] **BACK-01**: Cloudflare account created and configured for deployment
-- [x] **BACK-02**: PartyKit backend deployed to Cloudflare Workers
-- [x] **BACK-03**: Backend WebSocket endpoint accessible via public URL
+- [ ] **DUDO-01**: Backdrop blur is static (not animated), with opacity fade-in
+- [ ] **DUDO-02**: Text glow effect uses pseudo-element technique (no animated text-shadow)
+- [ ] **DUDO-03**: SVG glitch filter replaced with CSS-only alternative or removed
+- [ ] **DUDO-04**: Particle count reduced and uses only transform/opacity
 
-### Frontend Deployment
+### Victory/Defeat Screen Optimization
 
-- [x] **FRONT-01**: Next.js app deployed to Cloudflare Pages
-- [x] **FRONT-02**: Frontend accessible via public Cloudflare Pages URL
-- [x] **FRONT-03**: Static assets (CSS, JS, images) served correctly
+- [ ] **VICT-01**: VictoryScreen animations audited and optimized for 60fps
+- [ ] **VICT-02**: DefeatScreen animations audited and optimized for 60fps
 
-### Configuration
+### Other Component Optimization
 
-- [x] **CONF-01**: Production environment variables configured in Cloudflare
-- [x] **CONF-02**: NEXT_PUBLIC_PARTYKIT_HOST points to production backend URL
-- [x] **CONF-03**: Build process completes successfully in Cloudflare
+- [ ] **COMP-01**: RevealPhase dice animations audited for expensive properties
+- [ ] **COMP-02**: Any identified expensive animations fixed across codebase
+
+### Accessibility
+
+- [ ] **A11Y-01**: prefers-reduced-motion respected - simplified animations when enabled
 
 ### Verification
 
-- [ ] **VERF-01**: Room creation works in production environment
-- [ ] **VERF-02**: Players can join rooms via shareable link
-- [ ] **VERF-03**: Real-time multiplayer gameplay functional (bidding, Dudo, Calza)
-- [ ] **VERF-04**: Disconnect/reconnect handling works in production
+- [ ] **VERF-01**: DudoOverlay runs at 60fps on Firefox
+- [ ] **VERF-02**: DudoOverlay runs at 60fps on Chrome
+- [ ] **VERF-03**: Users can see complete Dudo/Calza animation before transition
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Custom domain | Cloudflare URLs sufficient for v2.0, can add later |
-| CI/CD pipeline | Manual deployment acceptable for now |
-| Multiple environments (staging) | Single production environment for initial launch |
-| Monitoring/alerting | Can add in future milestone |
+| Firefox-specific detection/fallbacks | Test first - may not be needed after fixes |
+| Canvas-based particle system | DOM-based with reduced count should suffice |
+| Bundle size optimization (LazyMotion) | Performance focus, not bundle size |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BACK-01 | Phase 10 | Complete |
-| BACK-02 | Phase 10 | Complete |
-| BACK-03 | Phase 10 | Complete |
-| FRONT-01 | Phase 11 | Complete |
-| FRONT-02 | Phase 11 | Complete |
-| FRONT-03 | Phase 11 | Complete |
-| CONF-01 | Phase 11 | Complete |
-| CONF-02 | Phase 11 | Complete |
-| CONF-03 | Phase 11 | Complete |
-| VERF-01 | Phase 12 | Pending |
-| VERF-02 | Phase 12 | Pending |
-| VERF-03 | Phase 12 | Pending |
-| VERF-04 | Phase 12 | Pending |
+| DUDO-01 | Phase 13 | Pending |
+| DUDO-02 | Phase 13 | Pending |
+| DUDO-03 | Phase 13 | Pending |
+| DUDO-04 | Phase 13 | Pending |
+| VICT-01 | Phase 14 | Pending |
+| VICT-02 | Phase 14 | Pending |
+| COMP-01 | Phase 14 | Pending |
+| COMP-02 | Phase 14 | Pending |
+| A11Y-01 | Phase 14 | Pending |
+| VERF-01 | Phase 15 | Pending |
+| VERF-02 | Phase 15 | Pending |
+| VERF-03 | Phase 15 | Pending |
 
 **Coverage:**
-- v2.0 requirements: 13 total
-- Mapped to phases: 13
+- v2.1 requirements: 12 total
+- Mapped to phases: 12
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-01-19*
-*Last updated: 2026-01-19 after Phase 11 completion*
+*Requirements defined: 2026-01-20*
+*Last updated: 2026-01-20 after initial definition*
