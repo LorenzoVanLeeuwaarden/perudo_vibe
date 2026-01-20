@@ -47,27 +47,29 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - Matchmaking/random lobbies — private rooms via link sharing only
 - Mobile app — web-only, but responsive design works on mobile browsers
 
-## Current Milestone: v2.0 Cloudflare Deployment
+## Current Milestone: v2.1 Animation Performance
 
-**Goal:** Deploy Perudo Vibe to Cloudflare so anyone can access and play via public URL.
+**Goal:** Optimize animations for smooth 60fps performance across all browsers, especially Firefox.
 
 **Target features:**
-- PartyKit backend running on Cloudflare Workers
-- Next.js frontend running on Cloudflare Pages
-- Production environment configuration
-- Live multiplayer verification
+- Audit all Framer Motion animations for performance issues
+- Fix DudoOverlay/CalzaOverlay Firefox slowness (users miss the screens entirely)
+- Eliminate expensive CSS properties (backdrop-filter animation, SVG filters, animated blur)
+- Use GPU-accelerated transforms instead of expensive properties
+- Ensure animations complete visibly before transitioning
 
 ## Context
 
-**Current State (v1.0 shipped 2026-01-18):**
+**Current State (v2.0 deployed 2026-01-19):**
 - ~30,700 lines of TypeScript across 56 files
 - Tech stack: Next.js 16, React 19, PartyKit, Zustand, Framer Motion, Tailwind CSS 4
 - Server-authoritative multiplayer with WebSocket real-time sync
-- **Not yet deployed** — runs locally only
+- **Deployed:** Frontend at faroleo.pages.dev, Backend at faroleo.lorenzovanleeuwaarden.partykit.dev
 
 **Known Issues:**
 - `npm run lint` / `next lint` failing with directory error (using tsc --noEmit instead)
 - Sound files are placeholders (need download from royalty-free sources)
+- **Animation performance:** DudoOverlay/CalzaOverlay extremely slow on Firefox (users miss them), occasional slowness on Chrome. Root causes: animated backdrop-filter, SVG filters, multiple animated text-shadows, 8 simultaneous particle animations.
 
 ## Constraints
 

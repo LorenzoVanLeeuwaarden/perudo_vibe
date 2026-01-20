@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.0 Cloudflare Deployment - Phase 11 Complete, Ready for Phase 12
+**Current focus:** v2.1 Animation Performance - Starting
 
 ## Current Position
 
-Phase: 11 of 12 (Frontend & Configuration) - COMPLETE
-Plan: 2 of 2 in phase (all plans complete)
-Status: Phase complete
-Last activity: 2026-01-19 - Completed 11-02-PLAN.md
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-01-20 — Milestone v2.1 started
 
-Progress: [###-----] 2/3 v2.0 phases complete (66%) - Phase 11 done
+Progress: [--------] 0% - v2.1 milestone initialized
 
 ## Production URLs
 
