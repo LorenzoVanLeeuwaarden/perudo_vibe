@@ -1,9 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import type { PlayerColor } from '@/lib/types';
 
 // Color stops for smooth cycling (ordered by hue for smooth transitions)
 // Red -> Orange -> Yellow -> Green -> Blue -> Purple -> Red
@@ -15,6 +16,10 @@ const COLOR_CYCLE = [
   { hue: 210, sat: 70, light: 55, name: 'blue' },   // Blue
   { hue: 270, sat: 60, light: 55, name: 'purple' }, // Purple
 ];
+
+interface CasinoLogoProps {
+  color?: PlayerColor;
+}
 
 // Interpolate between two values
 function lerp(a: number, b: number, t: number): number {
@@ -30,16 +35,34 @@ function generateColorConfig(hue: number, sat: number, light: number) {
   return { bg, border, shadow, glow };
 }
 
-export function CasinoLogo() {
+export function CasinoLogo({ color }: CasinoLogoProps = {}) {
   const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
   const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
 
-  // Animated color state
-  const [colorConfig, setColorConfig] = useState(() => generateColorConfig(45, 90, 55)); // Start with yellow/gold
+  // Get fixed color config if a color prop is provided (memoized to prevent infinite loops)
+  const fixedColorConfig = useMemo(() => {
+    if (!color) return null;
+    const colorData = COLOR_CYCLE.find(c => c.name === color);
+    return generateColorConfig(
+      colorData?.hue ?? 45,
+      colorData?.sat ?? 90,
+      colorData?.light ?? 55
+    );
+  }, [color]);
 
-  // Smooth color cycling animation
+  // Animated color state
+  const [colorConfig, setColorConfig] = useState(() =>
+    fixedColorConfig ?? generateColorConfig(45, 90, 55)
+  ); // Start with yellow/gold or fixed color
+
+  // Smooth color cycling animation (only when no fixed color)
   useEffect(() => {
+    if (fixedColorConfig) {
+      setColorConfig(fixedColorConfig);
+      return;
+    }
+
     if (prefersReducedMotion) {
       // For reduced motion, just use a static gold color
       setColorConfig(generateColorConfig(45, 90, 55));
@@ -86,7 +109,7 @@ export function CasinoLogo() {
 
     animationFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrame);
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, fixedColorConfig]);
 
   return (
     <div className="relative">
