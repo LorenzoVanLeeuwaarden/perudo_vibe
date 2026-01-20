@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, RotateCcw, Trophy, Skull, Dices, Target, Check, Users, Minus, Plus, Home, X, AlertTriangle, Settings } from 'lucide-react';
+import { Play, Trophy, Dices, Check, Users, Minus, Plus, X, Settings } from 'lucide-react';
 import { createRoomCode } from '@/lib/roomCode';
 import { GameState, Bid, PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { DiceCup } from '@/components/DiceCup';
@@ -14,8 +14,6 @@ import { CasinoLogo } from '@/components/CasinoLogo';
 import { VictoryScreen } from '@/components/VictoryScreen';
 import { DefeatScreen } from '@/components/DefeatScreen';
 import { DudoOverlay } from '@/components/DudoOverlay';
-import { DyingDie } from '@/components/DyingDie';
-import { SpawningDie } from '@/components/SpawningDie';
 import { PlayerDiceBadge } from '@/components/PlayerDiceBadge';
 import { PlayerRevealCard } from '@/components/PlayerRevealCard';
 import { SortedDiceDisplay } from '@/components/SortedDiceDisplay';
@@ -33,9 +31,6 @@ import {
 } from '@/lib/gameLogic';
 import { GameResultsScreen } from '@/components/GameResultsScreen';
 import type { PlayerStats, GameStats } from '@/shared/types';
-
-// Game name
-const GAME_NAME = 'FAROLEO';
 
 // AI thinking prompts - varied and fun
 const AI_THINKING_PROMPTS = [
@@ -129,7 +124,7 @@ export default function FaroleoGame() {
   const router = useRouter();
 
   // UI store for preferences
-  const { preferredMode, setPreferredMode, clearPreferredMode, playerColor: storedPlayerColor } = useUIStore();
+  const { preferredMode, setPreferredMode, clearPreferredMode } = useUIStore();
 
   // Animation optimization hooks
   const isFirefox = useIsFirefox();
@@ -144,8 +139,8 @@ export default function FaroleoGame() {
   const [currentBid, setCurrentBid] = useState<Bid | null>(null);
   const [isMyTurn, setIsMyTurn] = useState(true);
   const [currentTurnIndex, setCurrentTurnIndex] = useState(-1); // -1 = player, 0+ = opponent index
-  const [isRolling, setIsRolling] = useState(false);
-  const [roundResult, setRoundResult] = useState<'win' | 'lose' | null>(null);
+  const [, setIsRolling] = useState(false);
+  const [, setRoundResult] = useState<'win' | 'lose' | null>(null);
   const [playerDiceCount, setPlayerDiceCount] = useState(5);
   const [isPalifico, setIsPalifico] = useState(false);
   const [dudoCaller, setDudoCaller] = useState<'player' | number | null>(null);
@@ -166,7 +161,7 @@ export default function FaroleoGame() {
   const [revealOpponentDiceCounts, setRevealOpponentDiceCounts] = useState<Record<number, number> | null>(null);
   // Track reveal animation progress (how many dice have been revealed so far)
   const [revealProgress, setRevealProgress] = useState<number>(0);
-  const [revealComplete, setRevealComplete] = useState(false);
+  const [, setRevealComplete] = useState(false);
   // Dudo/Calza overlay state
   const [showDudoOverlay, setShowDudoOverlay] = useState(false);
   const [dudoOverlayComplete, setDudoOverlayComplete] = useState(false);
@@ -243,9 +238,6 @@ export default function FaroleoGame() {
   // Calculate total dice
   const totalDice = playerDiceCount + opponents.reduce((sum, o) => sum + o.diceCount, 0);
   const colorConfig = PLAYER_COLORS[playerColor];
-
-  // Get active opponents (not eliminated)
-  const activeOpponents = opponents.filter(o => !o.isEliminated);
 
   // Initialize opponents based on count
   const initializeOpponents = useCallback((count: number, existingOpponents?: Opponent[]) => {
@@ -1141,9 +1133,6 @@ export default function FaroleoGame() {
     return matches;
   }, [currentBid, gameState, playerHand, opponents, isPalifico]);
 
-  // Calculate total dice for reveal animation
-  const totalRevealDice = playerHand.length + opponents.reduce((sum, o) => sum + o.hand.length, 0);
-
   // Run the reveal animation when we enter Reveal state
   // For each player: pop in section → reveal dice → highlight matches → next player
   useEffect(() => {
@@ -1315,88 +1304,6 @@ export default function FaroleoGame() {
     if (isPalifico) return value === currentBid.value;
     return value === currentBid.value || (value === 1 && currentBid.value !== 1);
   }, [currentBid, isPalifico]);
-
-  // Count actual value matches vs joker (1s) matches for the reveal display
-  const getMatchCounts = useCallback(() => {
-    if (!currentBid) return { actual: 0, jokers: 0 };
-
-    const allDice = [
-      ...playerHand,
-      ...opponents.flatMap(o => o.hand)
-    ];
-
-    if (isPalifico) {
-      // In palifico, 1s don't count as wild
-      return {
-        actual: allDice.filter(d => d === currentBid.value).length,
-        jokers: 0
-      };
-    }
-
-    if (currentBid.value === 1) {
-      // Bidding on 1s - just count 1s
-      return {
-        actual: allDice.filter(d => d === 1).length,
-        jokers: 0
-      };
-    }
-
-    // Normal case: count actual value matches and 1s (jokers) separately
-    return {
-      actual: allDice.filter(d => d === currentBid.value).length,
-      jokers: allDice.filter(d => d === 1).length
-    };
-  }, [currentBid, playerHand, opponents, isPalifico]);
-
-  // Get all matching dice with their owner's color for the Actual display
-  const getMatchingDiceWithColors = useCallback(() => {
-    if (!currentBid) return [];
-
-    const matches: { value: number; color: PlayerColor; isJoker: boolean }[] = [];
-
-    // Check player's dice
-    playerHand.forEach(value => {
-      if (isPalifico) {
-        if (value === currentBid.value) {
-          matches.push({ value, color: playerColor, isJoker: false });
-        }
-      } else if (currentBid.value === 1) {
-        if (value === 1) {
-          matches.push({ value, color: playerColor, isJoker: false });
-        }
-      } else {
-        if (value === currentBid.value) {
-          matches.push({ value, color: playerColor, isJoker: false });
-        } else if (value === 1) {
-          matches.push({ value: 1, color: playerColor, isJoker: true });
-        }
-      }
-    });
-
-    // Check each opponent's dice
-    opponents.forEach(opponent => {
-      opponent.hand.forEach(value => {
-        if (isPalifico) {
-          if (value === currentBid.value) {
-            matches.push({ value, color: opponent.color, isJoker: false });
-          }
-        } else if (currentBid.value === 1) {
-          if (value === 1) {
-            matches.push({ value, color: opponent.color, isJoker: false });
-          }
-        } else {
-          if (value === currentBid.value) {
-            matches.push({ value, color: opponent.color, isJoker: false });
-          } else if (value === 1) {
-            matches.push({ value: 1, color: opponent.color, isJoker: true });
-          }
-        }
-      });
-    });
-
-    // Sort so regular matches come first, then jokers
-    return matches.sort((a, b) => (a.isJoker ? 1 : 0) - (b.isJoker ? 1 : 0));
-  }, [currentBid, playerHand, opponents, isPalifico, playerColor]);
 
   // Get matching dice with their global indices for incremental reveal
   const getMatchingDiceWithIndices = useCallback(() => {
