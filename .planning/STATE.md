@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.2 UI Unification & Tech Debt - Phase 16: Shared Hooks (complete)
+**Current focus:** v2.2 UI Unification & Tech Debt - Phase 17: Game UI Unification (in progress)
 
 ## Current Position
 
-Phase: 16 of 19 (Shared Hooks)
-Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-01-20 - Completed 16-01-PLAN.md
+Phase: 17 of 19 (Game UI Unification)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-20 - Completed 17-01-PLAN.md
 
 Progress: [################---] 16/19 phases complete (v1.0 + v2.0 + v2.1 done, v2.2 in progress)
 
@@ -41,9 +41,10 @@ Progress: [################---] 16/19 phases complete (v1.0 + v2.0 + v2.1 done, 
 - Animation performance: 60fps on Firefox and Chrome
 
 **v2.2 Summary (in progress):**
-- Plans completed: 1
+- Plans completed: 2
 - Phases complete: 1 (Phase 16)
 - Tech debt addressed: HOOKS-01 through HOOKS-05
+- UI unification: GAME-01, GAME-02, GAME-03 (bidding phase) complete
 
 ## Accumulated Context
 
@@ -59,6 +60,9 @@ Recent (v2.1):
 Recent (v2.2):
 - Keep Dice3D prop name as isFirefox for backward compatibility, pass combined value
 - Update all JSX references to useSimplifiedAnimations for clarity
+- Multiplayer adopts single-player bid display exactly (recessed table surface)
+- Player dice section uses shelf layout with radial glow, no retro-panel
+- BidUI uses hideBidDisplay={true} for consistent bid rendering
 
 ### Pending Todos
 
@@ -76,20 +80,24 @@ Addressed in Phase 16:
 - [x] DiceRoller3D deleted (unused dead code) — HOOKS-04 satisfied by removal
 - [x] All animated components now respect prefers-reduced-motion (HOOKS-05)
 
+Addressed in Phase 17 Plan 01:
+- [x] Multiplayer bidding phase matches single-player styling (GAME-01)
+- [x] PlayerDiceBadge renders identically in both modes (GAME-02)
+- [x] BidUI uses hideBidDisplay={true} consistently (GAME-03)
+
 Remaining:
-- Tooling issues (Phase 17)
-- UI unification (Phase 18)
+- RevealPhase unification (Phase 17 Plan 02)
 - Final testing (Phase 19)
 
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 16-01-PLAN.md (Phase 16 complete)
+Stopped at: Completed 17-01-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:plan-phase 17` to create plan for Game UI Unification phase.
+Run `/gsd:execute-phase 17-02` to continue with RevealPhase unification.
 
 ---
-*Updated: 2026-01-20 after Phase 16 completion*
+*Updated: 2026-01-20 after 17-01-PLAN.md completion*

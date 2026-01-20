@@ -293,42 +293,60 @@ export function RevealPhase({
             </motion.div>
           </div>
 
-          {/* Players' revealed hands */}
+          {/* Players' revealed hands - 2-column grid on mobile, flexible row on desktop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: (step >= 2 || skipped) ? 1 : 0 }}
             transition={{ duration: skipped ? 0 : 0.5 }}
-            className="w-full max-w-lg space-y-3 mb-6"
+            className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-4 mb-4 sm:mb-6 max-w-4xl mx-auto"
           >
             {activePlayers.map((player, index) => {
               const hand = revealedHands[player.id] || [];
               const colorConfig = PLAYER_COLORS[player.color as PlayerColor];
               const isLoser = player.id === loserId;
+              const isWinner = player.id === winnerId && isCalza;
               const matchingCount = hand.filter(
                 (d) => d === bid.value || (!roundResult.isCalza && d === 1)
               ).length;
 
+              // Determine border style based on result (after step 5)
+              const getBorderClass = () => {
+                if (step < 5 && !skipped) return 'border-purple-mid';
+                if (isLoser) return 'border-red-danger border-2';
+                if (isWinner) return 'border-green-crt border-2';
+                return 'border-purple-mid';
+              };
+
               return (
                 <motion.div
                   key={player.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                  className={`flex items-center gap-3 p-3 rounded-lg bg-purple-deep/50 border ${
-                    isLoser ? 'border-red-danger/50' : 'border-purple-mid'
-                  }`}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.1 * index, type: 'spring', stiffness: 400, damping: 25 }}
+                  className={`flex flex-col p-2 sm:p-3 rounded-lg bg-purple-deep/50 border min-w-[120px] sm:min-w-[140px] ${getBorderClass()}`}
                 >
-                  {/* Player name */}
-                  <span
-                    className="text-sm font-bold min-w-[80px] truncate"
-                    style={{ color: colorConfig.bg }}
-                  >
-                    {player.name}
-                    {isLoser && <span className="ml-1 text-red-danger">!</span>}
-                  </span>
+                  {/* Player name header */}
+                  <div className="flex items-center justify-between mb-2">
+                    <span
+                      className="text-xs sm:text-sm font-bold truncate"
+                      style={{ color: colorConfig.bg }}
+                    >
+                      {player.name}
+                    </span>
+                    {/* Matching count badge */}
+                    {(step >= 3 || skipped) && matchingCount > 0 && (
+                      <motion.span
+                        initial={skipped ? false : { opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-gold-accent/20 text-gold-accent font-bold ml-1"
+                      >
+                        {matchingCount}x
+                      </motion.span>
+                    )}
+                  </div>
 
                   {/* Dice display */}
-                  <div className="flex-1 flex items-center gap-1 flex-wrap">
+                  <div className="flex items-center justify-center gap-1 flex-wrap">
                     {hand.map((value, dieIndex) => {
                       const isMatching = value === bid.value || (!isCalza && value === 1);
                       const showHighlight = (step >= 3 || skipped) && isMatching;
@@ -392,17 +410,6 @@ export function RevealPhase({
                       );
                     })}
                   </div>
-
-                  {/* Matching count badge */}
-                  {(step >= 3 || skipped) && matchingCount > 0 && (
-                    <motion.span
-                      initial={skipped ? false : { opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="text-xs px-2 py-1 rounded bg-gold-accent/20 text-gold-accent font-bold"
-                    >
-                      {matchingCount}x
-                    </motion.span>
-                  )}
                 </motion.div>
               );
             })}
