@@ -1071,6 +1071,42 @@ export default function FaroleoGame() {
     setGameState('ModeSelection');
   }, [clearPreferredMode]);
 
+  // Called when Victory/Defeat celebration is clicked
+  const handleCelebrationComplete = useCallback(() => {
+    setShowStats(true);
+  }, []);
+
+  // Called from GameResultsScreen "Return to Lobby" button
+  const handleReturnToLobby = useCallback(() => {
+    setShowStats(false);
+    resetGame();
+  }, [resetGame]);
+
+  // Called from GameResultsScreen "Leave Game" button
+  const handleLeaveGame = useCallback(() => {
+    setShowStats(false);
+    quitGame();
+  }, [quitGame]);
+
+  // Convert gameStats to GameStats format for GameResultsScreen
+  const formattedStats: GameStats | null = gameStats ? {
+    roundsPlayed: gameStats.roundsPlayed,
+    totalBids: gameStats.totalBids,
+    winnerId: gameState === 'Victory' ? 'player' : (opponents.find(o => o.diceCount > 0)?.id.toString() || '0'),
+    playerStats: {
+      'player': gameStats.player,
+      ...Object.fromEntries(
+        Object.entries(gameStats.opponents).map(([idx, stats]) => [idx, stats])
+      ),
+    },
+  } : null;
+
+  // Build players array for GameResultsScreen
+  const allPlayers = [
+    { id: 'player', name: 'You', color: playerColor },
+    ...opponents.map((opp) => ({ id: opp.id.toString(), name: opp.name, color: opp.color })),
+  ];
+
   // Calculate all matching dice for the reveal animation
   const getAllMatchingDiceIndices = useCallback(() => {
     if (!currentBid || gameState !== 'Reveal') return [];
@@ -2157,17 +2193,30 @@ export default function FaroleoGame() {
         </AnimatePresence>
       </div>
 
-      {/* Victory Screen */}
+      {/* Victory Screen - shown until user clicks to continue */}
       <AnimatePresence>
-        {gameState === 'Victory' && (
-          <VictoryScreen playerColor={playerColor} onPlayAgain={resetGame} />
+        {gameState === 'Victory' && !showStats && (
+          <VictoryScreen playerColor={playerColor} onPlayAgain={handleCelebrationComplete} />
         )}
       </AnimatePresence>
 
-      {/* Defeat Screen */}
+      {/* Defeat Screen - shown until user clicks to continue */}
       <AnimatePresence>
-        {gameState === 'Defeat' && (
-          <DefeatScreen playerColor={playerColor} onPlayAgain={resetGame} />
+        {gameState === 'Defeat' && !showStats && (
+          <DefeatScreen playerColor={playerColor} onPlayAgain={handleCelebrationComplete} />
+        )}
+      </AnimatePresence>
+
+      {/* Stats Screen - shown after Victory/Defeat celebration */}
+      <AnimatePresence>
+        {(gameState === 'Victory' || gameState === 'Defeat') && showStats && formattedStats && (
+          <GameResultsScreen
+            stats={formattedStats}
+            players={allPlayers}
+            isHost={true}
+            onReturnToLobby={handleReturnToLobby}
+            onLeaveGame={handleLeaveGame}
+          />
         )}
       </AnimatePresence>
 
