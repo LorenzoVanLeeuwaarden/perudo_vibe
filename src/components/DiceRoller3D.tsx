@@ -1,16 +1,10 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
-
-// Detect Firefox browser for simplified animations
-function useIsFirefox(): boolean {
-  return useMemo(() => {
-    if (typeof navigator === 'undefined') return false;
-    return navigator.userAgent.toLowerCase().includes('firefox');
-  }, []);
-}
+import { useIsFirefox } from '@/hooks/useIsFirefox';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface DiceRoller3DProps {
   dice: number[];
@@ -291,6 +285,8 @@ export function DiceRoller3D({
   const [showButton, setShowButton] = useState(true);
   const colorConfig = PLAYER_COLORS[playerColor];
   const isFirefox = useIsFirefox();
+  const prefersReducedMotion = useReducedMotion();
+  const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
 
   const handleRoll = () => {
     if (phase !== 'waiting') return;
@@ -365,7 +361,7 @@ export function DiceRoller3D({
               phase={phase}
               color={playerColor}
               totalDice={dice.length}
-              isFirefox={isFirefox}
+              isFirefox={useSimplifiedAnimations}
             />
           ))}
 

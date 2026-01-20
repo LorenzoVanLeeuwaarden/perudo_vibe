@@ -1,8 +1,10 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
+import { useIsFirefox } from '@/hooks/useIsFirefox';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface DudoOverlayProps {
   isVisible: boolean;
@@ -12,17 +14,11 @@ interface DudoOverlayProps {
   onComplete?: () => void;
 }
 
-// Detect Firefox browser for simplified animations
-function useIsFirefox(): boolean {
-  return useMemo(() => {
-    if (typeof navigator === 'undefined') return false;
-    return navigator.userAgent.toLowerCase().includes('firefox');
-  }, []);
-}
-
 export function DudoOverlay({ isVisible, type, callerName, callerColor, onComplete }: DudoOverlayProps) {
   const [showGlitch, setShowGlitch] = useState(false);
   const isFirefox = useIsFirefox();
+  const prefersReducedMotion = useReducedMotion();
+  const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
   const colorConfig = PLAYER_COLORS[callerColor];
 
   const isDudo = type === 'dudo';
@@ -59,7 +55,7 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
           transition={{ duration: 0.1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
         >
-          {/* Backdrop layer - Firefox uses solid background, others get blur */}
+          {/* Backdrop layer - simplified mode uses solid background, others get blur */}
           <motion.div
             className="absolute inset-0"
             initial={{ opacity: 0 }}
@@ -67,13 +63,13 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             style={{
-              background: isFirefox ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.6)',
-              backdropFilter: isFirefox ? 'none' : 'blur(8px)',  // Skip blur on Firefox
+              background: useSimplifiedAnimations ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: useSimplifiedAnimations ? 'none' : 'blur(8px)',  // Skip blur on simplified mode
             }}
           />
 
-          {/* Glitch/Impact flash - simplified on Firefox */}
-          {!isFirefox && (
+          {/* Glitch/Impact flash - simplified on Firefox/reduced motion */}
+          {!useSimplifiedAnimations && (
             <motion.div
               className="absolute inset-0"
               initial={{ opacity: 0 }}
@@ -91,8 +87,8 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
             />
           )}
 
-          {/* Glitch lines - skip on Firefox */}
-          {showGlitch && !isFirefox && (
+          {/* Glitch lines - skip on Firefox/reduced motion */}
+          {showGlitch && !useSimplifiedAnimations && (
             <>
               <motion.div
                 className="absolute left-0 right-0 h-2"
@@ -147,23 +143,23 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
               {isDudo ? 'DUDO!' : 'CALZA!'}
             </motion.div>
 
-            {/* Glow layer - Firefox gets static glow, others get pulsing */}
+            {/* Glow layer - simplified mode gets static glow, others get pulsing */}
             <motion.span
               className="absolute inset-0 font-mono font-black text-8xl md:text-[12rem] uppercase tracking-tighter select-none pointer-events-none"
               style={{
                 color: mainColor,
-                filter: isFirefox ? 'none' : 'blur(20px)',  // No blur on Firefox
-                opacity: isFirefox ? 0 : undefined,  // Hide on Firefox (no glow layer)
+                filter: useSimplifiedAnimations ? 'none' : 'blur(20px)',  // No blur on simplified mode
+                opacity: useSimplifiedAnimations ? 0 : undefined,  // Hide on simplified mode (no glow layer)
               }}
-              animate={isFirefox ? {} : { opacity: [0.4, 0.8, 0.4] }}  // Only animate on non-Firefox
+              animate={useSimplifiedAnimations ? {} : { opacity: [0.4, 0.8, 0.4] }}  // Only animate on full mode
               transition={{ duration: 1, repeat: 2 }}
               aria-hidden="true"
             >
               {isDudo ? 'DUDO!' : 'CALZA!'}
             </motion.span>
 
-            {/* RGB Glitch layers - skip entirely on Firefox */}
-            {showGlitch && !isFirefox && (
+            {/* RGB Glitch layers - skip entirely on Firefox/reduced motion */}
+            {showGlitch && !useSimplifiedAnimations && (
               <>
                 <motion.span
                   className="absolute inset-0 font-mono font-black text-8xl md:text-[12rem] uppercase tracking-tighter select-none pointer-events-none"
@@ -219,11 +215,11 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
             </motion.p>
           </motion.div>
 
-          {/* Impact particles - Firefox gets 2, others get 5 */}
+          {/* Impact particles - simplified mode gets 2, others get 5 */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {/* Impact sparks using CSS transforms */}
-            {[...Array(isFirefox ? 2 : 5)].map((_, i) => {
-              const particleCount = isFirefox ? 2 : 5;
+            {[...Array(useSimplifiedAnimations ? 2 : 5)].map((_, i) => {
+              const particleCount = useSimplifiedAnimations ? 2 : 5;
               const angle = (i / particleCount) * Math.PI * 2;
               const distance = 120;
               const endX = Math.cos(angle) * distance;
@@ -238,7 +234,7 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
                     marginLeft: -4,
                     marginTop: -4,
                     backgroundColor: mainColor,
-                    boxShadow: isFirefox ? 'none' : `0 0 8px ${mainColor}`,  // No glow on Firefox
+                    boxShadow: useSimplifiedAnimations ? 'none' : `0 0 8px ${mainColor}`,  // No glow on simplified mode
                   }}
                   initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
                   animate={{

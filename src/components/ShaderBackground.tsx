@@ -1,22 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { useIsFirefox } from '@/hooks/useIsFirefox';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export function ShaderBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // Start with false to match SSR, then detect on client after hydration
-  const [isFirefox, setIsFirefox] = useState(false);
-
-  // Detect Firefox after mount to avoid hydration mismatch
-  useEffect(() => {
-    if (typeof navigator !== 'undefined') {
-      setIsFirefox(navigator.userAgent.toLowerCase().includes('firefox'));
-    }
-  }, []);
+  const isFirefox = useIsFirefox();
+  const prefersReducedMotion = useReducedMotion();
+  const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
 
   useEffect(() => {
-    // Skip canvas animation entirely on Firefox - use CSS fallback
-    if (isFirefox) return;
+    // Skip canvas animation entirely on Firefox/reduced motion - use CSS fallback
+    if (useSimplifiedAnimations) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -147,10 +143,10 @@ export function ShaderBackground() {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animationId);
     };
-  }, [isFirefox]);
+  }, [useSimplifiedAnimations]);
 
-  // Firefox gets a static CSS gradient background instead of canvas animation
-  if (isFirefox) {
+  // Simplified mode gets a static CSS gradient background instead of canvas animation
+  if (useSimplifiedAnimations) {
     return (
       <div
         className="fixed inset-0 pointer-events-none"
