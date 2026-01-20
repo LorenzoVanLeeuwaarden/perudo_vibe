@@ -1416,10 +1416,10 @@ export default function FaroleoGame() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={quitGame}
-          className="fixed top-4 right-4 z-50 px-3 py-2 rounded-lg bg-purple-deep/90 border border-purple-mid text-white-soft/70 text-sm flex items-center gap-2 hover:bg-purple-mid/70 transition-colors backdrop-blur-sm"
+          className="fixed top-4 right-4 z-50 p-2 sm:px-3 sm:py-2 rounded-lg bg-purple-deep/90 border border-purple-mid text-white-soft/70 text-sm flex items-center gap-2 hover:bg-purple-mid/70 transition-colors backdrop-blur-sm"
         >
           <X className="w-4 h-4" />
-          Quit
+          <span className="hidden sm:inline">Quit</span>
         </motion.button>
       )}
 

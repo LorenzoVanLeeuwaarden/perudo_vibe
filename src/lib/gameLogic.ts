@@ -385,7 +385,10 @@ export function shouldAICallCalza(
 }
 
 /**
- * Generate a valid AI bid - now with more strategic and risky behavior!
+ * Generate a valid AI bid - strategic bidding based on game theory
+ *
+ * Key insight: The goal is to NOT LOSE. Low bids cycle back to you, increasing
+ * your exposure. Competitive bids reduce the chance of getting the turn back.
  */
 export function generateAIBid(
   currentBid: Bid,
@@ -420,22 +423,53 @@ export function generateAIBid(
 
   const currentIsAces = currentBid.value === 1;
 
-  // Calculate aggression based on game state
-  // More aggressive when: we have good dice, fewer total dice, AI is confident
-  // Reduced aggression rates to make AI bluff less frequently
-  const confidenceBoost = Math.random();
-  const shouldBeAggressive = confidenceBoost > 0.65;      // Was 0.5 (50%) -> now 35%
-  const shouldBeSuperAggressive = confidenceBoost > 0.88; // Was 0.75 (25%) -> now 12%
+  // ==========================================================================
+  // COMPETITIVE BIDDING LOGIC
+  // ==========================================================================
+  // Calculate expected count for any non-ace value: totalDice * (2/6) = totalDice / 3
+  // This accounts for both the value AND jokers (wild)
+  const expectedCount = currentIsAces
+    ? totalDice / 6  // Aces: only 1/6 probability
+    : totalDice / 3; // Non-aces: 2/6 probability (value + jokers)
 
-  // Option 1: Conservative - Increase count by 1, same value
-  strategies.push({ count: currentBid.count + 1, value: currentBid.value });
+  // Determine how "low" the current bid is relative to expected
+  // A bid of 2x6 when there are 30 dice is very low (expected ~10)
+  const bidRatio = currentBid.count / expectedCount;
+  const isVeryLowBid = bidRatio < 0.35;  // Less than 35% of expected
+  const isLowBid = bidRatio < 0.55;      // Less than 55% of expected
+  const isModerateBid = bidRatio < 0.75; // Less than 75% of expected
 
-  // Option 2: Same count, higher value (if possible)
-  if (currentBid.value < 6) {
-    strategies.push({ count: currentBid.count, value: currentBid.value + 1 });
+  // Calculate a competitive minimum - where AI should aim for low bids
+  // This prevents silly bids like "2x6" when expected is 10
+  let competitiveMinCount = currentBid.count + 1;
+
+  if (isVeryLowBid) {
+    // Jump to 40-55% of expected (significant increase)
+    competitiveMinCount = Math.floor(expectedCount * (0.4 + Math.random() * 0.15));
+  } else if (isLowBid) {
+    // Jump to 55-70% of expected (moderate increase)
+    competitiveMinCount = Math.floor(expectedCount * (0.55 + Math.random() * 0.15));
+  } else if (isModerateBid) {
+    // Small jump: 2-3 higher
+    competitiveMinCount = currentBid.count + 2 + Math.floor(Math.random() * 2);
   }
 
-  // Option 3: Bid on our strongest value (if valid)
+  // Ensure competitive minimum is actually higher than current bid
+  competitiveMinCount = Math.max(currentBid.count + 1, competitiveMinCount);
+
+  // Cap at reasonable maximum (85% of expected to leave room)
+  competitiveMinCount = Math.min(competitiveMinCount, Math.floor(expectedCount * 0.85));
+
+  // ==========================================================================
+  // GENERATE BIDDING STRATEGIES
+  // ==========================================================================
+
+  // Calculate aggression based on game state
+  const confidenceBoost = Math.random();
+  const shouldBeAggressive = confidenceBoost > 0.65;      // 35% chance
+  const shouldBeSuperAggressive = confidenceBoost > 0.88; // 12% chance
+
+  // Find AI's best value
   let bestValue = 2;
   let bestCount = 0;
   for (let v = 2; v <= 6; v++) {
@@ -445,41 +479,62 @@ export function generateAIBid(
     }
   }
 
-  if (bestValue > currentBid.value) {
-    strategies.push({ count: currentBid.count, value: bestValue });
-  } else if (bestValue >= currentBid.value) {
-    strategies.push({ count: currentBid.count + 1, value: bestValue });
+  // Option 1: Competitive bid on current value (use competitive minimum for low bids)
+  if (isVeryLowBid || isLowBid) {
+    strategies.push({ count: competitiveMinCount, value: currentBid.value });
   }
 
-  // Option 4: RISKY - Jump up count aggressively (1-2 more)
-  // Additional 50% gate to reduce frequency of risky jumps
-  if (shouldBeAggressive && Math.random() > 0.5) {
-    const riskIncrease = Math.floor(Math.random() * 2) + 1; // 1-2 instead of 2-4
+  // Option 2: Conservative - Increase count by 1, same value (only if bid is already reasonable)
+  if (!isVeryLowBid) {
+    strategies.push({ count: currentBid.count + 1, value: currentBid.value });
+  }
+
+  // Option 3: Same count, higher value (if possible) - good for low counts
+  if (currentBid.value < 6) {
+    strategies.push({ count: currentBid.count, value: currentBid.value + 1 });
+    // For low bids, also try competitive count with higher value
+    if (isLowBid && currentBid.value < 5) {
+      strategies.push({ count: competitiveMinCount, value: currentBid.value + 1 });
+    }
+  }
+
+  // Option 4: Bid on our strongest value at competitive count
+  if (bestValue > currentBid.value) {
+    strategies.push({ count: currentBid.count, value: bestValue });
+    if (isLowBid) {
+      strategies.push({ count: competitiveMinCount, value: bestValue });
+    }
+  } else if (bestValue >= currentBid.value) {
+    const targetCount = isLowBid ? competitiveMinCount : currentBid.count + 1;
+    strategies.push({ count: targetCount, value: bestValue });
+  }
+
+  // Option 5: RISKY - Jump up count aggressively (for higher bids)
+  if (shouldBeAggressive && !isVeryLowBid && Math.random() > 0.5) {
+    const riskIncrease = Math.floor(Math.random() * 2) + 2; // 2-3
     strategies.push({ count: currentBid.count + riskIncrease, value: currentBid.value });
   }
 
-  // Option 5: SUPER RISKY - Jump to high value with same/higher count
+  // Option 6: SUPER RISKY - Jump to high value
   if (shouldBeSuperAggressive && currentBid.value < 5) {
     const targetValue = Math.floor(Math.random() * 2) + 5; // 5 or 6
-    strategies.push({ count: currentBid.count, value: targetValue });
-    strategies.push({ count: currentBid.count + 1, value: targetValue });
+    const targetCount = isLowBid ? competitiveMinCount : currentBid.count;
+    strategies.push({ count: targetCount, value: targetValue });
+    strategies.push({ count: targetCount + 1, value: targetValue });
   }
 
-  // Option 6: Switch TO aces strategically (if we have aces)
+  // Option 7: Switch TO aces strategically (if we have aces)
   if (!currentIsAces && jokerCount >= 1 && Math.random() > 0.6) {
     const minAceCount = Math.ceil(currentBid.count / 2);
     strategies.push({ count: minAceCount, value: 1 });
-    // Sometimes bid slightly higher on aces
     if (jokerCount >= 2) {
       strategies.push({ count: minAceCount + 1, value: 1 });
     }
   }
 
-  // Option 7: Switch FROM aces to numbers (using the 2x+1 rule)
-  // This is important - AI should sometimes switch back from aces!
+  // Option 8: Switch FROM aces to numbers (using the 2x+1 rule)
   if (currentIsAces && Math.random() > 0.4) {
     const minCount = currentBid.count * 2 + 1;
-    // Find our best non-ace value
     let bestNonAceValue = 2;
     let bestNonAceCount = 0;
     for (let v = 2; v <= 6; v++) {
@@ -488,17 +543,13 @@ export function generateAIBid(
         bestNonAceValue = v;
       }
     }
-    // Switch to our best value
     strategies.push({ count: minCount, value: bestNonAceValue });
-    // Or switch to a random high value
-    const randomHigh = Math.floor(Math.random() * 3) + 4; // 4, 5, or 6
+    const randomHigh = Math.floor(Math.random() * 3) + 4;
     strategies.push({ count: minCount, value: randomHigh });
   }
 
-  // Option 8: Bluff - bid on something we have none of!
-  // Only bluff when AI has joker backup (more conservative bluffing)
+  // Option 9: Bluff - bid on something we have none of (only with joker backup)
   if (shouldBeSuperAggressive && jokerCount >= 1 && Math.random() > 0.75) {
-    // Smaller bluff - only jump one value with joker support
     for (let v = 2; v <= 6; v++) {
       if (pureValueCounts[v] === 0 && v > currentBid.value) {
         strategies.push({ count: currentBid.count, value: v });
@@ -513,11 +564,12 @@ export function generateAIBid(
   );
 
   if (validBids.length === 0) {
-    // No valid bids, must Dudo
-    return null;
+    return null; // Must Dudo
   }
 
-  // Weight the strategies - prefer ones that match what we have
+  // ==========================================================================
+  // WEIGHT AND SELECT BEST BID
+  // ==========================================================================
   const weightedBids: { bid: Bid; weight: number }[] = validBids.map(bid => {
     let weight = 1;
     const ourCount = valueCounts[bid.value] || 0;
@@ -525,9 +577,20 @@ export function generateAIBid(
     // Prefer values we have dice for
     weight += ourCount * 2;
 
-    // Slight penalty for very high counts (risky)
-    if (bid.count > totalDice * 0.5) {
+    // BONUS for competitive bids when current bid is low
+    // This encourages AI to make meaningful jumps on low bids
+    if ((isVeryLowBid || isLowBid) && bid.count >= competitiveMinCount) {
+      weight += 3;
+    }
+
+    // Slight penalty for very high counts (approaching expected)
+    if (bid.count > expectedCount * 0.8) {
       weight -= 1;
+    }
+
+    // Bigger penalty for exceeding expected
+    if (bid.count > expectedCount) {
+      weight -= 3;
     }
 
     // Penalize bidding on values we have none of (bluffing penalty)

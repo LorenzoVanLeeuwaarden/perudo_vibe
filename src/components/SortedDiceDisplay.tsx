@@ -6,7 +6,7 @@ import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { Dice } from './Dice';
 
 // Highlight animation constants
-const HIGHLIGHT_Y_OFFSET = -16;
+const HIGHLIGHT_Y_OFFSET = -12;
 const HIGHLIGHT_SCALE = 1.08;
 
 interface SortedDiceDisplayProps {
@@ -118,7 +118,7 @@ export function SortedDiceDisplay({
         axis="x"
         values={displayDice}
         onReorder={handleReorder}
-        className="flex gap-3"
+        className="flex gap-1.5 sm:gap-3"
       >
         {displayDice.map((die, displayIndex) => {
           const isHighlighted = shouldHighlight(die.value, highlightValue, isPalifico);
@@ -176,7 +176,7 @@ export function SortedDiceDisplay({
   // Non-draggable mode (original behavior)
   return (
     <motion.div
-      className="flex gap-3"
+      className="flex gap-1.5 sm:gap-3"
       layout
     >
       <AnimatePresence mode="popLayout">

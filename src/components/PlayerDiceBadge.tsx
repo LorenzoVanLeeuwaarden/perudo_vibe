@@ -33,7 +33,8 @@ export function PlayerDiceBadge({
 
   return (
     <motion.div
-      className={`retro-panel px-3 py-1.5 sm:px-4 sm:py-2 relative transition-all duration-300 ${isEliminated ? 'opacity-40' : ''} ${showDisconnectedVisual ? 'opacity-50 grayscale' : ''}`}
+      className={`retro-panel px-2 py-1 sm:px-4 sm:py-2 relative transition-all duration-300 ${isEliminated ? 'opacity-40' : ''} ${showDisconnectedVisual ? 'opacity-50 grayscale' : ''}`}
+      style={{ zIndex: showThinking ? 30 : 1 }}
       animate={{
         boxShadow: isActive
           ? `0 0 ${showThinking ? '25px' : '20px'} ${colorConfig.glow}, 0 0 ${showThinking ? '50px' : '40px'} ${colorConfig.glow}`
@@ -58,14 +59,14 @@ export function PlayerDiceBadge({
         </motion.div>
       )}
 
-      {/* Thinking bubble */}
+      {/* Thinking bubble - appears below the badge */}
       <AnimatePresence>
         {showThinking && (
           <motion.div
             initial={{ opacity: 0, scale: 0, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0, y: -10 }}
-            className="absolute top-full mt-2 sm:mt-3 left-1/2 -translate-x-1/2 z-20"
+            className="absolute top-full mt-2 sm:mt-3 left-1/2 -translate-x-1/2 z-40"
           >
             {/* Speech bubble tail - pointing up */}
             <div
@@ -101,13 +102,33 @@ export function PlayerDiceBadge({
         )}
       </AnimatePresence>
 
-      <span className="text-[10px] sm:text-xs uppercase block text-center mb-0.5 sm:mb-1 font-bold flex items-center justify-center gap-1" style={{ color: colorConfig.bg }}>
+      {/* Mobile: compact layout with name and number */}
+      <div className="sm:hidden flex items-center gap-1.5">
+        <span className="text-[9px] uppercase font-bold truncate max-w-[50px]" style={{ color: colorConfig.bg }}>
+          {playerName}
+        </span>
+        {!isConnected && (
+          <WifiOff className="w-2 h-2 text-white-soft/60 flex-shrink-0" />
+        )}
+        <motion.span
+          className="text-[10px] font-bold min-w-[14px] text-center"
+          style={{ color: colorConfig.bg }}
+          animate={{
+            textShadow: showThinking ? `0 0 8px ${colorConfig.glow}` : 'none',
+          }}
+        >
+          {diceCount}
+        </motion.span>
+      </div>
+
+      {/* Desktop: original layout with dots */}
+      <span className="hidden sm:flex text-xs uppercase text-center mb-1 font-bold items-center justify-center gap-1" style={{ color: colorConfig.bg }}>
         {playerName}
         {!isConnected && (
-          <WifiOff className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white-soft/60" />
+          <WifiOff className="w-3 h-3 text-white-soft/60" />
         )}
       </span>
-      <div className="flex items-center gap-0.5 sm:gap-1">
+      <div className="hidden sm:flex items-center gap-1">
         {Array.from({ length: 5 }).map((_, i) => (
           <motion.div
             key={i}
@@ -119,7 +140,7 @@ export function PlayerDiceBadge({
                 : i < diceCount ? `0 0 5px ${colorConfig.glow}` : 'none',
             }}
             transition={{ delay: i * 0.05 }}
-            className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm"
+            className="w-3 h-3 rounded-sm"
             style={{
               background: i < diceCount ? colorConfig.bg : 'var(--purple-deep)',
               border: i < diceCount ? 'none' : '1px solid var(--purple-mid)',

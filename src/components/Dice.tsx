@@ -16,11 +16,16 @@ interface DiceProps {
 
 // Cool skull-style joker symbol
 function JokerSymbol({ size }: { size: 'xs' | 'sm' | 'md' | 'lg' }) {
-  const sizeMap = { xs: 16, sm: 22, md: 32, lg: 48 };
-  const s = sizeMap[size];
+  // Responsive: use percentage-based sizing that scales with container
+  const sizeClasses = {
+    xs: 'w-[60%] h-[60%]',
+    sm: 'w-[60%] h-[60%]',
+    md: 'w-[60%] h-[60%]',
+    lg: 'w-[60%] h-[60%]',
+  };
 
   return (
-    <svg width={s} height={s} viewBox="0 0 32 32" fill="none">
+    <svg className={sizeClasses[size]} viewBox="0 0 32 32" fill="none">
       {/* Outer glow ring */}
       <circle cx="16" cy="16" r="14" stroke="#ffd700" strokeWidth="1" opacity="0.5" />
 
@@ -101,7 +106,7 @@ const sizeClasses = {
   xs: { container: 'w-7 h-7', dot: 'w-1 h-1' },
   sm: { container: 'w-10 h-10', dot: 'w-1.5 h-1.5' },
   md: { container: 'w-14 h-14', dot: 'w-2.5 h-2.5' },
-  lg: { container: 'w-20 h-20', dot: 'w-4 h-4' },
+  lg: { container: 'w-14 h-14 sm:w-20 sm:h-20', dot: 'w-2.5 h-2.5 sm:w-4 sm:h-4' },
 };
 
 // Colors that need white dots for visibility
