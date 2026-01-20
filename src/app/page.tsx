@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, RotateCcw, Trophy, Skull, Dices, Target, Check, Users, Minus, Plus, Home, X, AlertTriangle, Settings, ArrowLeft } from 'lucide-react';
+import { Play, RotateCcw, Trophy, Skull, Dices, Target, Check, Users, Minus, Plus, Home, X, AlertTriangle, Settings } from 'lucide-react';
 import { createRoomCode } from '@/lib/roomCode';
 import { GameState, Bid, PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { DiceCup } from '@/components/DiceCup';
@@ -20,6 +20,7 @@ import { PlayerDiceBadge } from '@/components/PlayerDiceBadge';
 import { PlayerRevealCard } from '@/components/PlayerRevealCard';
 import { SortedDiceDisplay } from '@/components/SortedDiceDisplay';
 import { ModeSelection } from '@/components/ModeSelection';
+import { LobbyLayout } from '@/components/LobbyLayout';
 import { useUIStore } from '@/stores/uiStore';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -1392,27 +1393,29 @@ export default function FaroleoGame() {
 
           {/* LOBBY */}
           {gameState === 'Lobby' && (
-            <motion.div
-              key="lobby"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="text-center px-2 sm:px-0"
-            >
-              <div className="retro-panel p-5 sm:p-8 mb-4 sm:mb-6 relative">
-                {/* Back button */}
+            <LobbyLayout
+              title="Single Player"
+              onBack={quitGame}
+              confirmBack={false}
+              footer={
                 <motion.button
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  whileHover={{ scale: 1.05, x: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={quitGame}
-                  className="absolute top-3 left-3 sm:top-4 sm:left-4 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-purple-deep/80 border border-purple-mid text-white-soft/70 text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-purple-mid/50 transition-colors"
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.98, y: 0 }}
+                  onClick={startGame}
+                  className="retro-button flex items-center gap-2 mx-auto text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3"
+                  style={{
+                    background: colorConfig.bgGradient,
+                    border: `2px solid ${colorConfig.border}`,
+                    borderBottom: `4px solid ${colorConfig.shadow}`,
+                    boxShadow: `0 4px 0 0 ${colorConfig.shadowDark}, 0 6px 10px 0 rgba(0, 0, 0, 0.5)`,
+                  }}
                 >
-                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
-                  Back
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5" />
+                  START GAME
                 </motion.button>
-
+              }
+            >
+              <div className="text-center">
                 <Dices className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4" style={{ color: colorConfig.bg }} />
 
                 {/* Opponent count selection */}
@@ -1465,7 +1468,7 @@ export default function FaroleoGame() {
                 </div>
 
                 {/* Preview dice with settings button */}
-                <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="flex items-center justify-center gap-3 sm:gap-4">
                   <div className="flex gap-1.5 sm:gap-2 scale-90 sm:scale-100">
                     {[3, 5, 1, 2, 6].map((val, i) => (
                       <Dice key={i} value={val} index={i} size="sm" color={playerColor} />
@@ -1480,24 +1483,8 @@ export default function FaroleoGame() {
                     <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-white-soft" />
                   </motion.button>
                 </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.98, y: 0 }}
-                  onClick={startGame}
-                  className="retro-button flex items-center gap-2 mx-auto text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3"
-                  style={{
-                    background: colorConfig.bgGradient,
-                    border: `2px solid ${colorConfig.border}`,
-                    borderBottom: `4px solid ${colorConfig.shadow}`,
-                    boxShadow: `0 4px 0 0 ${colorConfig.shadowDark}, 0 6px 10px 0 rgba(0, 0, 0, 0.5)`,
-                  }}
-                >
-                  <Play className="w-4 h-4 sm:w-5 sm:h-5" />
-                  START GAME
-                </motion.button>
               </div>
-            </motion.div>
+            </LobbyLayout>
           )}
 
           {/* ROLLING */}
