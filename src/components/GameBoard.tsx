@@ -86,6 +86,11 @@ export function GameBoard({
     return () => clearInterval(interval);
   }, []);
 
+  // Memoized callback for DudoOverlay completion - must be before early return
+  const handleDudoComplete = useCallback(() => {
+    setDudoOverlay(false);
+  }, [setDudoOverlay]);
+
   const gameState = roomState.gameState;
   if (!gameState) return null;
 
@@ -101,7 +106,6 @@ export function GameBoard({
   const lastBidder = players.find(p => p.id === gameState.lastBidderId);
   const lastBidderColor = lastBidder?.color as PlayerColor | undefined;
   const lastBidderName = lastBidder?.name;
-  const currentTurnPlayer = players.find(p => p.id === gameState.currentTurnPlayerId);
 
   // Timer values
   const turnStartedAt = gameState.turnStartedAt;
@@ -144,11 +148,6 @@ export function GameBoard({
     // Send continue message to server
     sendMessage({ type: 'CONTINUE_ROUND', timestamp: Date.now() });
   };
-
-  // Memoized callback for DudoOverlay completion to prevent effect restarts
-  const handleDudoComplete = useCallback(() => {
-    setDudoOverlay(false);
-  }, [setDudoOverlay]);
 
   // Check if we're in reveal phase
   const isRevealPhase = gameState.phase === 'reveal';
