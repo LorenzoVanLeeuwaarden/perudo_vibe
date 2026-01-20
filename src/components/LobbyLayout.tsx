@@ -65,34 +65,41 @@ export function LobbyLayout({
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="retro-panel p-5 sm:p-8 w-full max-w-md flex flex-col"
+          className="retro-panel p-5 sm:p-8 w-full max-w-md flex flex-col relative"
           style={{ maxHeight: 'calc(100vh - 180px)' }}
         >
-          {/* Header */}
-          <div className={`flex items-center mb-4 sm:mb-6 ${title ? 'justify-between' : ''}`}>
+          {/* Back button - absolute when no title, in header row when title exists */}
+          {title ? (
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <motion.button
+                whileHover={{ scale: 1.05, x: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleBackClick}
+                className="px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-purple-deep/80 border border-purple-mid text-white-soft/70 text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-purple-mid/50 transition-colors"
+              >
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                Back
+              </motion.button>
+
+              <h1 className="text-lg sm:text-xl font-bold text-white-soft">
+                {title}
+              </h1>
+
+              <div className="min-w-[60px] sm:min-w-[72px] flex justify-end">
+                {headerRight}
+              </div>
+            </div>
+          ) : (
             <motion.button
               whileHover={{ scale: 1.05, x: -2 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleBackClick}
-              className="px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-purple-deep/80 border border-purple-mid text-white-soft/70 text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-purple-mid/50 transition-colors"
+              className="absolute top-4 left-4 sm:top-6 sm:left-6 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-purple-deep/80 border border-purple-mid text-white-soft/70 text-xs sm:text-sm flex items-center gap-1 sm:gap-2 hover:bg-purple-mid/50 transition-colors z-10"
             >
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
               Back
             </motion.button>
-
-            {title && (
-              <h1 className="text-lg sm:text-xl font-bold text-white-soft">
-                {title}
-              </h1>
-            )}
-
-            {/* Header right slot (or empty spacer for centering) */}
-            {(title || headerRight) && (
-              <div className="min-w-[60px] sm:min-w-[72px] flex justify-end">
-                {headerRight}
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Content zone - scrollable */}
           <div className="flex-1 overflow-y-auto min-h-0">
