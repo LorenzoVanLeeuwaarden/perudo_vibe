@@ -63,6 +63,14 @@ export function BidUI({
 
   const validation = isValidBid({ count, value }, currentBid, totalDice, isPalifico);
 
+  // Don't render empty panel when there's nothing to show
+  const hasBidToDisplay = currentBid && !hideBidDisplay;
+  const hasContentToShow = isMyTurn || hasBidToDisplay || isPalifico;
+
+  if (!hasContentToShow) {
+    return null;
+  }
+
   const handleBid = () => {
     if (validation.valid) {
       onBid({ count, value });
