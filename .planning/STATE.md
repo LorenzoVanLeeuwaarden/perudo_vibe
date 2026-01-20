@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.2 UI Unification & Tech Debt - Phase 16: Shared Hooks
+**Current focus:** v2.2 UI Unification & Tech Debt - Phase 16: Shared Hooks (complete)
 
 ## Current Position
 
 Phase: 16 of 19 (Shared Hooks)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-01-20 — v2.2 roadmap created
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-01-20 - Completed 16-01-PLAN.md
 
-Progress: [###############----] 15/19 phases complete (v1.0 + v2.0 + v2.1 done, v2.2 starting)
+Progress: [################---] 16/19 phases complete (v1.0 + v2.0 + v2.1 done, v2.2 in progress)
 
 ## Production URLs
 
@@ -40,6 +40,11 @@ Progress: [###############----] 15/19 phases complete (v1.0 + v2.0 + v2.1 done, 
 - Requirements complete: 12/12 (100%)
 - Animation performance: 60fps on Firefox and Chrome
 
+**v2.2 Summary (in progress):**
+- Plans completed: 1
+- Phases complete: 1 (Phase 16)
+- Tech debt addressed: HOOKS-01 through HOOKS-05
+
 ## Accumulated Context
 
 ### Decisions
@@ -50,6 +55,10 @@ Recent (v2.1):
 - Firefox simplified mode: Solid backgrounds instead of backdrop-blur
 - useSimplifiedAnimations pattern: Combined Firefox + reduced motion guard
 - Static style fallbacks: Preserve visual appearance when animations disabled
+
+Recent (v2.2):
+- Keep Dice3D prop name as isFirefox for backward compatibility, pass combined value
+- Update all JSX references to useSimplifiedAnimations for clarity
 
 ### Pending Todos
 
@@ -62,19 +71,24 @@ None.
 
 ### Tech Debt
 
-Being addressed in v2.2:
-- DudoOverlay, ShaderBackground, DiceRoller3D have local useIsFirefox (HOOKS-01 to HOOKS-04)
-- Animation components missing shared useReducedMotion (HOOKS-05)
+Addressed in Phase 16:
+- [x] DudoOverlay, ShaderBackground, DiceRoller3D now use shared useIsFirefox (HOOKS-01 to HOOKS-04)
+- [x] All 3 components now respect prefers-reduced-motion (HOOKS-05)
+
+Remaining:
+- Tooling issues (Phase 17)
+- UI unification (Phase 18)
+- Final testing (Phase 19)
 
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: v2.2 roadmap created
+Stopped at: Completed 16-01-PLAN.md (Phase 16 complete)
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:plan-phase 16` to create plan for Shared Hooks phase.
+Run `/gsd:plan-phase 17` to create plan for Tooling phase.
 
 ---
-*Updated: 2026-01-20 after v2.2 roadmap creation*
+*Updated: 2026-01-20 after Phase 16 completion*
