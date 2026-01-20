@@ -23,9 +23,9 @@ Requirements for UI Unification & Tech Debt milestone. Each maps to roadmap phas
 
 ### Lobby Unification
 
-- [ ] **LOBBY-01**: Shared layout/styling foundation for both lobby types
-- [ ] **LOBBY-02**: Single-player lobby uses unified styling
-- [ ] **LOBBY-03**: Multiplayer lobby uses unified styling (with mode-specific features)
+- [x] **LOBBY-01**: Shared layout/styling foundation for both lobby types
+- [x] **LOBBY-02**: Single-player lobby uses unified styling
+- [x] **LOBBY-03**: Multiplayer lobby uses unified styling (with mode-specific features)
 
 ### Shared Hooks
 
@@ -78,9 +78,9 @@ Which phases cover which requirements.
 | GAME-02 | Phase 17 | Complete |
 | GAME-03 | Phase 17 | Complete |
 | GAME-04 | Phase 17 | Complete |
-| LOBBY-01 | Phase 18 | Pending |
-| LOBBY-02 | Phase 18 | Pending |
-| LOBBY-03 | Phase 18 | Pending |
+| LOBBY-01 | Phase 18 | Complete |
+| LOBBY-02 | Phase 18 | Complete |
+| LOBBY-03 | Phase 18 | Complete |
 | END-01 | Phase 19 | Pending |
 | END-02 | Phase 19 | Pending |
 | END-03 | Phase 19 | Pending |
@@ -94,4 +94,4 @@ Which phases cover which requirements.
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-20 after Phase 17 completion*
+*Last updated: 2026-01-20 after Phase 18 completion*

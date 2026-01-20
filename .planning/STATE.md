@@ -109,7 +109,7 @@ Resume file: None
 
 ## Next Steps
 
-Run `/gsd:execute-phase 19` to begin Phase 19: Final Testing.
+Run `/gsd:discuss-phase 19` to gather context, or `/gsd:plan-phase 19` to create plans for Phase 19: End Game & Tooling.
 
 ---
-*Updated: 2026-01-20 after 18-02-PLAN.md completion*
+*Updated: 2026-01-20 after Phase 18 verified*
