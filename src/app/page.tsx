@@ -181,6 +181,7 @@ export default function FaroleoGame() {
   const lastBidderRef = useRef(lastBidder);
   const isPalificoRef = useRef(isPalifico);
   const roundStarterRef = useRef(roundStarter);
+  const revealCancelledRef = useRef(false);
 
   // Keep refs in sync
   useEffect(() => {
@@ -796,6 +797,8 @@ export default function FaroleoGame() {
 
   // Skip the reveal animation and show final state immediately
   const handleSkipReveal = useCallback(() => {
+    // Cancel any running reveal animation
+    revealCancelledRef.current = true;
     const totalDice = playerHand.length + opponents.reduce((sum, o) => sum + o.hand.length, 0);
     setRevealProgress(totalDice);
     setRevealComplete(true);
@@ -932,6 +935,12 @@ export default function FaroleoGame() {
     // Wait for dudo overlay to complete before starting reveal animation
     if (gameState !== 'Reveal' || !currentBid || !dudoOverlayComplete) return;
 
+    // Don't restart if already completed (e.g., user clicked Skip)
+    if (countingComplete) return;
+
+    // Reset cancellation flag for new animation
+    revealCancelledRef.current = false;
+
     // Reset states
     setRevealProgress(0);
     setRevealComplete(false);
@@ -969,6 +978,9 @@ export default function FaroleoGame() {
     let currentPlayerMatches: number[] = [];
 
     const processNext = () => {
+      // Bail out if animation was cancelled (user clicked Skip)
+      if (revealCancelledRef.current) return;
+
       if (currentPlayerListIdx >= playerList.length) {
         // All players processed
         setRevealComplete(true);
@@ -1026,7 +1038,7 @@ export default function FaroleoGame() {
     // Start animation after a brief delay
     const timeout = setTimeout(processNext, 300);
     return () => clearTimeout(timeout);
-  }, [gameState, currentBid, playerHand, opponents, dudoOverlayComplete]);
+  }, [gameState, currentBid, playerHand, opponents, dudoOverlayComplete, countingComplete]);
 
   // Trigger dying die animation when counting completes
   useEffect(() => {
@@ -1218,9 +1230,11 @@ export default function FaroleoGame() {
   // Get currently counted dice (those that have been highlighted so far)
   const getCountedDice = useCallback(() => {
     const allMatches = getMatchingDiceWithIndices();
+    // If counting is complete (including skip), show all matches
+    if (countingComplete) return allMatches;
     if (highlightedDiceIndex < 0) return [];
     return allMatches.filter(m => m.globalIdx <= highlightedDiceIndex);
-  }, [getMatchingDiceWithIndices, highlightedDiceIndex]);
+  }, [getMatchingDiceWithIndices, highlightedDiceIndex, countingComplete]);
 
   // Get the last bidder's color
   const getLastBidderColor = useCallback((): PlayerColor => {
