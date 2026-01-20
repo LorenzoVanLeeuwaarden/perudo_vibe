@@ -62,11 +62,20 @@ export function PlayerDiceBadge({
       <AnimatePresence>
         {showThinking && (
           <motion.div
-            initial={{ opacity: 0, scale: 0, y: 10 }}
+            initial={{ opacity: 0, scale: 0, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0, y: 10 }}
-            className="absolute -top-10 sm:-top-12 left-1/2 -translate-x-1/2 z-20"
+            exit={{ opacity: 0, scale: 0, y: -10 }}
+            className="absolute top-full mt-2 sm:mt-3 left-1/2 -translate-x-1/2 z-20"
           >
+            {/* Speech bubble tail - pointing up */}
+            <div
+              className="absolute left-1/2 -translate-x-1/2 -top-1.5 sm:-top-2 w-0 h-0"
+              style={{
+                borderLeft: '6px solid transparent',
+                borderRight: '6px solid transparent',
+                borderBottom: `6px solid ${colorConfig.border}`,
+              }}
+            />
             <div
               className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold whitespace-nowrap"
               style={{
@@ -88,15 +97,6 @@ export function PlayerDiceBadge({
                 ...
               </motion.span>
             </div>
-            {/* Speech bubble tail */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 -bottom-1.5 sm:-bottom-2 w-0 h-0"
-              style={{
-                borderLeft: '6px solid transparent',
-                borderRight: '6px solid transparent',
-                borderTop: `6px solid ${colorConfig.border}`,
-              }}
-            />
           </motion.div>
         )}
       </AnimatePresence>
