@@ -9,10 +9,10 @@ Requirements for animation performance optimization. Each maps to roadmap phases
 
 ### DudoOverlay Optimization
 
-- [ ] **DUDO-01**: Backdrop blur is static (not animated), with opacity fade-in
-- [ ] **DUDO-02**: Text glow effect uses pseudo-element technique (no animated text-shadow)
-- [ ] **DUDO-03**: SVG glitch filter replaced with CSS-only alternative or removed
-- [ ] **DUDO-04**: Particle count reduced and uses only transform/opacity
+- [x] **DUDO-01**: Backdrop blur is static (not animated), with opacity fade-in
+- [x] **DUDO-02**: Text glow effect uses pseudo-element technique (no animated text-shadow)
+- [x] **DUDO-03**: SVG glitch filter replaced with CSS-only alternative or removed
+- [x] **DUDO-04**: Particle count reduced and uses only transform/opacity
 
 ### Victory/Defeat Screen Optimization
 
@@ -46,10 +46,10 @@ Requirements for animation performance optimization. Each maps to roadmap phases
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DUDO-01 | Phase 13 | Pending |
-| DUDO-02 | Phase 13 | Pending |
-| DUDO-03 | Phase 13 | Pending |
-| DUDO-04 | Phase 13 | Pending |
+| DUDO-01 | Phase 13 | Complete |
+| DUDO-02 | Phase 13 | Complete |
+| DUDO-03 | Phase 13 | Complete |
+| DUDO-04 | Phase 13 | Complete |
 | VICT-01 | Phase 14 | Pending |
 | VICT-02 | Phase 14 | Pending |
 | COMP-01 | Phase 14 | Pending |

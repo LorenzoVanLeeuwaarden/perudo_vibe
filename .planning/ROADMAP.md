@@ -70,7 +70,7 @@
 
 **Milestone Goal:** Optimize animations for smooth 60fps performance across all browsers, especially Firefox.
 
-- [ ] **Phase 13: DudoOverlay Optimization** - Fix the main performance culprits
+- [x] **Phase 13: DudoOverlay Optimization** - Fix the main performance culprits
 - [ ] **Phase 14: Other Component Optimization** - Victory, Defeat, RevealPhase + accessibility
 - [ ] **Phase 15: Performance Verification** - Verify 60fps across browsers
 
@@ -89,7 +89,7 @@
 **Plans**: 1 plan
 
 Plans:
-- [ ] 13-01-PLAN.md — Optimize DudoOverlay for 60fps performance
+- [x] 13-01-PLAN.md — Optimize DudoOverlay for 60fps performance (complete)
 
 ### Phase 14: Other Component Optimization
 **Goal**: All animated components use GPU-accelerated properties, accessibility supported
@@ -127,7 +127,7 @@ Phases execute in numeric order: 13 -> 14 -> 15
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 13. DudoOverlay Optimization | v2.1 | 0/1 | Not started | - |
+| 13. DudoOverlay Optimization | v2.1 | 1/1 | ✓ Complete | 2026-01-20 |
 | 14. Other Component Optimization | v2.1 | 0/1 | Not started | - |
 | 15. Performance Verification | v2.1 | 0/1 | Not started | - |
 
