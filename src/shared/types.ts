@@ -6,7 +6,7 @@
  */
 
 // Re-export PlayerColor from existing types for consistency
-export type PlayerColor = 'blue' | 'green' | 'orange' | 'yellow' | 'black' | 'red';
+export type PlayerColor = 'blue' | 'green' | 'orange' | 'yellow' | 'purple' | 'red';
 
 /**
  * Server-authoritative game phases

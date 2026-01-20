@@ -235,56 +235,57 @@ export function BidUI({
           </div>
 
           <div className="flex flex-col gap-2 sm:gap-3">
-            <div className="flex gap-2 sm:gap-3">
-              <motion.button
-                whileHover={validation.valid ? { scale: 1.02 } : {}}
-                whileTap={validation.valid ? { scale: 0.98 } : {}}
-                onClick={handleBid}
-                disabled={!validation.valid}
-                className={`
-                  flex-1 retro-button retro-button-orange
-                  flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base
-                  ${!validation.valid ? 'opacity-50 cursor-not-allowed' : ''}
-                `}
-              >
-                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-                BID
-              </motion.button>
+            {/* BID button - always shown, full width */}
+            <motion.button
+              whileHover={validation.valid ? { scale: 1.02 } : {}}
+              whileTap={validation.valid ? { scale: 0.98 } : {}}
+              onClick={handleBid}
+              disabled={!validation.valid}
+              className={`
+                w-full retro-button retro-button-orange
+                flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base
+                ${!validation.valid ? 'opacity-50 cursor-not-allowed' : ''}
+              `}
+            >
+              <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+              BID
+            </motion.button>
 
-              {currentBid && (
+            {/* Calza and Dudo row - only shown when there's a current bid */}
+            {currentBid && (
+              <div className="flex gap-2 sm:gap-3">
+                {canCalza && (
+                  <motion.button
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={onCalza}
+                    className="flex-1 py-2 sm:py-2.5 px-3 rounded-lg font-bold uppercase text-xs sm:text-[11px] flex items-center justify-center gap-1"
+                    style={{
+                      background: 'linear-gradient(180deg, #22c55e 0%, #16a34a 100%)',
+                      border: '2px solid #4ade80',
+                      borderBottom: '3px solid #15803d',
+                      color: '#fff',
+                      letterSpacing: '0.15em',
+                      boxShadow: '0 3px 0 0 #166534, 0 5px 10px 0 rgba(0, 0, 0, 0.5)',
+                    }}
+                  >
+                    <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    CALZA!
+                  </motion.button>
+                )}
+
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={onDudo}
-                  className="flex-1 retro-button retro-button-danger flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+                  className="flex-1 retro-button retro-button-danger flex items-center justify-center gap-1 text-xs sm:text-[11px] py-2 sm:py-2.5"
                 >
-                  <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   DUDO!
                 </motion.button>
-              )}
-            </div>
-
-            {/* Calza button - only shown when there's a current bid to call Calza on */}
-            {currentBid && canCalza && (
-              <motion.button
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={onCalza}
-                className="w-full py-2.5 sm:py-3 px-4 rounded-lg font-bold uppercase text-xs sm:text-[13px] flex items-center justify-center gap-1 sm:gap-2"
-                style={{
-                  background: 'linear-gradient(180deg, #22c55e 0%, #16a34a 100%)',
-                  border: '2px solid #4ade80',
-                  borderBottom: '3px solid #15803d',
-                  color: '#fff',
-                  letterSpacing: '0.2em',
-                  boxShadow: '0 3px 0 0 #166534, 0 5px 10px 0 rgba(0, 0, 0, 0.5)',
-                }}
-              >
-                <Target className="w-4 h-4 sm:w-5 sm:h-5" />
-                CALZA!
-              </motion.button>
+              </div>
             )}
           </div>
 

@@ -105,7 +105,7 @@ const sizeClasses = {
 };
 
 // Colors that need white dots for visibility
-const DARK_COLORS: PlayerColor[] = ['black', 'blue', 'red', 'green'];
+const DARK_COLORS: PlayerColor[] = ['purple', 'blue', 'red', 'green'];
 
 export function Dice({
   value,

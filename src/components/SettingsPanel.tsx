@@ -5,7 +5,7 @@ import { X, Check } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { Dice } from '@/components/Dice';
 
-const COLOR_OPTIONS: PlayerColor[] = ['blue', 'green', 'orange', 'yellow', 'black', 'red'];
+const COLOR_OPTIONS: PlayerColor[] = ['blue', 'green', 'orange', 'yellow', 'purple', 'red'];
 
 interface SettingsPanelProps {
   showSettings: boolean;

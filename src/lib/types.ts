@@ -1,6 +1,6 @@
 export type GameState = 'ModeSelection' | 'Lobby' | 'Rolling' | 'Bidding' | 'Reveal' | 'Victory' | 'Defeat';
 
-export type PlayerColor = 'blue' | 'green' | 'orange' | 'yellow' | 'black' | 'red';
+export type PlayerColor = 'blue' | 'green' | 'orange' | 'yellow' | 'purple' | 'red';
 
 export interface Bid {
   count: number;
@@ -74,14 +74,14 @@ export const PLAYER_COLORS: Record<PlayerColor, {
     glow: 'rgba(234, 179, 8, 0.5)',
     text: '#fef9c3',
   },
-  black: {
-    bg: '#374151',
-    bgGradient: 'linear-gradient(135deg, #4b5563 0%, #374151 50%, #1f2937 100%)',
-    border: '#6b7280',
-    shadow: '#111827',
-    shadowDark: '#030712',
-    glow: 'rgba(75, 85, 99, 0.5)',
-    text: '#f3f4f6',
+  purple: {
+    bg: '#8b5cf6',
+    bgGradient: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%)',
+    border: '#c4b5fd',
+    shadow: '#6d28d9',
+    shadowDark: '#5b21b6',
+    glow: 'rgba(139, 92, 246, 0.5)',
+    text: '#ede9fe',
   },
   red: {
     bg: '#ef4444',

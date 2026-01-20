@@ -77,7 +77,7 @@ const AI_THINKING_PROMPTS = [
 ];
 
 // Opponent colors (excluding player's color)
-const OPPONENT_COLORS: PlayerColor[] = ['red', 'green', 'yellow', 'black', 'orange', 'blue'];
+const OPPONENT_COLORS: PlayerColor[] = ['red', 'green', 'yellow', 'purple', 'orange', 'blue'];
 
 // Funny Spanish-sounding AI names
 const AI_NAMES = [
@@ -117,7 +117,7 @@ interface Opponent {
   isEliminated: boolean;
 }
 
-const COLOR_OPTIONS: PlayerColor[] = ['blue', 'green', 'orange', 'yellow', 'black', 'red'];
+const COLOR_OPTIONS: PlayerColor[] = ['blue', 'green', 'orange', 'yellow', 'purple', 'red'];
 
 export default function FaroleoGame() {
   // Router for navigation

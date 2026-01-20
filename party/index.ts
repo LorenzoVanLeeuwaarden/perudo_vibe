@@ -835,8 +835,8 @@ export default class GameServer implements Party.Server {
 
     // Assign color (first available from list)
     const usedColors = new Set(this.roomState.players.map(p => p.color));
-    const availableColors: Array<'blue' | 'green' | 'orange' | 'yellow' | 'black' | 'red'> =
-      ['blue', 'green', 'orange', 'yellow', 'black', 'red'];
+    const availableColors: Array<'blue' | 'green' | 'orange' | 'yellow' | 'purple' | 'red'> =
+      ['blue', 'green', 'orange', 'yellow', 'purple', 'red'];
     const color = availableColors.find(c => !usedColors.has(c)) ?? 'blue';
 
     // Create player
