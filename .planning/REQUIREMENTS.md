@@ -16,10 +16,10 @@ Requirements for UI Unification & Tech Debt milestone. Each maps to roadmap phas
 
 ### Game UI Unification
 
-- [ ] **GAME-01**: Single-player game UI styling applied to multiplayer GameBoard
-- [ ] **GAME-02**: Consistent PlayerDiceBadge styling across both modes
-- [ ] **GAME-03**: Consistent BidUI styling across both modes
-- [ ] **GAME-04**: Consistent RevealPhase styling across both modes
+- [x] **GAME-01**: Single-player game UI styling applied to multiplayer GameBoard
+- [x] **GAME-02**: Consistent PlayerDiceBadge styling across both modes
+- [x] **GAME-03**: Consistent BidUI styling across both modes
+- [x] **GAME-04**: Consistent RevealPhase styling across both modes
 
 ### Lobby Unification
 
@@ -74,10 +74,10 @@ Which phases cover which requirements.
 | HOOKS-03 | Phase 16 | Complete |
 | HOOKS-04 | Phase 16 | Complete |
 | HOOKS-05 | Phase 16 | Complete |
-| GAME-01 | Phase 17 | Pending |
-| GAME-02 | Phase 17 | Pending |
-| GAME-03 | Phase 17 | Pending |
-| GAME-04 | Phase 17 | Pending |
+| GAME-01 | Phase 17 | Complete |
+| GAME-02 | Phase 17 | Complete |
+| GAME-03 | Phase 17 | Complete |
+| GAME-04 | Phase 17 | Complete |
 | LOBBY-01 | Phase 18 | Pending |
 | LOBBY-02 | Phase 18 | Pending |
 | LOBBY-03 | Phase 18 | Pending |
@@ -94,4 +94,4 @@ Which phases cover which requirements.
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-20 after Phase 16 completion*
+*Last updated: 2026-01-20 after Phase 17 completion*
