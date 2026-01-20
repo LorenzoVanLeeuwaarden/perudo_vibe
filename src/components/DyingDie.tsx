@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
+import { PlayerColor } from '@/lib/types';
 import { Dice } from './Dice';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -74,8 +74,6 @@ export function DyingDie({ value, color, onComplete, size = 'sm' }: DyingDieProp
       clearTimeout(explodeTimeout);
     };
   }, [onComplete, containerSize]);
-
-  const colorConfig = PLAYER_COLORS[color];
 
   return (
     <div className="relative" style={{ width: containerSize, height: containerSize }}>

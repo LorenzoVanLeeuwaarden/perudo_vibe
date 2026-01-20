@@ -58,10 +58,22 @@ export function BidUI({
 
   useEffect(() => {
     if (isMyTurn) {
-      setCount(getInitialCount());
-      setValue(getInitialValue());
+      // Initialize count based on current bid
+      if (!currentBid) {
+        setCount(1);
+      } else if (isPalifico) {
+        setCount(currentBid.count + 1);
+      } else {
+        setCount(currentBid.count);
+      }
+      // Initialize value based on current bid
+      if (!currentBid) {
+        setValue(2);
+      } else {
+        setValue(currentBid.value);
+      }
     }
-  }, [isMyTurn, currentBid]);
+  }, [isMyTurn, currentBid, isPalifico]);
 
   // Notify parent of value changes for dice highlighting
   useEffect(() => {

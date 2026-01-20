@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
+import { PlayerColor } from '@/lib/types';
 import { Dice } from './Dice';
 
 interface Particle {
@@ -67,8 +67,6 @@ export function SpawningDie({ value, color, onComplete, size = 'sm' }: SpawningD
       clearTimeout(doneTimeout);
     };
   }, [onComplete, containerSize]);
-
-  const colorConfig = PLAYER_COLORS[color];
 
   const scale = containerSize / 44; // Scale factor based on default "sm" size
 

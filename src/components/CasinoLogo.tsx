@@ -30,11 +30,7 @@ function generateColorConfig(hue: number, sat: number, light: number) {
   return { bg, border, shadow, glow };
 }
 
-interface CasinoLogoProps {
-  color?: string; // Optional - ignored, we cycle through all colors
-}
-
-export function CasinoLogo({ color: _color }: CasinoLogoProps) {
+export function CasinoLogo() {
   const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
   const useSimplifiedAnimations = isFirefox || prefersReducedMotion;

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Skull } from 'lucide-react';
-import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
+import { PlayerColor } from '@/lib/types';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
@@ -23,10 +23,9 @@ interface DefeatScreenProps {
   onPlayAgain: () => void;
 }
 
-export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
+export function DefeatScreen({ onPlayAgain }: DefeatScreenProps) {
   const [embers, setEmbers] = useState<Ember[]>([]);
   const [shakeIntensity, setShakeIntensity] = useState(20);
-  const colorConfig = PLAYER_COLORS[playerColor];
   const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
   const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
@@ -51,7 +50,7 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
 
     const interval = setInterval(createEmber, 50);
     return () => clearInterval(interval);
-  }, [isFirefox]);
+  }, [useSimplifiedAnimations]);
 
   // Ember physics - skip on Firefox for performance
   useEffect(() => {
@@ -72,7 +71,7 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
     }, 16);
 
     return () => clearInterval(interval);
-  }, [isFirefox]);
+  }, [useSimplifiedAnimations]);
 
   // Initial shake that calms down
   useEffect(() => {

@@ -126,7 +126,7 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
     }, 800);
 
     return () => clearInterval(interval);
-  }, [createFirework, isFirefox]);
+  }, [createFirework, useSimplifiedAnimations]);
 
   // Confetti spawner - skip on Firefox for performance
   useEffect(() => {
@@ -137,7 +137,7 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
     }, 100);
 
     return () => clearInterval(interval);
-  }, [createConfetti, isFirefox]);
+  }, [createConfetti, useSimplifiedAnimations]);
 
   // Particle physics - skip on Firefox for performance
   useEffect(() => {
@@ -160,7 +160,7 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
     }, 16);
 
     return () => clearInterval(interval);
-  }, [isFirefox]);
+  }, [useSimplifiedAnimations]);
 
   const handleClick = useCallback(() => {
     if (canSkip) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PartySocket from 'partysocket';
 import { normalizeRoomCode } from '@/lib/roomCode';
 import type { ServerMessage } from '@/shared';

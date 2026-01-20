@@ -55,8 +55,8 @@ export function SortedDiceDisplay({
     }));
   }, [dice]);
 
-  // State to control when sorting happens
-  const [isSorted, setIsSorted] = useState(!animateSort);
+  // State to control when sorting happens (setter used in effects)
+  const [, setIsSorted] = useState(!animateSort);
   const [displayDice, setDisplayDice] = useState<DiceWithId[]>(diceWithIds);
   // Track if user has manually reordered (prevents auto-sort override)
   const [hasManuallyOrdered, setHasManuallyOrdered] = useState(false);

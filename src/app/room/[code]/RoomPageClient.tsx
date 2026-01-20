@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 import { normalizeRoomCode } from '@/lib/roomCode';
 import { useClientIdentity } from '@/hooks/useClientIdentity';
-import { useRoomConnection, type ConnectionStatus } from '@/hooks/useRoomConnection';
+import { useRoomConnection } from '@/hooks/useRoomConnection';
 import { useUIStore } from '@/stores/uiStore';
 import { JoinForm } from '@/components/JoinForm';
 import { RoomLobby } from '@/components/RoomLobby';
