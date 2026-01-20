@@ -141,10 +141,11 @@ Plans:
   3. Stats page component works identically in both modes (same component, same data format)
   4. Single-player tracks and displays game stats (bids made, dudo/calza accuracy, dice lost/gained)
   5. `npm run lint` executes successfully without directory errors
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 19-01: TBD
+- [ ] 19-01-PLAN.md — ESLint configuration migration (flat config for Next.js 16)
+- [ ] 19-02-PLAN.md — Single-player stats tracking and end game flow
 
 ## Progress
 
@@ -159,8 +160,8 @@ Phases 1-15 complete. v2.2 starts at Phase 16.
 | 16. Shared Hooks | v2.2 | 1/1 | Complete | 2026-01-20 |
 | 17. Game UI | v2.2 | 2/2 | Complete | 2026-01-20 |
 | 18. Lobby UI | v2.2 | 2/2 | Complete | 2026-01-20 |
-| 19. End Game & Tooling | v2.2 | 0/TBD | Not started | - |
+| 19. End Game & Tooling | v2.2 | 0/2 | Not started | - |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-20 after Phase 18 execution*
+*Last updated: 2026-01-20 after Phase 19 planning*
