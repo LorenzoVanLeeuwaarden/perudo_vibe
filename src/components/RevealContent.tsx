@@ -105,10 +105,56 @@ export function RevealContent({
     return actualCount < bid.count ? 'text-green-crt' : 'text-red-danger';
   };
 
+  // Get container styling based on call type (Dudo vs Calza)
+  const getContainerStyle = () => {
+    if (isCalza) {
+      return {
+        border: '3px solid #22c55e',
+        boxShadow: '0 0 20px rgba(34, 197, 94, 0.4), 0 0 40px rgba(34, 197, 94, 0.2), inset 0 0 30px rgba(34, 197, 94, 0.1)',
+      };
+    }
+    // Dudo
+    return {
+      border: '3px solid #ef4444',
+      boxShadow: '0 0 20px rgba(239, 68, 68, 0.4), 0 0 40px rgba(239, 68, 68, 0.2), inset 0 0 30px rgba(239, 68, 68, 0.1)',
+    };
+  };
+
   return (
-    <div className="retro-panel p-3 sm:p-6 max-w-4xl">
+    <div
+      className="retro-panel p-3 sm:p-6 max-w-4xl relative overflow-hidden"
+      style={getContainerStyle()}
+    >
+      {/* Diagonal watermark text - DUDO or CALZA - 8-bit pixel style */}
+      <div
+        className="absolute inset-0 pointer-events-none select-none"
+        style={{ zIndex: 0 }}
+      >
+        <div
+          className="absolute left-1/2 top-1/2 whitespace-nowrap"
+          style={{
+            transform: 'translate(-50%, -50%) rotate(-35deg)',
+          }}
+        >
+          <span
+            className="uppercase"
+            style={{
+              fontSize: 'clamp(100px, 28vw, 220px)',
+              color: isCalza ? '#22c55e' : '#ef4444',
+              opacity: 0.18,
+              fontFamily: '"Press Start 2P", cursive',
+              textShadow: isCalza
+                ? '0 0 40px #22c55e, 0 0 80px #22c55e, 6px 6px 0 #14532d'
+                : '0 0 40px #ef4444, 0 0 80px #ef4444, 6px 6px 0 #7f1d1d',
+            }}
+          >
+            {isCalza ? 'CALZA' : 'DUDO'}
+          </span>
+        </div>
+      </div>
+
       {/* Bid vs Actual comparison - stacks on mobile */}
-      <div className="flex flex-col sm:flex-row items-stretch justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+      <div className="flex flex-col sm:flex-row items-stretch justify-center gap-2 sm:gap-4 mb-4 sm:mb-6 relative" style={{ zIndex: 1 }}>
         {/* BID block - uses last bidder's color */}
         <motion.div
           initial={{ x: -50, opacity: 0 }}
@@ -212,7 +258,7 @@ export function RevealContent({
 
       {/* Dice reveal grid - 2-column on mobile, flexible on larger screens */}
       {/* Only show players who have dice to reveal this round */}
-      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-4 mb-4 sm:mb-6 max-w-4xl mx-auto">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-4 mb-4 sm:mb-6 max-w-4xl mx-auto relative" style={{ zIndex: 1 }}>
         {players
           .filter((player) => player.hand.length > 0)
           .map((player) => {
@@ -243,7 +289,7 @@ export function RevealContent({
       </div>
 
       {/* Action buttons */}
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-3 relative" style={{ zIndex: 1 }}>
         {/* Skip button - shown while animation is running */}
         {!countingComplete && (
           <motion.button

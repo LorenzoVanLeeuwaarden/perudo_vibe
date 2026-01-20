@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Dice } from './Dice';
 import type { PlayerColor } from '@/lib/types';
 
@@ -23,6 +23,13 @@ interface DiceExplosionProps {
 
 export function DiceExplosion({ color, onComplete }: DiceExplosionProps) {
   const [dice, setDice] = useState<ExplodingDie[]>([]);
+  const onCompleteRef = useRef(onComplete);
+  const hasCompletedRef = useRef(false);
+
+  // Keep ref updated
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     // Create initial explosion of 12 dice from center
@@ -62,9 +69,14 @@ export function DiceExplosion({ color, onComplete }: DiceExplosionProps) {
           }))
           .filter(d => d.life > 0);
 
-        if (updated.length === 0) {
+        // Schedule onComplete outside of setState to avoid React warning
+        if (updated.length === 0 && !hasCompletedRef.current) {
+          hasCompletedRef.current = true;
           clearInterval(interval);
-          onComplete?.();
+          // Use setTimeout to call onComplete after state update completes
+          setTimeout(() => {
+            onCompleteRef.current?.();
+          }, 0);
         }
 
         return updated;
@@ -72,7 +84,7 @@ export function DiceExplosion({ color, onComplete }: DiceExplosionProps) {
     }, 16);
 
     return () => clearInterval(interval);
-  }, [onComplete]);
+  }, []);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-30 overflow-hidden">
