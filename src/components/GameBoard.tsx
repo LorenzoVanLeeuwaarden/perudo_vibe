@@ -381,26 +381,49 @@ export function GameBoard({
           )}
         </motion.div>
 
-        {/* My dice at bottom */}
+        {/* Player Shelf (Bottom) - matches single-player */}
         {myHand.length > 0 && gameState.phase !== 'ended' && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-auto pt-4"
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="flex-none pb-4 relative"
           >
-            <div className="retro-panel p-4">
-              <p className="text-xs uppercase text-white-soft/50 mb-3 tracking-wider text-center">Your Dice</p>
-              <div className="flex justify-center">
-                <SortedDiceDisplay
-                  dice={myHand}
-                  color={myColor}
-                  isPalifico={gameState.isPalifico}
-                  size="md"
-                  highlightValue={!isMyTurn ? gameState.currentBid?.value ?? null : null}
-                  draggable={true}
-                />
-              </div>
-            </div>
+            {/* Radial glow from bottom */}
+            <div
+              className="absolute inset-x-0 bottom-0 h-32 pointer-events-none"
+              style={{
+                background: `radial-gradient(ellipse 70% 100% at 50% 100%, ${PLAYER_COLORS[myColor].glow} 0%, transparent 70%)`,
+                opacity: 0.35,
+              }}
+            />
+
+            {/* Dice container - guard filter animation for Firefox/reduced motion */}
+            <motion.div
+              className="relative flex justify-center items-end"
+              style={useSimplifiedAnimations ? {
+                filter: `drop-shadow(0 0 18px ${PLAYER_COLORS[myColor].glow})`,
+              } : undefined}
+              animate={useSimplifiedAnimations ? {} : {
+                filter: [
+                  `drop-shadow(0 0 12px ${PLAYER_COLORS[myColor].glow})`,
+                  `drop-shadow(0 0 25px ${PLAYER_COLORS[myColor].glow})`,
+                  `drop-shadow(0 0 12px ${PLAYER_COLORS[myColor].glow})`,
+                ],
+              }}
+              transition={useSimplifiedAnimations ? undefined : { duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              {/* Player's dice with sorting and drag-to-reorder */}
+              <SortedDiceDisplay
+                dice={myHand}
+                color={myColor}
+                isPalifico={gameState.isPalifico}
+                size="lg"
+                animateSort={true}
+                highlightValue={!isMyTurn ? gameState.currentBid?.value ?? null : null}
+                draggable={true}
+              />
+            </motion.div>
           </motion.div>
         )}
       </div>
