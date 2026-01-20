@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.1 Animation Performance - Starting
+**Current focus:** v2.1 Animation Performance - Ready for Phase 13
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 13 of 15 (DudoOverlay Optimization) - Not started
 Plan: —
-Status: Defining requirements
-Last activity: 2026-01-20 — Milestone v2.1 started
+Status: Ready to plan
+Last activity: 2026-01-20 — Milestone v2.1 roadmap created
 
-Progress: [--------] 0% - v2.1 milestone initialized
+Progress: [--------] 0/3 v2.1 phases complete (0%)
 
 ## Production URLs
 

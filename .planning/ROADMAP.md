@@ -3,7 +3,8 @@
 ## Milestones
 
 - [x] **v1.0 MVP** - Phases 1-9 (shipped 2026-01-18)
-- [ ] **v2.0 Cloudflare Deployment** - Phases 10-12 (in progress)
+- [x] **v2.0 Cloudflare Deployment** - Phases 10-12 (shipped 2026-01-19)
+- [ ] **v2.1 Animation Performance** - Phases 13-15 (in progress)
 
 ## Phases
 
@@ -48,71 +49,87 @@
 
 </details>
 
-### v2.0 Cloudflare Deployment (In Progress)
+<details>
+<summary>v2.0 Cloudflare Deployment (Phases 10-12) - SHIPPED 2026-01-19</summary>
 
-**Milestone Goal:** Deploy Perudo Vibe to Cloudflare so anyone can access and play via public URL.
+### Phase 10: Backend Deployment
+**Goal**: PartyKit backend running on Cloudflare Workers
+**Plans**: 1 plan (complete)
 
-- [x] **Phase 10: Backend Deployment** - PartyKit backend live on Cloudflare Workers (completed 2026-01-19)
-- [x] **Phase 11: Frontend & Configuration** - Next.js deployed with production config (completed 2026-01-19)
-- [ ] **Phase 12: Production Verification** - End-to-end multiplayer verified
+### Phase 11: Frontend & Configuration
+**Goal**: Next.js frontend deployed to Cloudflare Pages
+**Plans**: 2 plans (complete)
+
+### Phase 12: Production Verification
+**Goal**: Full multiplayer experience verified working
+**Plans**: 1 plan (complete)
+
+</details>
+
+### v2.1 Animation Performance (In Progress)
+
+**Milestone Goal:** Optimize animations for smooth 60fps performance across all browsers, especially Firefox.
+
+- [ ] **Phase 13: DudoOverlay Optimization** - Fix the main performance culprits
+- [ ] **Phase 14: Other Component Optimization** - Victory, Defeat, RevealPhase + accessibility
+- [ ] **Phase 15: Performance Verification** - Verify 60fps across browsers
 
 ## Phase Details
 
-### Phase 10: Backend Deployment
-**Goal**: PartyKit backend running on Cloudflare Workers with accessible WebSocket endpoint
-**Depends on**: Nothing (first phase of v2.0)
-**Requirements**: BACK-01, BACK-02, BACK-03
+### Phase 13: DudoOverlay Optimization
+**Goal**: DudoOverlay animations use only GPU-accelerated properties (transform/opacity)
+**Depends on**: Nothing (first phase of v2.1)
+**Requirements**: DUDO-01, DUDO-02, DUDO-03, DUDO-04
 **Success Criteria** (what must be TRUE):
-  1. Cloudflare account exists with Workers capability enabled
-  2. PartyKit server code deploys successfully to Cloudflare Workers
-  3. WebSocket endpoint responds to connections at public URL
-  4. Backend URL is known and ready for frontend configuration
+  1. backdrop-filter is static (not animated), container fades in with opacity
+  2. Text glow uses pseudo-element technique, no animated text-shadow
+  3. SVG glitch filter removed or replaced with CSS-only approach
+  4. Particles reduced to 4-6, animate only transform/opacity
+  5. Animation visually complete and impactful
 **Plans**: 1 plan
 
 Plans:
-- [x] 10-01-PLAN.md — Deploy PartyKit backend to Cloudflare Workers (completed 2026-01-19)
+- [ ] 13-01-PLAN.md — Optimize DudoOverlay for 60fps performance
 
-### Phase 11: Frontend & Configuration
-**Goal**: Next.js frontend deployed to Cloudflare Pages, configured to connect to production backend
-**Depends on**: Phase 10 (needs backend URL)
-**Requirements**: FRONT-01, FRONT-02, FRONT-03, CONF-01, CONF-02, CONF-03
+### Phase 14: Other Component Optimization
+**Goal**: All animated components use GPU-accelerated properties, accessibility supported
+**Depends on**: Phase 13 (apply same patterns)
+**Requirements**: VICT-01, VICT-02, COMP-01, COMP-02, A11Y-01
 **Success Criteria** (what must be TRUE):
-  1. Next.js app builds successfully in Cloudflare Pages environment
-  2. Frontend accessible via public Cloudflare Pages URL
-  3. Static assets (CSS, JS, images) load correctly
-  4. NEXT_PUBLIC_PARTYKIT_HOST points to production backend
-  5. Frontend successfully establishes WebSocket connection to backend
-**Plans**: 2 plans
-
-Plans:
-- [x] 11-01-PLAN.md — Configure Next.js for static export with production environment (completed 2026-01-19)
-- [x] 11-02-PLAN.md — Deploy static build to Cloudflare Pages (completed 2026-01-19)
-
-### Phase 12: Production Verification
-**Goal**: Full multiplayer experience verified working in production environment
-**Depends on**: Phase 11 (needs both frontend and backend deployed)
-**Requirements**: VERF-01, VERF-02, VERF-03, VERF-04
-**Success Criteria** (what must be TRUE):
-  1. User can create a room and receive shareable link
-  2. Second user can join room via shareable link
-  3. Complete game playable: bidding, Dudo, Calza all work
-  4. Disconnected player reconnects and resumes game
-  5. Game ends correctly with winner/statistics displayed
+  1. VictoryScreen audited and any expensive animations fixed
+  2. DefeatScreen audited and any expensive animations fixed
+  3. RevealPhase audited and any expensive animations fixed
+  4. prefers-reduced-motion respected with simplified animations
+  5. No animated backdrop-filter, text-shadow, or SVG filters in codebase
 **Plans**: 1 plan
 
 Plans:
-- [ ] 12-01-PLAN.md — End-to-end production verification (infrastructure checks + manual testing)
+- [ ] 14-01-PLAN.md — Audit and optimize Victory, Defeat, RevealPhase, add reduced motion support
+
+### Phase 15: Performance Verification
+**Goal**: Verify 60fps animation performance across browsers
+**Depends on**: Phase 14 (all optimizations complete)
+**Requirements**: VERF-01, VERF-02, VERF-03
+**Success Criteria** (what must be TRUE):
+  1. DudoOverlay runs at 60fps on Firefox (no dropped frames)
+  2. DudoOverlay runs at 60fps on Chrome (no dropped frames)
+  3. Users can see complete Dudo/Calza animation before game transitions
+  4. No visual regression — animations still look good
+**Plans**: 1 plan
+
+Plans:
+- [ ] 15-01-PLAN.md — Cross-browser performance verification and testing
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 10 -> 11 -> 12
+Phases execute in numeric order: 13 -> 14 -> 15
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 10. Backend Deployment | v2.0 | 1/1 | Complete | 2026-01-19 |
-| 11. Frontend & Configuration | v2.0 | 2/2 | Complete | 2026-01-19 |
-| 12. Production Verification | v2.0 | 0/1 | Not started | - |
+| 13. DudoOverlay Optimization | v2.1 | 0/1 | Not started | - |
+| 14. Other Component Optimization | v2.1 | 0/1 | Not started | - |
+| 15. Performance Verification | v2.1 | 0/1 | Not started | - |
 
 ---
-*Created: 2026-01-19 for v2.0 Cloudflare Deployment milestone*
+*Created: 2026-01-20 for v2.1 Animation Performance milestone*
