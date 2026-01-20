@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
+import { useIsFirefox } from '@/hooks/useIsFirefox';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface CasinoLogoProps {
   color: PlayerColor;
@@ -9,6 +11,9 @@ interface CasinoLogoProps {
 
 export function CasinoLogo({ color }: CasinoLogoProps) {
   const colorConfig = PLAYER_COLORS[color];
+  const isFirefox = useIsFirefox();
+  const prefersReducedMotion = useReducedMotion();
+  const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
 
   return (
     <div className="relative">
@@ -120,19 +125,25 @@ export function CasinoLogo({ color }: CasinoLogoProps) {
               WebkitTextStroke: `2px ${colorConfig.border}`,
             }}
           >
-            {/* Animated letters */}
+            {/* Animated letters - guard textShadow animation for Firefox/reduced motion */}
             {'FAROLEO'.split('').map((letter, i) => (
               <motion.span
                 key={i}
                 className="inline-block"
-                animate={{
-                  y: [0, -4, 0],
-                  textShadow: [
-                    `0 0 10px ${colorConfig.glow}, 0 0 20px ${colorConfig.glow}, 0 4px 0 ${colorConfig.shadow}`,
-                    `0 0 20px ${colorConfig.glow}, 0 0 40px ${colorConfig.glow}, 0 4px 0 ${colorConfig.shadow}`,
-                    `0 0 10px ${colorConfig.glow}, 0 0 20px ${colorConfig.glow}, 0 4px 0 ${colorConfig.shadow}`,
-                  ],
+                style={{
+                  textShadow: `0 0 10px ${colorConfig.glow}, 0 0 20px ${colorConfig.glow}, 0 4px 0 ${colorConfig.shadow}`,
                 }}
+                animate={useSimplifiedAnimations
+                  ? { y: [0, -2, 0] }  // Gentler bounce only, no textShadow animation
+                  : {
+                      y: [0, -4, 0],
+                      textShadow: [
+                        `0 0 10px ${colorConfig.glow}, 0 0 20px ${colorConfig.glow}, 0 4px 0 ${colorConfig.shadow}`,
+                        `0 0 20px ${colorConfig.glow}, 0 0 40px ${colorConfig.glow}, 0 4px 0 ${colorConfig.shadow}`,
+                        `0 0 10px ${colorConfig.glow}, 0 0 20px ${colorConfig.glow}, 0 4px 0 ${colorConfig.shadow}`,
+                      ],
+                    }
+                }
                 transition={{
                   duration: 2,
                   repeat: Infinity,

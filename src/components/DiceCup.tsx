@@ -3,6 +3,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useCallback } from 'react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
+import { useIsFirefox } from '@/hooks/useIsFirefox';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface DiceCupProps {
   dice: number[];
@@ -263,6 +265,9 @@ export function DiceCup({
   const [phase, setPhase] = useState<'waiting' | 'slamming' | 'revealed'>('waiting');
   const [showParticles, setShowParticles] = useState(false);
   const colorConfig = PLAYER_COLORS[playerColor];
+  const isFirefox = useIsFirefox();
+  const prefersReducedMotion = useReducedMotion();
+  const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
 
   const handleSlam = useCallback(() => {
     if (phase !== 'waiting') return;
@@ -313,14 +318,19 @@ export function DiceCup({
         }}
         animate={
           phase === 'waiting'
-            ? {
-                borderColor: [colorConfig.shadow, colorConfig.bg, colorConfig.shadow],
-                boxShadow: [
-                  `inset 0 4px 40px rgba(0,0,0,0.7), 0 8px 0 0 #030f0f, 0 12px 30px rgba(0,0,0,0.5), 0 0 25px ${colorConfig.glow}`,
-                  `inset 0 4px 40px rgba(0,0,0,0.7), 0 8px 0 0 #030f0f, 0 12px 30px rgba(0,0,0,0.5), 0 0 45px ${colorConfig.glow}`,
-                  `inset 0 4px 40px rgba(0,0,0,0.7), 0 8px 0 0 #030f0f, 0 12px 30px rgba(0,0,0,0.5), 0 0 25px ${colorConfig.glow}`,
-                ],
-              }
+            ? useSimplifiedAnimations
+              ? {
+                  borderColor: [colorConfig.shadow, colorConfig.bg, colorConfig.shadow],
+                  // Static boxShadow for Firefox/reduced motion - only animate borderColor
+                }
+              : {
+                  borderColor: [colorConfig.shadow, colorConfig.bg, colorConfig.shadow],
+                  boxShadow: [
+                    `inset 0 4px 40px rgba(0,0,0,0.7), 0 8px 0 0 #030f0f, 0 12px 30px rgba(0,0,0,0.5), 0 0 25px ${colorConfig.glow}`,
+                    `inset 0 4px 40px rgba(0,0,0,0.7), 0 8px 0 0 #030f0f, 0 12px 30px rgba(0,0,0,0.5), 0 0 45px ${colorConfig.glow}`,
+                    `inset 0 4px 40px rgba(0,0,0,0.7), 0 8px 0 0 #030f0f, 0 12px 30px rgba(0,0,0,0.5), 0 0 25px ${colorConfig.glow}`,
+                  ],
+                }
             : phase === 'slamming'
             ? {
                 scale: [1, 1.06, 0.97],

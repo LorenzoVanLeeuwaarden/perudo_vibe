@@ -21,6 +21,8 @@ import { PlayerRevealCard } from '@/components/PlayerRevealCard';
 import { SortedDiceDisplay } from '@/components/SortedDiceDisplay';
 import { ModeSelection } from '@/components/ModeSelection';
 import { useUIStore } from '@/stores/uiStore';
+import { useIsFirefox } from '@/hooks/useIsFirefox';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import {
   rollDice,
   countMatching,
@@ -125,6 +127,11 @@ export default function FaroleoGame() {
 
   // UI store for preferences
   const { preferredMode, setPreferredMode, clearPreferredMode, playerColor: storedPlayerColor } = useUIStore();
+
+  // Animation optimization hooks
+  const isFirefox = useIsFirefox();
+  const prefersReducedMotion = useReducedMotion();
+  const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
 
   // Game state
   const [gameState, setGameState] = useState<GameState>('ModeSelection');
@@ -1665,17 +1672,20 @@ export default function FaroleoGame() {
                   }}
                 />
 
-                {/* Dice container */}
+                {/* Dice container - guard filter animation for Firefox/reduced motion */}
                 <motion.div
                   className="relative flex justify-center items-end"
-                  animate={{
+                  style={useSimplifiedAnimations ? {
+                    filter: `drop-shadow(0 0 18px ${PLAYER_COLORS[playerColor].glow})`,
+                  } : undefined}
+                  animate={useSimplifiedAnimations ? {} : {
                     filter: [
                       `drop-shadow(0 0 12px ${PLAYER_COLORS[playerColor].glow})`,
                       `drop-shadow(0 0 25px ${PLAYER_COLORS[playerColor].glow})`,
                       `drop-shadow(0 0 12px ${PLAYER_COLORS[playerColor].glow})`,
                     ],
                   }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  transition={useSimplifiedAnimations ? undefined : { duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 >
                   {/* Responsive dice: md size on mobile, lg on larger screens */}
                   <div className="flex gap-2 sm:gap-3">

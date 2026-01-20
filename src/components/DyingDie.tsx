@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { Dice } from './Dice';
+import { useIsFirefox } from '@/hooks/useIsFirefox';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Particle {
   id: number;
@@ -34,6 +36,9 @@ export function DyingDie({ value, color, onComplete, size = 'sm' }: DyingDieProp
   const [phase, setPhase] = useState<'vibrate' | 'explode' | 'done'>('vibrate');
   const [particles, setParticles] = useState<Particle[]>([]);
   const containerSize = sizeToPixels[size];
+  const isFirefox = useIsFirefox();
+  const prefersReducedMotion = useReducedMotion();
+  const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
 
   useEffect(() => {
     // Phase 1: Vibrate for 800ms
@@ -79,13 +84,19 @@ export function DyingDie({ value, color, onComplete, size = 'sm' }: DyingDieProp
           <motion.div
             className="die-dying"
             initial={{ scale: 1 }}
-            animate={{
-              scale: [1, 1.05, 0.95, 1.1, 0.9, 1.15],
-              filter: [
-                'saturate(1) brightness(1)',
-                'saturate(0) brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(6)',
-              ],
-            }}
+            animate={useSimplifiedAnimations
+              ? {
+                  scale: [1, 1.05, 0.95, 1.1, 0.9, 1.15],
+                  opacity: [1, 0.8, 0.6, 0.4],  // Fade instead of filter
+                }
+              : {
+                  scale: [1, 1.05, 0.95, 1.1, 0.9, 1.15],
+                  filter: [
+                    'saturate(1) brightness(1)',
+                    'saturate(0) brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(6)',
+                  ],
+                }
+            }
             transition={{ duration: 0.8 }}
             exit={{ scale: 0, opacity: 0 }}
           >
@@ -100,7 +111,13 @@ export function DyingDie({ value, color, onComplete, size = 'sm' }: DyingDieProp
             animate={{ scale: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="relative w-full h-full" style={{ filter: 'saturate(0) brightness(0.3) sepia(1) hue-rotate(-50deg) saturate(8)' }}>
+            <div
+              className="relative w-full h-full"
+              style={useSimplifiedAnimations
+                ? { opacity: 0.5 }
+                : { filter: 'saturate(0) brightness(0.3) sepia(1) hue-rotate(-50deg) saturate(8)' }
+              }
+            >
               <Dice value={value} size={size} color={color} />
             </div>
           </motion.div>
