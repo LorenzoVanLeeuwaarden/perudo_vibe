@@ -1,12 +1,20 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PLAYER_COLORS } from '@/lib/types';
 import { SortedDiceDisplay } from './SortedDiceDisplay';
 import { DyingDie } from './DyingDie';
 import type { ServerPlayer, Bid } from '@/shared';
 import type { PlayerColor } from '@/lib/types';
+
+// Detect Firefox browser for simplified animations
+function useIsFirefox(): boolean {
+  return useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    return navigator.userAgent.toLowerCase().includes('firefox');
+  }, []);
+}
 
 interface RoundResult {
   bid: Bid;
@@ -35,6 +43,7 @@ export function RevealPhase({
 }: RevealPhaseProps) {
   const [step, setStep] = useState<RevealStep>(0);
   const [dyingDieVisible, setDyingDieVisible] = useState(false);
+  const isFirefox = useIsFirefox();
 
   // Animation sequence timing
   useEffect(() => {
@@ -101,8 +110,10 @@ export function RevealPhase({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4"
           style={{
-            background: 'linear-gradient(180deg, rgba(26, 15, 46, 0.95) 0%, rgba(13, 7, 23, 0.98) 100%)',
-            backdropFilter: 'blur(8px)',
+            background: isFirefox
+              ? 'linear-gradient(180deg, rgba(26, 15, 46, 0.98) 0%, rgba(13, 7, 23, 1) 100%)'
+              : 'linear-gradient(180deg, rgba(26, 15, 46, 0.95) 0%, rgba(13, 7, 23, 0.98) 100%)',
+            backdropFilter: isFirefox ? 'none' : 'blur(8px)',  // Skip blur on Firefox
           }}
         >
           {/* Title */}
@@ -184,8 +195,8 @@ export function RevealPhase({
                           }}
                           className={`relative ${showHighlight ? 'z-10' : ''}`}
                         >
-                          {/* Glow effect for matching dice */}
-                          {showHighlight && (
+                          {/* Glow effect for matching dice - simplified on Firefox */}
+                          {showHighlight && !isFirefox && (
                             <motion.div
                               initial={{ opacity: 0 }}
                               animate={{ opacity: [0.5, 1, 0.5] }}
@@ -195,6 +206,13 @@ export function RevealPhase({
                                 background: `radial-gradient(circle, ${colorConfig.glow}80 0%, transparent 70%)`,
                                 filter: 'blur(4px)',
                               }}
+                            />
+                          )}
+                          {/* Firefox: Simple border highlight instead */}
+                          {showHighlight && isFirefox && (
+                            <div
+                              className="absolute -inset-1 rounded-lg border-2"
+                              style={{ borderColor: colorConfig.glow }}
                             />
                           )}
                           <SortedDiceDisplay
