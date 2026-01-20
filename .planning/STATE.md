@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.2 UI Unification & Tech Debt - Phase 18: Lobby Unification (complete)
+**Current focus:** v2.2 UI Unification & Tech Debt - Phase 19: End Game & Tooling (in progress)
 
 ## Current Position
 
-Phase: 18 of 19 (Lobby Unification)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-20 - Completed 18-02-PLAN.md
+Phase: 19 of 19 (End Game & Tooling)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-20 - Completed 19-01-PLAN.md
 
-Progress: [##################-] 18/19 phases complete (v1.0 + v2.0 + v2.1 done, v2.2 in progress)
+Progress: [##################-] 18.5/19 phases complete (v1.0 + v2.0 + v2.1 done, v2.2 in progress)
 
 ## Production URLs
 
@@ -41,11 +41,12 @@ Progress: [##################-] 18/19 phases complete (v1.0 + v2.0 + v2.1 done, 
 - Animation performance: 60fps on Firefox and Chrome
 
 **v2.2 Summary (in progress):**
-- Plans completed: 6
-- Phases complete: 3 (Phase 16, 17, 18)
+- Plans completed: 7
+- Phases complete: 3.5 (Phase 16, 17, 18, 19 partial)
 - Tech debt addressed: HOOKS-01 through HOOKS-05
 - UI unification: GAME-01 through GAME-04 complete
 - Lobby unification: LOBBY-01 through LOBBY-03 complete
+- Tooling: TOOL-01 complete (ESLint migration)
 
 ## Accumulated Context
 
@@ -70,6 +71,7 @@ Recent (v2.2):
 - LobbyLayout uses static gradient background (GPU efficient)
 - Single-player lobby refactored to use LobbyLayout component
 - Multiplayer lobby refactored to use LobbyLayout with leave confirmation
+- FlatCompat wrapper for eslint-config-next compatibility with ESLint 9 flat config
 
 ### Pending Todos
 
@@ -77,8 +79,9 @@ None.
 
 ### Blockers/Concerns
 
-- `npm run lint` / `next lint` failing with directory error (TOOL-01 will fix)
+- ~~`npm run lint` / `next lint` failing with directory error~~ (FIXED in 19-01)
 - Sound files (victory.mp3, pop.mp3, dice-rattle.mp3) are placeholders
+- 31 lint issues identified (25 errors, 6 warnings) for future cleanup
 
 ### Tech Debt
 
@@ -98,18 +101,21 @@ Addressed in Phase 18:
 - [x] Single-player lobby uses LobbyLayout (LOBBY-02)
 - [x] Multiplayer lobby uses LobbyLayout with leave confirmation (LOBBY-03)
 
+Addressed in Phase 19:
+- [x] ESLint migrated to flat config format (TOOL-01)
+
 Remaining:
-- Final testing (Phase 19)
+- Single-player end game stats flow (19-02)
 
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 18-02-PLAN.md (Phase 18 complete)
+Stopped at: Completed 19-01-PLAN.md (ESLint migration)
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:discuss-phase 19` to gather context, or `/gsd:plan-phase 19` to create plans for Phase 19: End Game & Tooling.
+Execute 19-02-PLAN.md for single-player end game stats flow.
 
 ---
-*Updated: 2026-01-20 after Phase 18 verified*
+*Updated: 2026-01-20 after 19-01 complete*
