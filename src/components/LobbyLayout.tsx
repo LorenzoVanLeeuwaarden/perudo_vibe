@@ -69,7 +69,7 @@ export function LobbyLayout({
           style={{ maxHeight: 'calc(100vh - 180px)' }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className={`flex items-center mb-4 sm:mb-6 ${title ? 'justify-between' : ''}`}>
             <motion.button
               whileHover={{ scale: 1.05, x: -2 }}
               whileTap={{ scale: 0.95 }}
@@ -87,9 +87,11 @@ export function LobbyLayout({
             )}
 
             {/* Header right slot (or empty spacer for centering) */}
-            <div className="min-w-[60px] sm:min-w-[72px] flex justify-end">
-              {headerRight}
-            </div>
+            {(title || headerRight) && (
+              <div className="min-w-[60px] sm:min-w-[72px] flex justify-end">
+                {headerRight}
+              </div>
+            )}
           </div>
 
           {/* Content zone - scrollable */}
