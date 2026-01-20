@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Target, ThumbsUp, ThumbsDown, Dice1, Trophy } from 'lucide-react';
+import { Trophy, TrendingDown, TrendingUp } from 'lucide-react';
 import type { PlayerColor } from '@/lib/types';
 import { PLAYER_COLORS } from '@/lib/types';
 import { Dice } from './Dice';
@@ -31,10 +31,16 @@ export function StatCard({ playerName, color, stats, isWinner, currentDiceCount,
   const colorConfig = PLAYER_COLORS[color];
   const dudoAccuracy = stats.dudosCalled > 0
     ? Math.round((stats.dudosSuccessful / stats.dudosCalled) * 100)
-    : 0;
+    : null;
+  const calzaAccuracy = stats.calzasCalled > 0
+    ? Math.round((stats.calzasSuccessful / stats.calzasCalled) * 100)
+    : null;
 
   // Show game in progress state when currentDiceCount is provided
   const gameInProgress = currentDiceCount !== undefined;
+
+  // Net dice change
+  const netDice = stats.diceGained - stats.diceLost;
 
   return (
     <motion.div
@@ -58,7 +64,7 @@ export function StatCard({ playerName, color, stats, isWinner, currentDiceCount,
         />
         <h3 className="font-bold text-lg text-white-soft">
           {playerName}
-          {isEliminated && <span className="text-red-400 ml-2 text-sm">Eliminated</span>}
+          {isEliminated && <span className="text-red-400 ml-2 text-sm">Out</span>}
         </h3>
       </div>
 
@@ -86,35 +92,48 @@ export function StatCard({ playerName, color, stats, isWinner, currentDiceCount,
         </div>
       )}
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <div className="flex items-center gap-2">
-          <Target className="w-4 h-4 text-purple-light" />
-          <span className="text-white-soft/70">Bids:</span>
-          <span className="text-white-soft font-medium">{stats.bidsPlaced}</span>
+      {/* Stats - clean layout */}
+      <div className="space-y-2 text-sm">
+        {/* Top row: Bids and Net dice */}
+        <div className="flex justify-between items-center">
+          <div>
+            <span className="text-white-soft/50">Bids</span>
+            <span className="text-white-soft font-bold ml-2">{stats.bidsPlaced}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            {netDice < 0 ? (
+              <TrendingDown className="w-4 h-4 text-red-400" />
+            ) : netDice > 0 ? (
+              <TrendingUp className="w-4 h-4 text-green-400" />
+            ) : null}
+            <span className={`font-bold ${netDice < 0 ? 'text-red-400' : netDice > 0 ? 'text-green-400' : 'text-white-soft/50'}`}>
+              {netDice > 0 ? '+' : ''}{netDice} dice
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Dice1 className="w-4 h-4 text-purple-light" />
-          <span className="text-white-soft/70">Dice lost:</span>
-          <span className="text-red-400 font-medium">{stats.diceLost}</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <ThumbsDown className="w-4 h-4 text-orange-400" />
-          <span className="text-white-soft/70">Successful Dudo&apos;s:</span>
-          <span className="text-white-soft font-medium">
-            {stats.dudosSuccessful}
-            {stats.dudosCalled > 0 && (
-              <span className="text-white-soft/50 ml-1">({dudoAccuracy}%)</span>
+        {/* Dudo stats */}
+        <div className="flex justify-between items-center">
+          <span className="text-white-soft/50">Dudo</span>
+          <span className="text-white-soft">
+            <span className="font-bold text-orange-400">{stats.dudosSuccessful}</span>
+            <span className="text-white-soft/40">/{stats.dudosCalled}</span>
+            {dudoAccuracy !== null && (
+              <span className="text-white-soft/50 ml-1 text-xs">({dudoAccuracy}%)</span>
             )}
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <ThumbsUp className="w-4 h-4 text-green-400" />
-          <span className="text-white-soft/70">Dice won via Calza:</span>
-          <span className="text-white-soft font-medium">{stats.diceGained}</span>
+        {/* Calza stats */}
+        <div className="flex justify-between items-center">
+          <span className="text-white-soft/50">Calza</span>
+          <span className="text-white-soft">
+            <span className="font-bold text-green-400">{stats.calzasSuccessful}</span>
+            <span className="text-white-soft/40">/{stats.calzasCalled}</span>
+            {calzaAccuracy !== null && (
+              <span className="text-white-soft/50 ml-1 text-xs">({calzaAccuracy}%)</span>
+            )}
+          </span>
         </div>
       </div>
     </motion.div>
