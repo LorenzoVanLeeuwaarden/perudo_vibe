@@ -30,9 +30,9 @@ Requirements for animation performance optimization. Each maps to roadmap phases
 
 ### Verification
 
-- [ ] **VERF-01**: DudoOverlay runs at 60fps on Firefox
-- [ ] **VERF-02**: DudoOverlay runs at 60fps on Chrome
-- [ ] **VERF-03**: Users can see complete Dudo/Calza animation before transition
+- [x] **VERF-01**: DudoOverlay runs at 60fps on Firefox
+- [x] **VERF-02**: DudoOverlay runs at 60fps on Chrome
+- [x] **VERF-03**: Users can see complete Dudo/Calza animation before transition
 
 ## Out of Scope
 
@@ -55,15 +55,16 @@ Requirements for animation performance optimization. Each maps to roadmap phases
 | COMP-01 | Phase 14 | Complete |
 | COMP-02 | Phase 14 | Complete |
 | A11Y-01 | Phase 14 | Complete |
-| VERF-01 | Phase 15 | Pending |
-| VERF-02 | Phase 15 | Pending |
-| VERF-03 | Phase 15 | Pending |
+| VERF-01 | Phase 15 | Complete |
+| VERF-02 | Phase 15 | Complete |
+| VERF-03 | Phase 15 | Complete |
 
 **Coverage:**
 - v2.1 requirements: 12 total
 - Mapped to phases: 12
 - Unmapped: 0
+- **Complete: 12/12 (100%)**
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-20 after Phase 14 completion*
+*Last updated: 2026-01-20 after Phase 15 verification*
