@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.2 UI Unification & Tech Debt - Phase 19: End Game & Tooling (complete)
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 19 of 19 (End Game & Tooling)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-20 - Completed 19-02-PLAN.md
+Phase: All 19 phases complete
+Plan: N/A
+Status: v2.2 milestone shipped
+Last activity: 2026-01-20 - v2.2 milestone complete
 
 Progress: [###################] 19/19 phases complete (v1.0 + v2.0 + v2.1 + v2.2 done)
 
@@ -81,9 +81,7 @@ None.
 
 ### Blockers/Concerns
 
-- ~~`npm run lint` / `next lint` failing with directory error~~ (FIXED in 19-01)
 - Sound files (victory.mp3, pop.mp3, dice-rattle.mp3) are placeholders
-- 31 lint issues identified (25 errors, 6 warnings) for future cleanup
 
 ### Tech Debt
 
@@ -106,24 +104,27 @@ Addressed in Phase 18:
 Addressed in Phase 19:
 - [x] ESLint migrated to flat config format (TOOL-01)
 - [x] Single-player stats tracking and end game flow (19-02)
+- [x] All 31 lint issues fixed (25 errors, 6 warnings → 0)
 
 Remaining:
-- None (v2.2 complete)
+- None (v2.2 shipped)
 
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 19-02-PLAN.md (v2.2 complete)
+Stopped at: v2.2 milestone shipped
 Resume file: None
 
 ## Next Steps
 
-v2.2 UI Unification & Tech Debt is complete. All 19 phases are done.
+v2.2 UI Unification & Tech Debt is shipped. All 19 phases are done.
 
 Future work could include:
-- Fixing the 31 lint issues identified
-- Replacing placeholder sound files
+- Replacing placeholder sound files (SND-01, SND-02, SND-03)
+- Accessibility improvements (A11Y-01, A11Y-02)
 - Additional features as needed
 
+Run `/gsd:new-milestone` to start the next milestone.
+
 ---
-*Updated: 2026-01-20 after 19-02 complete (v2.2 complete)*
+*Updated: 2026-01-20 after v2.2 milestone completion*

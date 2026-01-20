@@ -1,5 +1,33 @@
 # Project Milestones: Perudo Vibe
 
+## v2.2 UI Unification & Tech Debt (Shipped: 2026-01-20)
+
+**Delivered:** Unified single-player and multiplayer UI components, shared animation hooks, ESLint tooling migration, and single-player stats tracking with zero lint errors.
+
+**Phases completed:** 16-19 (7 plans total)
+
+**Key accomplishments:**
+
+- Consolidated Firefox detection and reduced motion into shared hooks (useIsFirefox, useReducedMotion)
+- Unified game UI - multiplayer matches single-player styling (bid display, player dice shelf, RevealPhase)
+- Created LobbyLayout foundation for unified lobby styling across both modes
+- Migrated ESLint to flat config format for Next.js 16 with FlatCompat wrapper
+- Added single-player stats tracking with end game flow matching multiplayer
+- Fixed all 31 lint issues to achieve zero errors/warnings
+
+**Stats:**
+
+- 15+ files created/modified
+- ~500 lines of TypeScript added/refactored
+- 4 phases, 7 plans
+- 1 day from start to ship
+
+**Git range:** `5269768` → `25c7105`
+
+**What's next:** Sound effects (replace placeholder audio), additional accessibility (colorblind mode), or new game features.
+
+---
+
 ## v2.1 Animation Performance (Shipped: 2026-01-20)
 
 **Delivered:** 60fps animation performance across all browsers with Firefox-specific optimizations and prefers-reduced-motion accessibility support.
@@ -84,4 +112,4 @@
 ---
 
 *Milestones created: 2026-01-18*
-*Last updated: 2026-01-20 after v2.1 milestone*
+*Last updated: 2026-01-20 after v2.2 milestone*

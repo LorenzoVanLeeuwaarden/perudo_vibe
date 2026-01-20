@@ -37,15 +37,15 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - ✓ 60fps animation performance on Firefox — v2.1
 - ✓ 60fps animation performance on Chrome — v2.1
 - ✓ prefers-reduced-motion accessibility support — v2.1
+- ✓ Unified UI components used in both single-player and multiplayer — v2.2
+- ✓ Single-player stats page (port from multiplayer) — v2.2
+- ✓ Shared useIsFirefox hook (replace local implementations) — v2.2
+- ✓ Shared useReducedMotion hook for accessibility — v2.2
+- ✓ Fix npm run lint / next lint directory error — v2.2
 
 ### Active
 
-**v2.2 UI Unification & Tech Debt:**
-- [ ] Unified UI components used in both single-player and multiplayer
-- [ ] Single-player stats page (port from multiplayer)
-- [ ] Shared useIsFirefox hook (replace local implementations)
-- [ ] Shared useReducedMotion hook for accessibility
-- [ ] Fix npm run lint / next lint directory error
+(No active requirements — planning next milestone)
 
 ### Out of Scope
 
@@ -55,35 +55,25 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - Matchmaking/random lobbies — private rooms via link sharing only
 - Mobile app — web-only, but responsive design works on mobile browsers
 
-## Current Milestone: v2.2 UI Unification & Tech Debt
-
-**Goal:** Consolidate single-player and multiplayer UI into one unified component set, using single-player UI as the base, and clean up tech debt.
-
-**Target features:**
-- Unified UI components (single-player base, used in both modes)
-- Stats page in single-player (ported from multiplayer)
-- Shared animation hooks (useIsFirefox, useReducedMotion)
-- Fix lint tooling
-
-## Current State (v2.1 shipped 2026-01-20)
+## Current State (v2.2 shipped 2026-01-20)
 
 **Production URLs:**
 - Frontend: https://faroleo.pages.dev
 - Backend: perudo-vibe.lorenzovanleeuwaarden.partykit.dev
 
 **Codebase:**
-- ~31,000 lines of TypeScript across 58 files
+- ~11,400 lines of TypeScript across 60+ files
 - Tech stack: Next.js 16, React 19, PartyKit, Zustand, Framer Motion, Tailwind CSS 4
 - Server-authoritative multiplayer with WebSocket real-time sync
 - GPU-optimized animations with Firefox simplified mode
+- Unified UI components across single-player and multiplayer
+- Zero lint errors (ESLint flat config)
 
 **Known Issues:**
-- `npm run lint` / `next lint` failing with directory error (using tsc --noEmit instead)
 - Sound files are placeholders (need download from royalty-free sources)
 
-**Tech Debt (from v2.1):**
-- DudoOverlay, ShaderBackground, DiceRoller3D have local useIsFirefox instead of shared hook
-- Same 3 components missing useReducedMotion support
+**Tech Debt:**
+- None (cleared in v2.2)
 
 ## Constraints
 
@@ -111,4 +101,4 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 | useSimplifiedAnimations pattern | Combined Firefox + reduced motion into single guard for cleaner code | ✓ Good |
 
 ---
-*Last updated: 2026-01-20 after v2.2 milestone start*
+*Last updated: 2026-01-20 after v2.2 milestone completion*
