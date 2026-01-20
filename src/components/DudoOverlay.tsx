@@ -37,10 +37,10 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
         setTimeout(() => setShowGlitch(false), 150);
       }, 200);
 
-      // Call onComplete after animation - reduced from 1500ms for better responsiveness
+      // Call onComplete after animation - give user time to see the overlay
       const completeTimeout = setTimeout(() => {
         onComplete?.();
-      }, 800);
+      }, 2000);
 
       return () => {
         clearTimeout(glitchTimeout);
