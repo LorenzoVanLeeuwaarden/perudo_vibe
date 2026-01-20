@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.2 UI Unification & Tech Debt - Phase 18: Lobby Unification (in progress)
+**Current focus:** v2.2 UI Unification & Tech Debt - Phase 18: Lobby Unification (complete)
 
 ## Current Position
 
 Phase: 18 of 19 (Lobby Unification)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-20 - Completed 18-01-PLAN.md
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-20 - Completed 18-02-PLAN.md
 
-Progress: [#################--] 17/19 phases complete (v1.0 + v2.0 + v2.1 done, v2.2 in progress)
+Progress: [##################-] 18/19 phases complete (v1.0 + v2.0 + v2.1 done, v2.2 in progress)
 
 ## Production URLs
 
@@ -41,11 +41,11 @@ Progress: [#################--] 17/19 phases complete (v1.0 + v2.0 + v2.1 done, 
 - Animation performance: 60fps on Firefox and Chrome
 
 **v2.2 Summary (in progress):**
-- Plans completed: 4
-- Phases complete: 2 (Phase 16, 17)
+- Plans completed: 6
+- Phases complete: 3 (Phase 16, 17, 18)
 - Tech debt addressed: HOOKS-01 through HOOKS-05
 - UI unification: GAME-01 through GAME-04 complete
-- Lobby unification: LOBBY-01 (LobbyLayout foundation) complete
+- Lobby unification: LOBBY-01 through LOBBY-03 complete
 
 ## Accumulated Context
 
@@ -69,6 +69,7 @@ Recent (v2.2):
 - Result-based border styling: red for loser, green for calza winner
 - LobbyLayout uses static gradient background (GPU efficient)
 - Single-player lobby refactored to use LobbyLayout component
+- Multiplayer lobby refactored to use LobbyLayout with leave confirmation
 
 ### Pending Todos
 
@@ -92,18 +93,23 @@ Addressed in Phase 17:
 - [x] BidUI uses hideBidDisplay={true} consistently (GAME-03)
 - [x] RevealPhase styling matches single-player visual patterns (GAME-04)
 
+Addressed in Phase 18:
+- [x] LobbyLayout foundation created (LOBBY-01)
+- [x] Single-player lobby uses LobbyLayout (LOBBY-02)
+- [x] Multiplayer lobby uses LobbyLayout with leave confirmation (LOBBY-03)
+
 Remaining:
 - Final testing (Phase 19)
 
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 18-01-PLAN.md
+Stopped at: Completed 18-02-PLAN.md (Phase 18 complete)
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:execute-phase 18` to continue with 18-02-PLAN.md (multiplayer lobby integration).
+Run `/gsd:execute-phase 19` to begin Phase 19: Final Testing.
 
 ---
-*Updated: 2026-01-20 after 18-01-PLAN.md completion*
+*Updated: 2026-01-20 after 18-02-PLAN.md completion*
