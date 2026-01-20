@@ -50,15 +50,16 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
           transition={{ duration: 0.1 }}
           className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
         >
-          {/* Backdrop blur and darken layer */}
+          {/* Backdrop blur and darken layer - STATIC backdrop-filter, only opacity animates */}
           <motion.div
             className="absolute inset-0"
-            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-            animate={{ opacity: 1, backdropFilter: 'blur(8px)' }}
-            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             style={{
               background: 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(8px)',  // STATIC - never animated
             }}
           />
 
@@ -135,30 +136,56 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
               {isDudo ? 'DUDO!' : 'CALZA!'}
             </motion.div>
 
-            {/* Main text */}
-            <motion.h1
-              className="font-mono font-black text-8xl md:text-[12rem] uppercase tracking-tighter select-none relative"
+            {/* Glow layer - blurred duplicate that animates opacity only */}
+            <motion.span
+              className="absolute inset-0 font-mono font-black text-8xl md:text-[12rem] uppercase tracking-tighter select-none pointer-events-none"
               style={{
                 color: mainColor,
-                textShadow: `
-                  0 0 20px ${glowColor},
-                  0 0 40px ${glowColor},
-                  0 0 80px ${glowColor},
-                  4px 4px 0 ${isDudo ? '#990033' : '#166534'}
-                `,
-                filter: showGlitch ? 'url(#glitch)' : 'none'
+                filter: 'blur(20px)',  // Static blur
               }}
-              animate={{
-                textShadow: [
-                  `0 0 20px ${glowColor}, 0 0 40px ${glowColor}, 0 0 80px ${glowColor}, 4px 4px 0 ${isDudo ? '#990033' : '#166534'}`,
-                  `0 0 40px ${glowColor}, 0 0 80px ${glowColor}, 0 0 120px ${glowColor}, 4px 4px 0 ${isDudo ? '#990033' : '#166534'}`,
-                  `0 0 20px ${glowColor}, 0 0 40px ${glowColor}, 0 0 80px ${glowColor}, 4px 4px 0 ${isDudo ? '#990033' : '#166534'}`,
-                ]
-              }}
-              transition={{ duration: 0.5, repeat: 2 }}
+              animate={{ opacity: [0.4, 0.8, 0.4] }}  // Only opacity animates
+              transition={{ duration: 1, repeat: 2 }}
+              aria-hidden="true"
             >
               {isDudo ? 'DUDO!' : 'CALZA!'}
-            </motion.h1>
+            </motion.span>
+
+            {/* RGB Glitch layers - CSS only, animates transform/opacity */}
+            {showGlitch && (
+              <>
+                <motion.span
+                  className="absolute inset-0 font-mono font-black text-8xl md:text-[12rem] uppercase tracking-tighter select-none pointer-events-none"
+                  style={{ color: '#ff0000', mixBlendMode: 'screen' }}
+                  initial={{ opacity: 0, x: 0 }}
+                  animate={{ x: [-2, 2, -2], opacity: [0, 0.5, 0] }}
+                  transition={{ duration: 0.15 }}
+                  aria-hidden="true"
+                >
+                  {isDudo ? 'DUDO!' : 'CALZA!'}
+                </motion.span>
+                <motion.span
+                  className="absolute inset-0 font-mono font-black text-8xl md:text-[12rem] uppercase tracking-tighter select-none pointer-events-none"
+                  style={{ color: '#00ffff', mixBlendMode: 'screen' }}
+                  initial={{ opacity: 0, x: 0 }}
+                  animate={{ x: [2, -2, 2], opacity: [0, 0.5, 0] }}
+                  transition={{ duration: 0.15, delay: 0.02 }}
+                  aria-hidden="true"
+                >
+                  {isDudo ? 'DUDO!' : 'CALZA!'}
+                </motion.span>
+              </>
+            )}
+
+            {/* Main text - STATIC text-shadow, no animation */}
+            <h1
+              className="relative font-mono font-black text-8xl md:text-[12rem] uppercase tracking-tighter select-none"
+              style={{
+                color: mainColor,
+                textShadow: `0 0 20px ${glowColor}, 0 0 40px ${glowColor}, 4px 4px 0 ${isDudo ? '#990033' : '#166534'}`,  // Static
+              }}
+            >
+              {isDudo ? 'DUDO!' : 'CALZA!'}
+            </h1>
 
             {/* Caller name */}
             <motion.p
@@ -180,40 +207,12 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
             </motion.p>
           </motion.div>
 
-          {/* Impact particles - using divs with transforms for better performance */}
+          {/* Impact particles - reduced to 5 for better performance */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {/* SVG filter for glitch effect only */}
-            <svg className="absolute w-0 h-0">
-              <defs>
-                <filter id="glitch">
-                  <feColorMatrix
-                    type="matrix"
-                    values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                    result="red"
-                  />
-                  <feOffset in="red" dx="2" dy="0" result="redShift" />
-                  <feColorMatrix
-                    in="SourceGraphic"
-                    type="matrix"
-                    values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                    result="green"
-                  />
-                  <feColorMatrix
-                    in="SourceGraphic"
-                    type="matrix"
-                    values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
-                    result="blue"
-                  />
-                  <feOffset in="blue" dx="-2" dy="0" result="blueShift" />
-                  <feBlend in="redShift" in2="green" mode="screen" result="blend1" />
-                  <feBlend in="blend1" in2="blueShift" mode="screen" />
-                </filter>
-              </defs>
-            </svg>
             {/* Impact sparks using CSS transforms */}
-            {[...Array(8)].map((_, i) => {
-              const angle = (i / 8) * Math.PI * 2;
-              const distance = 150;
+            {[...Array(5)].map((_, i) => {
+              const angle = (i / 5) * Math.PI * 2;  // 5 instead of 8
+              const distance = 120;  // Slightly reduced distance
               const endX = Math.cos(angle) * distance;
               const endY = Math.sin(angle) * distance;
               return (
@@ -226,25 +225,16 @@ export function DudoOverlay({ isVisible, type, callerName, callerColor, onComple
                     marginLeft: -4,
                     marginTop: -4,
                     backgroundColor: mainColor,
-                    boxShadow: `0 0 8px ${mainColor}`,
+                    boxShadow: `0 0 8px ${mainColor}`,  // Static glow
                   }}
-                  initial={{
-                    opacity: 0,
-                    scale: 0,
-                    x: 0,
-                    y: 0
-                  }}
+                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
                   animate={{
                     opacity: [0, 1, 0],
-                    scale: [0, 1.5, 0],
+                    scale: [0, 1.2, 0],  // Slightly smaller scale
                     x: [0, endX],
                     y: [0, endY]
                   }}
-                  transition={{
-                    duration: 0.4,
-                    delay: 0.2,
-                    ease: 'easeOut'
-                  }}
+                  transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}
                 />
               );
             })}
