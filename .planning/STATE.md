@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.2 UI Unification & Tech Debt - Phase 17: Game UI Unification (in progress)
+**Current focus:** v2.2 UI Unification & Tech Debt - Phase 17: Game UI Unification (complete)
 
 ## Current Position
 
 Phase: 17 of 19 (Game UI Unification)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-01-20 - Completed 17-01-PLAN.md
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-20 - Completed 17-02-PLAN.md
 
-Progress: [################---] 16/19 phases complete (v1.0 + v2.0 + v2.1 done, v2.2 in progress)
+Progress: [#################--] 17/19 phases complete (v1.0 + v2.0 + v2.1 done, v2.2 in progress)
 
 ## Production URLs
 
@@ -41,10 +41,10 @@ Progress: [################---] 16/19 phases complete (v1.0 + v2.0 + v2.1 done, 
 - Animation performance: 60fps on Firefox and Chrome
 
 **v2.2 Summary (in progress):**
-- Plans completed: 2
-- Phases complete: 1 (Phase 16)
+- Plans completed: 3
+- Phases complete: 2 (Phase 16, 17)
 - Tech debt addressed: HOOKS-01 through HOOKS-05
-- UI unification: GAME-01, GAME-02, GAME-03 (bidding phase) complete
+- UI unification: GAME-01 through GAME-04 complete
 
 ## Accumulated Context
 
@@ -63,6 +63,9 @@ Recent (v2.2):
 - Multiplayer adopts single-player bid display exactly (recessed table surface)
 - Player dice section uses shelf layout with radial glow, no retro-panel
 - BidUI uses hideBidDisplay={true} for consistent bid rendering
+- RevealPhase uses Bid vs Actual comparison blocks with incremental counting
+- Player hands use 2-column grid on mobile, flexible row on desktop
+- Result-based border styling: red for loser, green for calza winner
 
 ### Pending Todos
 
@@ -80,24 +83,24 @@ Addressed in Phase 16:
 - [x] DiceRoller3D deleted (unused dead code) — HOOKS-04 satisfied by removal
 - [x] All animated components now respect prefers-reduced-motion (HOOKS-05)
 
-Addressed in Phase 17 Plan 01:
+Addressed in Phase 17:
 - [x] Multiplayer bidding phase matches single-player styling (GAME-01)
 - [x] PlayerDiceBadge renders identically in both modes (GAME-02)
 - [x] BidUI uses hideBidDisplay={true} consistently (GAME-03)
+- [x] RevealPhase styling matches single-player visual patterns (GAME-04)
 
 Remaining:
-- RevealPhase unification (Phase 17 Plan 02)
 - Final testing (Phase 19)
 
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: Completed 17-01-PLAN.md
+Stopped at: Completed 17-02-PLAN.md (Phase 17 complete)
 Resume file: None
 
 ## Next Steps
 
-Run `/gsd:execute-phase 17-02` to continue with RevealPhase unification.
+Run `/gsd:plan-phase 18` to create plan for next phase, or `/gsd:execute-phase 18` if plans exist.
 
 ---
-*Updated: 2026-01-20 after 17-01-PLAN.md completion*
+*Updated: 2026-01-20 after 17-02-PLAN.md completion*
