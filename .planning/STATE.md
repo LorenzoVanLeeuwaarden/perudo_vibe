@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.2 UI Unification & Tech Debt
+**Current focus:** v2.2 UI Unification & Tech Debt - Phase 16: Shared Hooks
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements for v2.2
-Last activity: 2026-01-20 — Milestone v2.2 started
+Phase: 16 of 19 (Shared Hooks)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-01-20 — v2.2 roadmap created
 
-Progress: [###############] 15/15 phases complete (v1.0 + v2.0 + v2.1) | v2.2 in planning
+Progress: [###############----] 15/19 phases complete (v1.0 + v2.0 + v2.1 done, v2.2 starting)
 
 ## Production URLs
 
@@ -57,32 +57,24 @@ None.
 
 ### Blockers/Concerns
 
-- `npm run lint` / `next lint` failing with directory error (using tsc --noEmit instead)
+- `npm run lint` / `next lint` failing with directory error (TOOL-01 will fix)
 - Sound files (victory.mp3, pop.mp3, dice-rattle.mp3) are placeholders
 
 ### Tech Debt
 
-From v2.1 audit:
-- DudoOverlay, ShaderBackground, DiceRoller3D have local useIsFirefox instead of shared hook
-- Same 3 components missing useReducedMotion support (accessibility incomplete)
+Being addressed in v2.2:
+- DudoOverlay, ShaderBackground, DiceRoller3D have local useIsFirefox (HOOKS-01 to HOOKS-04)
+- Animation components missing shared useReducedMotion (HOOKS-05)
 
 ## Session Continuity
 
 Last session: 2026-01-20
-Stopped at: v2.1 milestone shipped
+Stopped at: v2.2 roadmap created
 Resume file: None
 
 ## Next Steps
 
-**v2.2 UI Unification & Tech Debt** in progress.
-
-Defining requirements for:
-- Unified UI components (single-player base)
-- Stats page in single-player
-- Shared animation hooks
-- Lint fix
-
-Next: Complete requirements definition → create roadmap
+Run `/gsd:plan-phase 16` to create plan for Shared Hooks phase.
 
 ---
-*Updated: 2026-01-20 after v2.2 milestone start*
+*Updated: 2026-01-20 after v2.2 roadmap creation*

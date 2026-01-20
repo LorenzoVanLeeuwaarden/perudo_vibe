@@ -65,33 +65,33 @@ Deferred to future milestones.
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
+Which phases cover which requirements.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| END-01 | TBD | Pending |
-| END-02 | TBD | Pending |
-| END-03 | TBD | Pending |
-| END-04 | TBD | Pending |
-| GAME-01 | TBD | Pending |
-| GAME-02 | TBD | Pending |
-| GAME-03 | TBD | Pending |
-| GAME-04 | TBD | Pending |
-| LOBBY-01 | TBD | Pending |
-| LOBBY-02 | TBD | Pending |
-| LOBBY-03 | TBD | Pending |
-| HOOKS-01 | TBD | Pending |
-| HOOKS-02 | TBD | Pending |
-| HOOKS-03 | TBD | Pending |
-| HOOKS-04 | TBD | Pending |
-| HOOKS-05 | TBD | Pending |
-| TOOL-01 | TBD | Pending |
+| HOOKS-01 | Phase 16 | Pending |
+| HOOKS-02 | Phase 16 | Pending |
+| HOOKS-03 | Phase 16 | Pending |
+| HOOKS-04 | Phase 16 | Pending |
+| HOOKS-05 | Phase 16 | Pending |
+| GAME-01 | Phase 17 | Pending |
+| GAME-02 | Phase 17 | Pending |
+| GAME-03 | Phase 17 | Pending |
+| GAME-04 | Phase 17 | Pending |
+| LOBBY-01 | Phase 18 | Pending |
+| LOBBY-02 | Phase 18 | Pending |
+| LOBBY-03 | Phase 18 | Pending |
+| END-01 | Phase 19 | Pending |
+| END-02 | Phase 19 | Pending |
+| END-03 | Phase 19 | Pending |
+| END-04 | Phase 19 | Pending |
+| TOOL-01 | Phase 19 | Pending |
 
 **Coverage:**
 - v2.2 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17 (roadmap pending)
+- Mapped to phases: 17
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-20 after initial definition*
+*Last updated: 2026-01-20 after v2.2 roadmap creation*
