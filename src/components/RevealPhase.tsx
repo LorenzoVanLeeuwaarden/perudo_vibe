@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { PLAYER_COLORS } from '@/lib/types';
 import { SortedDiceDisplay } from './SortedDiceDisplay';
 import { DyingDie } from './DyingDie';
+import { Dice } from './Dice';
 import type { ServerPlayer, Bid } from '@/shared';
 import type { PlayerColor } from '@/lib/types';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
@@ -16,6 +17,7 @@ interface RoundResult {
   loserId: string | null;
   winnerId: string | null;
   isCalza: boolean;
+  lastBidderId?: string;
 }
 
 interface RevealPhaseProps {
@@ -38,6 +40,7 @@ export function RevealPhase({
   const [step, setStep] = useState<RevealStep>(0);
   const [dyingDieVisible, setDyingDieVisible] = useState(false);
   const [skipped, setSkipped] = useState(false);
+  const [countedDice, setCountedDice] = useState<number>(0);
   const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
   const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
@@ -45,11 +48,32 @@ export function RevealPhase({
   const handleSkip = () => {
     setSkipped(true);
     setStep(7);
+    setCountedDice(roundResult.actualCount); // Show full count immediately
     // Also show dying die immediately if there's a loser
     if (roundResult.loserId && !roundResult.isCalza) {
       setDyingDieVisible(true);
     }
   };
+
+  // Reset counted dice when step changes or overlay resets
+  useEffect(() => {
+    if (showOverlay) {
+      setCountedDice(0);
+    }
+  }, [showOverlay]);
+
+  // Incremental dice counting animation (during step 4)
+  useEffect(() => {
+    if (step < 4 || skipped) return;
+
+    // Start counting from 0 up to actualCount
+    if (countedDice < roundResult.actualCount) {
+      const timer = setTimeout(() => {
+        setCountedDice(prev => prev + 1);
+      }, 150); // 150ms between each die count
+      return () => clearTimeout(timer);
+    }
+  }, [step, countedDice, roundResult.actualCount, skipped]);
 
   // Animation sequence timing
   useEffect(() => {
@@ -101,16 +125,44 @@ export function RevealPhase({
     };
   }, [showOverlay, roundResult.loserId, roundResult.isCalza, skipped]);
 
-  const { bid, actualCount, loserId, winnerId, isCalza } = roundResult;
+  const { bid, actualCount, loserId, winnerId, isCalza, lastBidderId } = roundResult;
   const loser = players.find((p) => p.id === loserId);
   const winner = players.find((p) => p.id === winnerId);
+  const lastBidder = players.find((p) => p.id === lastBidderId);
 
   // Determine if this is a successful challenge
   const dudoSuccess = !isCalza && actualCount < bid.count;
   const calzaSuccess = isCalza && actualCount === bid.count;
 
+  // Counting is complete when we've reached actualCount
+  const countingComplete = countedDice >= actualCount || skipped;
+  const isCountingStarted = step >= 4 || skipped;
+
+  // Get border color based on result after counting complete
+  const getActualBlockBorderColor = () => {
+    if (!countingComplete) return 'border-purple-glow';
+    if (isCalza) {
+      return actualCount === bid.count ? 'border-green-crt' : 'border-red-danger';
+    }
+    // For Dudo: correct if actualCount < bid.count (the caller was right)
+    return actualCount < bid.count ? 'border-green-crt' : 'border-red-danger';
+  };
+
+  const getActualBlockTextColor = () => {
+    if (!countingComplete) return 'text-purple-glow';
+    if (isCalza) {
+      return actualCount === bid.count ? 'text-green-crt' : 'text-red-danger';
+    }
+    return actualCount < bid.count ? 'text-green-crt' : 'text-red-danger';
+  };
+
   // Filter to only active (non-eliminated) players for display
   const activePlayers = players.filter((p) => !p.isEliminated || p.id === loserId);
+
+  // Get last bidder color config (fallback to orange if not found)
+  const bidderColorConfig = lastBidder
+    ? PLAYER_COLORS[lastBidder.color as PlayerColor]
+    : PLAYER_COLORS.orange;
 
   return (
     <AnimatePresence>
@@ -132,10 +184,114 @@ export function RevealPhase({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-2xl md:text-3xl font-bold text-gold-accent mb-6 text-center"
+            className="text-2xl md:text-3xl font-bold text-gold-accent mb-4 sm:mb-6 text-center"
           >
             {isCalza ? 'CALZA!' : 'DUDO!'} Called
           </motion.h2>
+
+          {/* Bid vs Actual comparison - stacks on mobile */}
+          <div className="flex flex-col sm:flex-row items-stretch justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+            {/* BID block - uses last bidder's color */}
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="flex-1 p-2 sm:p-4 rounded-lg bg-purple-deep/70 border-2 max-w-none sm:max-w-[200px] mx-auto sm:mx-0"
+              style={{ borderColor: bidderColorConfig.border }}
+            >
+              <p
+                className="text-[10px] sm:text-xs uppercase font-bold mb-2 sm:mb-3 tracking-wider"
+                style={{ color: bidderColorConfig.bg }}
+              >
+                The Bid
+                {lastBidder && (
+                  <span className="ml-1 sm:ml-2 opacity-70">
+                    ({lastBidder.name})
+                  </span>
+                )}
+              </p>
+              <div className="flex flex-wrap justify-center gap-1 mb-1 sm:mb-2">
+                {Array.from({ length: bid.count }).map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: i * 0.03, type: 'spring' }}
+                  >
+                    <Dice
+                      value={bid.value}
+                      index={i}
+                      size="xs"
+                      color={lastBidder?.color as PlayerColor || 'orange'}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+              <p className="text-xl sm:text-2xl font-bold" style={{ color: bidderColorConfig.bg }}>
+                {bid.count}x
+              </p>
+            </motion.div>
+
+            {/* VS divider - horizontal on mobile */}
+            <div className="flex items-center justify-center py-1 sm:py-0">
+              <motion.div
+                animate={useSimplifiedAnimations ? {} : { scale: [1, 1.2, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+                className="text-white-soft/40 font-bold text-sm sm:text-lg"
+              >
+                VS
+              </motion.div>
+            </div>
+
+            {/* ACTUAL block - shows dice incrementally */}
+            <motion.div
+              initial={{ x: 50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className={`flex-1 p-2 sm:p-4 rounded-lg bg-purple-deep/70 border-2 max-w-none sm:max-w-[250px] mx-auto sm:mx-0 ${getActualBlockBorderColor()}`}
+            >
+              <p className={`text-[10px] sm:text-xs uppercase font-bold mb-2 sm:mb-3 tracking-wider ${getActualBlockTextColor()}`}>
+                Actual
+              </p>
+              <div className="flex flex-wrap justify-center gap-1 mb-1 sm:mb-2 min-h-[28px] sm:min-h-[40px]">
+                {isCountingStarted ? (
+                  <>
+                    {/* Show matching dice incrementally as they're counted */}
+                    {Array.from({ length: countedDice }).map((_, i) => (
+                      <motion.div
+                        key={`match-${i}`}
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                      >
+                        <Dice
+                          value={bid.value}
+                          index={i}
+                          size="xs"
+                          color="orange"
+                          highlighted
+                        />
+                      </motion.div>
+                    ))}
+                  </>
+                ) : (
+                  <motion.div
+                    animate={useSimplifiedAnimations ? {} : { opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="text-purple-glow text-xl sm:text-2xl"
+                  >
+                    ?
+                  </motion.div>
+                )}
+              </div>
+              <motion.p
+                key={countedDice}
+                initial={countedDice > 0 ? { scale: 1.3, opacity: 0 } : false}
+                animate={{ scale: 1, opacity: 1 }}
+                className={`text-xl sm:text-2xl font-bold ${getActualBlockTextColor()}`}
+              >
+                {isCountingStarted ? `${countedDice}x` : '...'}
+              </motion.p>
+            </motion.div>
+          </div>
 
           {/* Players' revealed hands */}
           <motion.div
@@ -251,30 +407,6 @@ export function RevealPhase({
               );
             })}
           </motion.div>
-
-          {/* Count comparison */}
-          <AnimatePresence>
-            {(step >= 4 || skipped) && (
-              <motion.div
-                initial={skipped ? false : { opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="text-center mb-6"
-              >
-                <p className="text-white-soft/60 text-sm mb-2">
-                  Bid: {bid.count}x {bid.value}s
-                </p>
-                <motion.p
-                  initial={skipped ? false : { scale: 0.8 }}
-                  animate={{ scale: 1 }}
-                  className="text-3xl font-bold"
-                >
-                  <span className="text-gold-accent">{actualCount}</span>
-                  <span className="text-white-soft/40 mx-2">found</span>
-                </motion.p>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           {/* Result */}
           <AnimatePresence>
