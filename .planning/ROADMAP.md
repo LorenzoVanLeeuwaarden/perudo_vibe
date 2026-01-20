@@ -97,10 +97,10 @@
   2. DudoOverlay, ShaderBackground, and DiceRoller3D all import from the shared hook
   3. A useReducedMotion hook exists and all animated components respect prefers-reduced-motion
   4. No duplicate Firefox detection logic remains in component files
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 16-01: TBD
+- [ ] 16-01-PLAN.md — Migrate DudoOverlay, ShaderBackground, DiceRoller3D to shared hooks
 
 ### Phase 17: Game UI Unification
 **Goal**: Multiplayer uses single-player game UI styling consistently
@@ -154,11 +154,11 @@ Phases 1-15 complete. v2.2 starts at Phase 16.
 | 1-9 | v1.0 | 22/22 | Complete | 2026-01-18 |
 | 10-12 | v2.0 | 4/4 | Complete | 2026-01-19 |
 | 13-15 | v2.1 | 3/3 | Complete | 2026-01-20 |
-| 16. Shared Hooks | v2.2 | 0/TBD | Not started | - |
+| 16. Shared Hooks | v2.2 | 0/1 | Planned | - |
 | 17. Game UI | v2.2 | 0/TBD | Not started | - |
 | 18. Lobby UI | v2.2 | 0/TBD | Not started | - |
 | 19. End Game & Tooling | v2.2 | 0/TBD | Not started | - |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-20 after v2.2 roadmap creation*
+*Last updated: 2026-01-20 after Phase 16 planning*
