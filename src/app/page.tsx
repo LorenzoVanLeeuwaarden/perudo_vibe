@@ -1469,7 +1469,7 @@ export default function FaroleoGame() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="flex flex-col items-center"
+              className="flex flex-col items-center w-full max-w-[400px] px-4"
             >
               <DiceCup
                 dice={playerHand}

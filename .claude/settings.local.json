@@ -25,7 +25,11 @@
       "Skill(gsd:audit-milestone)",
       "Bash(npx partykit:*)",
       "Bash(gtimeout 5 npx partykit:*)",
-      "Bash(npx wrangler whoami)"
+      "Bash(npx wrangler whoami)",
+      "Bash(npm run build:production:*)",
+      "Bash(npx wrangler pages deploy:*)",
+      "Bash(git push:*)",
+      "Bash(npx vercel:*)"
     ]
   }
 }

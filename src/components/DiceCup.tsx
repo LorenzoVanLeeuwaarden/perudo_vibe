@@ -298,12 +298,14 @@ export function DiceCup({
   }, [phase, onComplete]);
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full px-4 sm:px-0">
-      {/* Main cup container - clickable, responsive width */}
+    <div className="flex flex-col items-center gap-4 w-full">
+      {/* Main cup container - clickable */}
       <motion.div
         onClick={handleSlam}
-        className="relative rounded-2xl overflow-hidden select-none w-full max-w-[380px] aspect-[380/180]"
+        className="relative rounded-2xl overflow-hidden select-none"
         style={{
+          width: 380,
+          height: 180,
           cursor: phase === 'waiting' ? 'pointer' : 'default',
           background: 'linear-gradient(180deg, rgba(15, 46, 46, 0.85) 0%, rgba(3, 15, 15, 0.95) 100%)',
           border: '3px solid',
