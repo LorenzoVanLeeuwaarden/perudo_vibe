@@ -2,9 +2,9 @@
 
 ## Milestones
 
-- [x] **v1.0 MVP** - Phases 1-9 (shipped 2026-01-18)
-- [x] **v2.0 Cloudflare Deployment** - Phases 10-12 (shipped 2026-01-19)
-- [x] **v2.1 Animation Performance** - Phases 13-15 (shipped 2026-01-20)
+- [x] **v1.0 MVP** - Phases 1-9 (shipped 2026-01-18) — [archive](milestones/v1.0-ROADMAP.md)
+- [x] **v2.0 Cloudflare Deployment** - Phases 10-12 (shipped 2026-01-19) — [archive](milestones/v2.0-ROADMAP.md)
+- [x] **v2.1 Animation Performance** - Phases 13-15 (shipped 2026-01-20) — [archive](milestones/v2.1-ROADMAP.md)
 
 ## Phases
 
@@ -66,71 +66,34 @@
 
 </details>
 
-### v2.1 Animation Performance (Complete)
-
-**Milestone Goal:** Optimize animations for smooth 60fps performance across all browsers, especially Firefox.
-**Status:** SHIPPED 2026-01-20
-
-- [x] **Phase 13: DudoOverlay Optimization** - Fix the main performance culprits
-- [x] **Phase 14: Other Component Optimization** - Victory, Defeat, RevealPhase + accessibility
-- [x] **Phase 15: Performance Verification** - Verify 60fps across browsers
-
-## Phase Details
+<details>
+<summary>v2.1 Animation Performance (Phases 13-15) - SHIPPED 2026-01-20</summary>
 
 ### Phase 13: DudoOverlay Optimization
 **Goal**: DudoOverlay animations use only GPU-accelerated properties (transform/opacity)
-**Depends on**: Nothing (first phase of v2.1)
-**Requirements**: DUDO-01, DUDO-02, DUDO-03, DUDO-04
-**Success Criteria** (what must be TRUE):
-  1. backdrop-filter is static (not animated), container fades in with opacity
-  2. Text glow uses pseudo-element technique, no animated text-shadow
-  3. SVG glitch filter removed or replaced with CSS-only approach
-  4. Particles reduced to 4-6, animate only transform/opacity
-  5. Animation visually complete and impactful
-**Plans**: 1 plan
-
-Plans:
-- [x] 13-01-PLAN.md — Optimize DudoOverlay for 60fps performance (complete)
+**Plans**: 1 plan (complete)
 
 ### Phase 14: Other Component Optimization
 **Goal**: All animated components use GPU-accelerated properties, accessibility supported
-**Depends on**: Phase 13 (apply same patterns)
-**Requirements**: VICT-01, VICT-02, COMP-01, COMP-02, A11Y-01
-**Success Criteria** (what must be TRUE):
-  1. VictoryScreen audited and any expensive animations fixed
-  2. DefeatScreen audited and any expensive animations fixed
-  3. RevealPhase audited and any expensive animations fixed
-  4. prefers-reduced-motion respected with simplified animations
-  5. No animated backdrop-filter, text-shadow, or SVG filters in codebase
-**Plans**: 1 plan
-
-Plans:
-- [x] 14-01-PLAN.md — Audit and optimize Victory, Defeat, RevealPhase, add reduced motion support (complete)
+**Plans**: 1 plan (complete)
 
 ### Phase 15: Performance Verification
 **Goal**: Verify 60fps animation performance across browsers
-**Depends on**: Phase 14 (all optimizations complete)
-**Requirements**: VERF-01, VERF-02, VERF-03
-**Success Criteria** (what must be TRUE):
-  1. DudoOverlay runs at 60fps on Firefox (no dropped frames)
-  2. DudoOverlay runs at 60fps on Chrome (no dropped frames)
-  3. Users can see complete Dudo/Calza animation before game transitions
-  4. No visual regression — animations still look good
-**Plans**: 1 plan
+**Plans**: 1 plan (complete)
 
-Plans:
-- [x] 15-01-PLAN.md — Cross-browser performance verification and testing (complete)
+</details>
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 13 -> 14 -> 15
+Phases 1-15 complete. Next milestone starts at Phase 16.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 13. DudoOverlay Optimization | v2.1 | 1/1 | ✓ Complete | 2026-01-20 |
-| 14. Other Component Optimization | v2.1 | 1/1 | ✓ Complete | 2026-01-20 |
-| 15. Performance Verification | v2.1 | 1/1 | ✓ Complete | 2026-01-20 |
+| 1-9 | v1.0 | 22/22 | Complete | 2026-01-18 |
+| 10-12 | v2.0 | 4/4 | Complete | 2026-01-19 |
+| 13-15 | v2.1 | 3/3 | Complete | 2026-01-20 |
 
 ---
-*Created: 2026-01-20 for v2.1 Animation Performance milestone*
+*Created: 2026-01-17 for v1.0 MVP milestone*
+*Last updated: 2026-01-20 after v2.1 milestone completion*

@@ -30,14 +30,17 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - ✓ Return to lobby after game ends for rematches — v1.0
 - ✓ Game statistics displayed at end — v1.0
 - ✓ Maximum 6 players per room — v1.0
+- ✓ PartyKit backend deployed to Cloudflare Workers — v2.0
+- ✓ Next.js frontend deployed to Cloudflare Pages — v2.0
+- ✓ Environment variables configured for production — v2.0
+- ✓ End-to-end multiplayer verified in production — v2.0
+- ✓ 60fps animation performance on Firefox — v2.1
+- ✓ 60fps animation performance on Chrome — v2.1
+- ✓ prefers-reduced-motion accessibility support — v2.1
 
 ### Active
 
-**v2.0 Cloudflare Deployment:**
-- [ ] PartyKit backend deployed to Cloudflare Workers
-- [ ] Next.js frontend deployed to Cloudflare Pages
-- [ ] Environment variables configured for production
-- [ ] End-to-end multiplayer verified in production
+(No active requirements — planning next milestone)
 
 ### Out of Scope
 
@@ -47,29 +50,25 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - Matchmaking/random lobbies — private rooms via link sharing only
 - Mobile app — web-only, but responsive design works on mobile browsers
 
-## Current Milestone: v2.1 Animation Performance
+## Current State (v2.1 shipped 2026-01-20)
 
-**Goal:** Optimize animations for smooth 60fps performance across all browsers, especially Firefox.
+**Production URLs:**
+- Frontend: https://faroleo.pages.dev
+- Backend: perudo-vibe.lorenzovanleeuwaarden.partykit.dev
 
-**Target features:**
-- Audit all Framer Motion animations for performance issues
-- Fix DudoOverlay/CalzaOverlay Firefox slowness (users miss the screens entirely)
-- Eliminate expensive CSS properties (backdrop-filter animation, SVG filters, animated blur)
-- Use GPU-accelerated transforms instead of expensive properties
-- Ensure animations complete visibly before transitioning
-
-## Context
-
-**Current State (v2.0 deployed 2026-01-19):**
-- ~30,700 lines of TypeScript across 56 files
+**Codebase:**
+- ~31,000 lines of TypeScript across 58 files
 - Tech stack: Next.js 16, React 19, PartyKit, Zustand, Framer Motion, Tailwind CSS 4
 - Server-authoritative multiplayer with WebSocket real-time sync
-- **Deployed:** Frontend at faroleo.pages.dev, Backend at faroleo.lorenzovanleeuwaarden.partykit.dev
+- GPU-optimized animations with Firefox simplified mode
 
 **Known Issues:**
 - `npm run lint` / `next lint` failing with directory error (using tsc --noEmit instead)
 - Sound files are placeholders (need download from royalty-free sources)
-- **Animation performance:** DudoOverlay/CalzaOverlay extremely slow on Firefox (users miss them), occasional slowness on Chrome. Root causes: animated backdrop-filter, SVG filters, multiple animated text-shadows, 8 simultaneous particle animations.
+
+**Tech Debt (from v2.1):**
+- DudoOverlay, ShaderBackground, DiceRoller3D have local useIsFirefox instead of shared hook
+- Same 3 components missing useReducedMotion support
 
 ## Constraints
 
@@ -92,7 +91,9 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 | 60-second grace period for reconnection | Allows page refresh without losing position | ✓ Good |
 | Turn-based Calza (not interrupt) | Matches standard Perudo rules, cleaner implementation | ✓ Good |
 | 8-second celebration before results | Ensures winner celebration is properly seen | ✓ Good |
-| Cloudflare for deployment | Single platform for frontend + backend, generous free tier, PartyKit now native to Cloudflare | — Pending |
+| Cloudflare for deployment | Single platform for frontend + backend, generous free tier, PartyKit now native to Cloudflare | ✓ Good |
+| Firefox simplified mode | Solid backgrounds instead of backdrop-blur for Firefox performance | ✓ Good |
+| useSimplifiedAnimations pattern | Combined Firefox + reduced motion into single guard for cleaner code | ✓ Good |
 
 ---
-*Last updated: 2026-01-19 after starting v2.0 milestone*
+*Last updated: 2026-01-20 after v2.1 milestone*

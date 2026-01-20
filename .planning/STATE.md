@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-19)
+See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.1 Animation Performance - COMPLETE
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 15 of 15 (Performance Verification) - Complete
-Plan: 01 of 01
-Status: v2.1 Milestone complete
-Last activity: 2026-01-20 - Completed 15-01-PLAN.md
+Phase: 15 of 15 complete
+Plan: All complete
+Status: Ready for next milestone
+Last activity: 2026-01-20 — v2.1 milestone shipped
 
-Progress: [########] 3/3 v2.1 phases complete (100%)
+Progress: [###############] 15/15 phases complete (v1.0 + v2.0 + v2.1)
 
 ## Production URLs
 
@@ -26,43 +26,30 @@ Progress: [########] 3/3 v2.1 phases complete (100%)
 **v1.0 Summary:**
 - Total plans completed: 22
 - Total phases: 9
-- Total execution time: ~5h
 - Git commits: 56 feature commits
 
-**v2.0 Metrics:**
+**v2.0 Summary:**
 - Plans completed: 4
-- Phases complete: 2 of 3 (Phase 10, 11 complete)
-- Total execution time: ~38min
+- Phases complete: 3 (Phase 10, 11, 12)
 - Backend URL: perudo-vibe.lorenzovanleeuwaarden.partykit.dev
 - Frontend URL: faroleo.pages.dev
 
-**v2.1 Metrics:**
+**v2.1 Summary:**
 - Plans completed: 3
-- Phases complete: 3 of 3 (Phase 13, 14, 15 complete)
-- Total execution time: ~53min
+- Phases complete: 3 (Phase 13, 14, 15)
 - Requirements complete: 12/12 (100%)
+- Animation performance: 60fps on Firefox and Chrome
 
 ## Accumulated Context
 
 ### Decisions
 
-| Phase | Decision | Rationale |
-|-------|----------|-----------|
-| 10 | PartyKit managed deployment | No direct Cloudflare account needed, handles infrastructure |
-| 11-01 | Server/client component split for room page | generateStaticParams requires server component, room UI uses client hooks |
-| 11-01 | PLACEHOLDER param + _redirects for SPA routing | Static export needs known params; SPA fallback handles actual room codes |
-| 11-01 | build:production script | .env.local overrides .env.production; explicit env var ensures correct host |
-| 11-02 | 404.html SPA fallback | _redirects wasn't sufficient; 404.html serves index.html content for SPA routing |
-| 11-02 | Client-side room code extraction | useParams returns PLACEHOLDER; extract from window.location.pathname |
-| 11-02 | Connection guard in useRoomConnection | Prevent WebSocket before valid room code is extracted |
-| 13-01 | Firefox simplified mode | Solid backgrounds instead of backdrop-blur for Firefox performance |
-| 13-01 | Particle systems disabled on Firefox | Prevents frame drops while maintaining visual experience |
-| 13-01 | useFirefox hook pattern | Reusable browser detection for conditional rendering |
-| 14-01 | useSimplifiedAnimations pattern | Combined Firefox + reduced motion into single guard for cleaner code |
-| 14-01 | Static style fallbacks | Preserve visual appearance when animations disabled |
-| 14-01 | Shared hooks in src/hooks/ | Cross-component reuse for useIsFirefox and useReducedMotion |
-| 15-01 | Manual DevTools performance testing | Accurate frame rate measurement using browser Performance tab |
-| 15-01 | v2.1 milestone complete | All 12 requirements verified passing |
+See PROJECT.md Key Decisions table for full list.
+
+Recent (v2.1):
+- Firefox simplified mode: Solid backgrounds instead of backdrop-blur
+- useSimplifiedAnimations pattern: Combined Firefox + reduced motion guard
+- Static style fallbacks: Preserve visual appearance when animations disabled
 
 ### Pending Todos
 
@@ -73,24 +60,29 @@ None.
 - `npm run lint` / `next lint` failing with directory error (using tsc --noEmit instead)
 - Sound files (victory.mp3, pop.mp3, dice-rattle.mp3) are placeholders
 
+### Tech Debt
+
+From v2.1 audit:
+- DudoOverlay, ShaderBackground, DiceRoller3D have local useIsFirefox instead of shared hook
+- Same 3 components missing useReducedMotion support (accessibility incomplete)
+
 ## Session Continuity
 
-Last session: 2026-01-20T13:49:17Z
-Stopped at: Completed 15-01-PLAN.md (v2.1 milestone complete)
+Last session: 2026-01-20
+Stopped at: v2.1 milestone shipped
 Resume file: None
 
 ## Next Steps
 
-**v2.1 Animation Performance milestone is COMPLETE!**
+**v2.1 Animation Performance milestone is SHIPPED!**
 
-All 12 requirements verified:
-- DUDO-01 through DUDO-04: DudoOverlay optimization
-- VICT-01, VICT-02: Victory/Defeat screen optimization
-- COMP-01, COMP-02: Other component optimization
-- A11Y-01: Accessibility (prefers-reduced-motion)
-- VERF-01, VERF-02, VERF-03: Performance verification (60fps Firefox/Chrome)
+Ready for next milestone. Options:
+- Sound effects (replace placeholder audio)
+- Additional accessibility (colorblind mode)
+- New game features
+- Tech debt cleanup
 
-Ready for future development (v2.2+) or production use.
+To start: `/gsd:new-milestone`
 
 ---
-*Updated: 2026-01-20 after 15-01-PLAN.md completion - v2.1 milestone complete*
+*Updated: 2026-01-20 after v2.1 milestone completion*
