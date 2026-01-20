@@ -211,32 +211,35 @@ export function RevealContent({
       </div>
 
       {/* Dice reveal grid - 2-column on mobile, flexible on larger screens */}
+      {/* Only show players who have dice to reveal this round */}
       <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-4 mb-4 sm:mb-6 max-w-4xl mx-auto">
-        {players.map((player) => {
-          const baseIdx = getPlayerBaseIdx(player.id);
-          return (
-            <PlayerRevealCard
-              key={player.id}
-              playerName={player.name}
-              hand={player.hand}
-              color={player.color}
-              isEliminated={player.isEliminated}
-              baseIdx={baseIdx}
-              isRevealed={isPlayerSectionRevealed(baseIdx)}
-              isPalifico={isPalifico}
-              isDieRevealed={isDieRevealed}
-              isDieHighlighted={isDieHighlighted}
-              isDieMatching={isDieMatching}
-              dyingDieOwner={dyingDieOwner}
-              dyingDieIndex={dyingDieIndex}
-              countingComplete={countingComplete}
-              calzaSuccess={calzaSuccess}
-              spawningDieOwner={spawningDieOwner}
-              spawningDieValue={spawningDieValue}
-              playerId={player.id}
-            />
-          );
-        })}
+        {players
+          .filter((player) => player.hand.length > 0)
+          .map((player) => {
+            const baseIdx = getPlayerBaseIdx(player.id);
+            return (
+              <PlayerRevealCard
+                key={player.id}
+                playerName={player.name}
+                hand={player.hand}
+                color={player.color}
+                isEliminated={player.isEliminated}
+                baseIdx={baseIdx}
+                isRevealed={isPlayerSectionRevealed(baseIdx)}
+                isPalifico={isPalifico}
+                isDieRevealed={isDieRevealed}
+                isDieHighlighted={isDieHighlighted}
+                isDieMatching={isDieMatching}
+                dyingDieOwner={dyingDieOwner}
+                dyingDieIndex={dyingDieIndex}
+                countingComplete={countingComplete}
+                calzaSuccess={calzaSuccess}
+                spawningDieOwner={spawningDieOwner}
+                spawningDieValue={spawningDieValue}
+                playerId={player.id}
+              />
+            );
+          })}
       </div>
 
       {/* Action buttons */}
