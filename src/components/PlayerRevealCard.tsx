@@ -125,11 +125,7 @@ export function PlayerRevealCard({
             </motion.div>
           );
         })}
-        {/* Invisible placeholder slots to maintain width for up to 5 dice */}
-        {Array.from({ length: placeholderSlots }).map((_, i) => (
-          <div key={`placeholder-${i}`} className="w-7 h-7" />
-        ))}
-        {/* Spawning die for Calza success */}
+        {/* Spawning die for Calza success - appears right after existing dice */}
         {countingComplete && calzaSuccess && isOwner(spawningDieOwner) && (
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
@@ -140,6 +136,11 @@ export function PlayerRevealCard({
             <SpawningDie value={spawningDieValue} color={color} size={diceSize} />
           </motion.div>
         )}
+        {/* Invisible placeholder slots to maintain width for up to 5 dice */}
+        {/* Subtract 1 if spawning die is showing since it takes a slot */}
+        {Array.from({ length: Math.max(0, placeholderSlots - (countingComplete && calzaSuccess && isOwner(spawningDieOwner) ? 1 : 0)) }).map((_, i) => (
+          <div key={`placeholder-${i}`} className="w-7 h-7" />
+        ))}
       </div>
     </div>
   );
