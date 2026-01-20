@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 
 interface DiceCupProps {
@@ -13,15 +13,12 @@ interface DiceCupProps {
 }
 
 // Ghost dice component - just outlines bouncing around wildly
-// Uses x/y transforms for smooth Framer Motion animation
-function GhostDie({ index, containerWidth }: { index: number; containerWidth: number }) {
+function GhostDie({ index }: { index: number }) {
+  const dieSize = 44;
+
   // Each die has its own random animation pattern
   const randomDuration = 0.8 + Math.random() * 0.6;
   const randomDelay = index * 0.1;
-
-  // Scale factor based on container width (380px is the max/reference width)
-  const scale = containerWidth / 380;
-  const dieSize = Math.max(40, 44 * scale);
 
   return (
     <motion.div
@@ -29,27 +26,23 @@ function GhostDie({ index, containerWidth }: { index: number; containerWidth: nu
       style={{
         width: dieSize,
         height: dieSize,
-        left: '50%',
-        top: '50%',
-        marginLeft: -dieSize / 2,
-        marginTop: -dieSize / 2,
         border: '2px dashed rgba(45, 212, 191, 0.25)',
         background: 'rgba(45, 212, 191, 0.03)',
       }}
       animate={{
         x: [
-          (50 + Math.sin(index * 1.5) * 80) * scale - (containerWidth / 2) * 0.3,
-          (150 + Math.cos(index * 2.1) * 100) * scale - (containerWidth / 2) * 0.3,
-          (80 + Math.sin(index * 0.8) * 120) * scale - (containerWidth / 2) * 0.3,
-          (200 + Math.cos(index * 1.3) * 60) * scale - (containerWidth / 2) * 0.3,
-          (50 + Math.sin(index * 1.5) * 80) * scale - (containerWidth / 2) * 0.3,
+          50 + Math.sin(index * 1.5) * 80,
+          150 + Math.cos(index * 2.1) * 100,
+          80 + Math.sin(index * 0.8) * 120,
+          200 + Math.cos(index * 1.3) * 60,
+          50 + Math.sin(index * 1.5) * 80,
         ],
         y: [
-          (30 + Math.cos(index * 1.2) * 40) * scale - 45 * scale,
-          (80 + Math.sin(index * 1.8) * 50) * scale - 45 * scale,
-          (20 + Math.cos(index * 2.5) * 30) * scale - 45 * scale,
-          (60 + Math.sin(index * 0.9) * 45) * scale - 45 * scale,
-          (30 + Math.cos(index * 1.2) * 40) * scale - 45 * scale,
+          30 + Math.cos(index * 1.2) * 40,
+          80 + Math.sin(index * 1.8) * 50,
+          20 + Math.cos(index * 2.5) * 30,
+          60 + Math.sin(index * 0.9) * 45,
+          30 + Math.cos(index * 1.2) * 40,
         ],
         rotate: [0, 180, 360, 540, 720],
         scale: [1, 1.1, 0.95, 1.05, 1],
@@ -269,21 +262,7 @@ export function DiceCup({
 }: DiceCupProps) {
   const [phase, setPhase] = useState<'waiting' | 'slamming' | 'revealed'>('waiting');
   const [showParticles, setShowParticles] = useState(false);
-  const [containerWidth, setContainerWidth] = useState(380);
-  const containerRef = useRef<HTMLDivElement>(null);
   const colorConfig = PLAYER_COLORS[playerColor];
-
-  // Track container width for responsive ghost dice
-  useEffect(() => {
-    const updateWidth = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth);
-      }
-    };
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
-  }, []);
 
   const handleSlam = useCallback(() => {
     if (phase !== 'waiting') return;
@@ -322,7 +301,6 @@ export function DiceCup({
     <div className="flex flex-col items-center gap-4 w-full px-4 sm:px-0">
       {/* Main cup container - clickable, responsive width */}
       <motion.div
-        ref={containerRef}
         onClick={handleSlam}
         className="relative rounded-2xl overflow-hidden select-none w-full max-w-[380px] aspect-[380/180]"
         style={{
@@ -385,7 +363,7 @@ export function DiceCup({
               transition={{ duration: 0.15 }}
             >
               {Array.from({ length: diceCount }).map((_, i) => (
-                <GhostDie key={i} index={i} containerWidth={containerWidth} />
+                <GhostDie key={i} index={i} />
               ))}
             </motion.div>
           )}
