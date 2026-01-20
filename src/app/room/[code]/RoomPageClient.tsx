@@ -122,7 +122,6 @@ export default function RoomPage() {
           }
           return prev;
         });
-        toast.success(`${newPlayer.name} joined`);
         break;
       }
 
@@ -139,12 +138,6 @@ export default function RoomPage() {
 
             const player = prev.roomState.players.find(p => p.id === message.playerId);
             if (message.reason === 'disconnected') {
-              // Show toast for disconnect (but not for ourselves)
-              if (player && message.playerId !== prev.playerId) {
-                queueMicrotask(() => {
-                  toast.warning(`${player.name} disconnected`);
-                });
-              }
               // Mark as disconnected in BOTH roomState.players AND gameState.players
               const disconnectedAt = Date.now();
               const updatePlayer = (p: typeof player) =>
@@ -168,9 +161,6 @@ export default function RoomPage() {
               };
             } else {
               // Actually left (kicked, voluntarily left) - remove from list
-              if (player) {
-                toast.info(`${player.name} left`);
-              }
               return {
                 ...prev,
                 roomState: {
@@ -188,18 +178,6 @@ export default function RoomPage() {
         // Update player's connection status and clear disconnectedAt
         setJoinState(prev => {
           if (prev.status === 'joined') {
-            // Check if this reconnection message is for ourselves
-            const isMe = message.playerId === prev.playerId;
-
-            // Schedule toast after state update
-            queueMicrotask(() => {
-              if (isMe) {
-                toast.success("Welcome back! You're back in the game");
-              } else {
-                toast.success(`${message.playerName} reconnected`);
-              }
-            });
-
             // Update BOTH roomState.players AND gameState.players
             const reconnectPlayer = <T extends { id: string; isConnected: boolean; disconnectedAt: number | null }>(p: T): T =>
               p.id === message.playerId
@@ -299,10 +277,6 @@ export default function RoomPage() {
         // Turn advanced (e.g., after player eliminated due to disconnect)
         setJoinState(prev => {
           if (prev.status === 'joined' && prev.roomState.gameState) {
-            const nextPlayerName = prev.roomState.players.find(p => p.id === message.currentPlayerId)?.name;
-            if (nextPlayerName) {
-              toast.info(`Turn passed to ${nextPlayerName}`);
-            }
             return {
               ...prev,
               roomState: {
@@ -323,10 +297,6 @@ export default function RoomPage() {
         // Update current bid and last bidder
         setJoinState(prev => {
           if (prev.status === 'joined' && prev.roomState.gameState) {
-            const playerName = prev.roomState.players.find(p => p.id === message.playerId)?.name;
-            if (playerName) {
-              toast(`${playerName} bid ${message.bid.count}x${message.bid.value}s`);
-            }
             // Find next player in turn order
             const activePlayers = prev.roomState.gameState.players.filter(p => !p.isEliminated);
             const currentIndex = activePlayers.findIndex(p => p.id === message.playerId);

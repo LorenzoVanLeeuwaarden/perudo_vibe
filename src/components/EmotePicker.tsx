@@ -44,24 +44,24 @@ export function EmotePicker({ onSelect, disabled }: EmotePickerProps) {
             />
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 10 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              className="absolute bottom-full mb-2 right-0 p-2 bg-purple-deep border border-purple-light/30
-                rounded-lg shadow-xl z-50 grid grid-cols-4 gap-1"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.15 }}
+              className="absolute bottom-full mb-2 right-0 bg-purple-deep border border-purple-light/30 rounded-lg shadow-xl z-50"
+              style={{ width: '200px' }}
             >
-              {EMOTES.map(emote => (
-                <motion.button
-                  key={emote}
-                  whileHover={{ scale: 1.15 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => handleSelect(emote)}
-                  className="text-2xl p-2 hover:bg-purple-mid/50 rounded transition-colors"
-                >
-                  {emote}
-                </motion.button>
-              ))}
+              <div className="p-3 grid grid-cols-4 gap-2">
+                {EMOTES.map(emote => (
+                  <button
+                    key={emote}
+                    onClick={() => handleSelect(emote)}
+                    className="text-2xl w-10 h-10 flex items-center justify-center hover:bg-purple-mid/50 rounded transition-colors active:scale-90"
+                  >
+                    {emote}
+                  </button>
+                ))}
+              </div>
             </motion.div>
           </>
         )}
