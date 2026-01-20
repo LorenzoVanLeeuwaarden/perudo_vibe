@@ -408,6 +408,7 @@ export default class GameServer implements Party.Server {
         loserId,
         winnerId: null,
         isCalza: false,
+        lastBidderId: gameState.lastBidderId,
         playerDiceCounts,
         timestamp: Date.now(),
       });
@@ -1216,6 +1217,7 @@ export default class GameServer implements Party.Server {
       loserId,
       winnerId: null,
       isCalza: false,
+      lastBidderId: gameState.lastBidderId,
       playerDiceCounts,
       timestamp: Date.now(),
     });
@@ -1304,15 +1306,21 @@ export default class GameServer implements Party.Server {
     let winnerId: string | null = null;
 
     if (actualCount === gameState.currentBid.count) {
-      // Calza success - caller gains 1 die (max 5)
-      winnerId = sender.id;
-      if (caller) {
-        caller.diceCount = Math.min(caller.diceCount + 1, 5);
+      // Calza success - caller gains 1 die (up to max starting dice)
+      const maxDice = this.roomState.settings.startingDice;
+      const canGainDie = caller && caller.diceCount < maxDice;
+
+      if (canGainDie) {
+        winnerId = sender.id;
+        caller.diceCount += 1;
+        // Track stats: diceGained only if actually gained
+        if (gameState.stats[sender.id]) {
+          gameState.stats[sender.id].diceGained++;
+        }
       }
-      // Track stats: calzasSuccessful and diceGained
+      // Track stats: calzasSuccessful even if at max dice
       if (gameState.stats[sender.id]) {
         gameState.stats[sender.id].calzasSuccessful++;
-        gameState.stats[sender.id].diceGained++;
       }
       // On calza success, the last bidder starts next round (convention varies)
       // Using caller as the next starter since they "won" the round
@@ -1352,6 +1360,7 @@ export default class GameServer implements Party.Server {
       loserId,
       winnerId,
       isCalza: true,
+      lastBidderId: gameState.lastBidderId,
       playerDiceCounts,
       timestamp: Date.now(),
     });

@@ -8,6 +8,7 @@ interface RoundResult {
   loserId: string | null;
   winnerId: string | null;
   isCalza: boolean;
+  lastBidderId?: string | null;
 }
 
 interface ActiveEmote {

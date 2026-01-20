@@ -77,6 +77,8 @@ export function GameBoard({
 
   // Track current time for disconnect visual delay calculation
   const [currentTime, setCurrentTime] = useState(Date.now());
+  // Track selected bid value for dice highlighting (like single player)
+  const [selectedBidValue, setSelectedBidValue] = useState<number | null>(null);
 
   // Update every second to recalculate disconnect visuals
   useEffect(() => {
@@ -362,6 +364,7 @@ export function GameBoard({
                   lastBidderName={lastBidderName}
                   hideBidDisplay={true}
                   wasAutoPlayed={wasAutoPlayed}
+                  onValueChange={setSelectedBidValue}
                 />
               </div>
             </>
@@ -419,7 +422,7 @@ export function GameBoard({
                 isPalifico={gameState.isPalifico}
                 size="lg"
                 animateSort={true}
-                highlightValue={!isMyTurn ? gameState.currentBid?.value ?? null : null}
+                highlightValue={isMyTurn ? selectedBidValue : (gameState.currentBid?.value ?? null)}
                 draggable={true}
               />
             </motion.div>
@@ -454,6 +457,7 @@ export function GameBoard({
           roundResult={roundResult}
           onContinue={handleContinueRound}
           showOverlay={showDudoOverlay}
+          isPalifico={gameState.isPalifico}
         />
       )}
 

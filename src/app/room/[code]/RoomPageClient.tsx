@@ -366,6 +366,7 @@ export default function RoomPage() {
           loserId: message.loserId,
           winnerId: message.winnerId,
           isCalza: message.isCalza,
+          lastBidderId: message.lastBidderId,
         });
         setJoinState(prev => {
           if (prev.status === 'joined' && prev.roomState.gameState) {

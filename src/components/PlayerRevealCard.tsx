@@ -20,14 +20,14 @@ interface PlayerRevealCardProps {
   isDieHighlighted: (globalIdx: number) => boolean;
   isDieMatching: (value: number) => boolean;
 
-  // Dying die state
-  dyingDieOwner: 'player' | number | null;
+  // Dying die state (supports both single player format and multiplayer string IDs)
+  dyingDieOwner: 'player' | number | string | null;
   dyingDieIndex: number | null;
 
   // Spawning die state (for Calza success)
   countingComplete: boolean;
   calzaSuccess: boolean;
-  spawningDieOwner: 'player' | number | null;
+  spawningDieOwner: 'player' | number | string | null;
   spawningDieValue: number;
 
   // Player identifier (for matching dying/spawning die owner)
@@ -59,12 +59,18 @@ export function PlayerRevealCard({
 }: PlayerRevealCardProps) {
   const colorConfig = PLAYER_COLORS[color];
 
-  // Helper to check if this player is the owner
-  const isOwner = (owner: 'player' | number | null): boolean => {
+  // Helper to check if this player is the owner (supports single player and multiplayer)
+  const isOwner = (owner: 'player' | number | string | null): boolean => {
     if (owner === null) return false;
+    // Single player mode: 'player' string literal
     if (playerId === 'player' && owner === 'player') return true;
+    // Single player mode: opponent number ID
     if (playerId !== 'player' && typeof owner === 'number') {
       return owner.toString() === playerId;
+    }
+    // Multiplayer mode: string player ID comparison
+    if (typeof owner === 'string' && owner !== 'player') {
+      return owner === playerId;
     }
     return false;
   };

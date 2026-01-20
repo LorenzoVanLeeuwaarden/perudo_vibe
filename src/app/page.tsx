@@ -17,6 +17,7 @@ import { DudoOverlay } from '@/components/DudoOverlay';
 import { PlayerDiceBadge } from '@/components/PlayerDiceBadge';
 import { PlayerRevealCard } from '@/components/PlayerRevealCard';
 import { SortedDiceDisplay } from '@/components/SortedDiceDisplay';
+import { RevealContent } from '@/components/RevealContent';
 import { ModeSelection } from '@/components/ModeSelection';
 import { LobbyLayout } from '@/components/LobbyLayout';
 import { useUIStore } from '@/stores/uiStore';
@@ -380,16 +381,25 @@ export default function FaroleoGame() {
 
         // Calza rewards/penalties
         if (exactMatch) {
-          // Caller gains a die (max 5) - no loser
+          // Caller gains a die (up to max 5) - no loser
+          const maxDice = 5;
+          const callerCurrentDice = isPlayerCaller
+            ? playerDiceCount
+            : opponents.find(o => o.id === caller)?.diceCount || 0;
+          const canGainDie = callerCurrentDice < maxDice;
+
           setCalzaSuccess(true);
-          setSpawningDieOwner(caller);
-          setSpawningDieValue(Math.floor(Math.random() * 6) + 1);
-          if (isPlayerCaller) {
-            setPlayerDiceCount((c) => Math.min(c + 1, 5));
-          } else {
-            setOpponents(prev => prev.map(o =>
-              o.id === caller ? { ...o, diceCount: Math.min(o.diceCount + 1, 5) } : o
-            ));
+          // Only show spawning animation if caller can actually gain a die
+          if (canGainDie) {
+            setSpawningDieOwner(caller);
+            setSpawningDieValue(Math.floor(Math.random() * 6) + 1);
+            if (isPlayerCaller) {
+              setPlayerDiceCount((c) => c + 1);
+            } else {
+              setOpponents(prev => prev.map(o =>
+                o.id === caller ? { ...o, diceCount: o.diceCount + 1 } : o
+              ));
+            }
           }
         } else {
           // Caller loses a die
@@ -1842,7 +1852,7 @@ export default function FaroleoGame() {
           )}
 
           {/* REVEAL */}
-          {gameState === 'Reveal' && (
+          {gameState === 'Reveal' && currentBid && (
             <motion.div
               key="reveal"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -1850,250 +1860,39 @@ export default function FaroleoGame() {
               exit={{ opacity: 0, scale: 0.9 }}
               className="text-center px-2 sm:px-0"
             >
-              <div className="retro-panel p-3 sm:p-6 max-w-4xl">
-                {/* Bid vs Actual comparison - stacks on mobile */}
-                {currentBid && (
-                  <div className="flex flex-col sm:flex-row items-stretch justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-                    {/* BID block - uses last bidder's color */}
-                    {(() => {
-                      const bidderColor = getLastBidderColor();
-                      const bidderConfig = PLAYER_COLORS[bidderColor];
-                      return (
-                        <motion.div
-                          initial={{ x: -50, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          className="flex-1 p-2 sm:p-4 rounded-lg bg-purple-deep/70 border-2 max-w-none sm:max-w-[200px] mx-auto sm:mx-0"
-                          style={{ borderColor: bidderConfig.border }}
-                        >
-                          <p className="text-[10px] sm:text-xs uppercase font-bold mb-2 sm:mb-3 tracking-wider" style={{ color: bidderConfig.bg }}>
-                            The Bid
-                            <span className="ml-1 sm:ml-2 opacity-70">
-                              ({lastBidder === 'player' ? 'You' : opponents.find(o => o.id === lastBidder)?.name})
-                            </span>
-                          </p>
-                          <div className="flex flex-wrap justify-center gap-1 mb-1 sm:mb-2">
-                            {Array.from({ length: currentBid.count }).map((_, i) => (
-                              <motion.div
-                                key={i}
-                                initial={{ scale: 0, rotate: -180 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                transition={{ delay: i * 0.03, type: 'spring' }}
-                              >
-                                <Dice
-                                  value={currentBid.value}
-                                  index={i}
-                                  size="xs"
-                                  isPalifico={isPalifico}
-                                  color={bidderColor}
-                                />
-                              </motion.div>
-                            ))}
-                          </div>
-                          <p className="text-xl sm:text-2xl font-bold" style={{ color: bidderConfig.bg }}>{currentBid.count}×</p>
-                        </motion.div>
-                      );
-                    })()}
-
-                    {/* VS divider - horizontal on mobile */}
-                    <div className="flex items-center justify-center py-1 sm:py-0">
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 1, repeat: Infinity }}
-                        className="text-white-soft/40 font-bold text-sm sm:text-lg"
-                      >
-                        VS
-                      </motion.div>
-                    </div>
-
-                    {/* ACTUAL block - shows dice with their owner's colors */}
-                    {(() => {
-                      const countedDice = getCountedDice();
-                      const currentCount = countedDice.length;
-                      const isCountingStarted = highlightedDiceIndex >= 0 || countingComplete;
-                      return (
-                        <motion.div
-                          initial={{ x: 50, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          className={`flex-1 p-2 sm:p-4 rounded-lg bg-purple-deep/70 border-2 max-w-none sm:max-w-[250px] mx-auto sm:mx-0 ${
-                            countingComplete
-                              ? (calzaCaller
-                                  ? (actualCount === currentBid.count ? 'border-green-crt' : 'border-red-danger')
-                                  : (actualCount >= currentBid.count ? 'border-green-crt' : 'border-red-danger'))
-                              : 'border-purple-glow'
-                          }`}
-                        >
-                          <p className={`text-[10px] sm:text-xs uppercase font-bold mb-2 sm:mb-3 tracking-wider ${
-                            countingComplete
-                              ? (calzaCaller
-                                  ? (actualCount === currentBid.count ? 'text-green-crt' : 'text-red-danger')
-                                  : (actualCount >= currentBid.count ? 'text-green-crt' : 'text-red-danger'))
-                              : 'text-purple-glow'
-                          }`}>
-                            Actual
-                          </p>
-                          <div className="flex flex-wrap justify-center gap-1 mb-1 sm:mb-2 min-h-[28px] sm:min-h-[40px]">
-                            {isCountingStarted ? (
-                              <>
-                                {/* Show matching dice incrementally as they're counted */}
-                                {countedDice.map((match, i) => (
-                                  <motion.div
-                                    key={`match-${match.globalIdx}`}
-                                    initial={{ scale: 0, rotate: -180 }}
-                                    animate={{ scale: 1, rotate: 0 }}
-                                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                                  >
-                                    <Dice
-                                      value={match.value}
-                                      index={i}
-                                      size="xs"
-                                      isPalifico={isPalifico && !match.isJoker}
-                                      color={match.color}
-                                      highlighted
-                                    />
-                                  </motion.div>
-                                ))}
-                              </>
-                            ) : (
-                              <motion.div
-                                animate={{ opacity: [0.3, 1, 0.3] }}
-                                transition={{ duration: 1.5, repeat: Infinity }}
-                                className="text-purple-glow text-xl sm:text-2xl"
-                              >
-                                ?
-                              </motion.div>
-                            )}
-                          </div>
-                          <motion.p
-                            key={currentCount}
-                            initial={{ scale: 1.3, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className={`text-xl sm:text-2xl font-bold ${
-                              countingComplete
-                                ? (calzaCaller
-                                    ? (actualCount === currentBid.count ? 'text-green-crt' : 'text-red-danger')
-                                    : (actualCount >= currentBid.count ? 'text-green-crt' : 'text-red-danger'))
-                                : 'text-white-soft'
-                            }`}
-                          >
-                            {isCountingStarted ? `${currentCount}×` : '...'}
-                          </motion.p>
-                        </motion.div>
-                      );
-                    })()}
-                  </div>
-                )}
-
-                {/* Dice reveal grid - 2-column on mobile, flexible on larger screens */}
-                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-4 mb-4 sm:mb-6 max-w-4xl mx-auto">
-                  {/* Player's dice */}
-                  <PlayerRevealCard
-                    playerName="You"
-                    hand={playerHand}
-                    color={playerColor}
-                    isEliminated={playerDiceCount === 0}
-                    baseIdx={0}
-                    isRevealed={isPlayerSectionRevealed(0)}
-                    isPalifico={isPalifico}
-                    isDieRevealed={isDieRevealed}
-                    isDieHighlighted={isDieHighlighted}
-                    isDieMatching={isDieMatching}
-                    dyingDieOwner={dyingDieOwner}
-                    dyingDieIndex={dyingDieIndex}
-                    countingComplete={countingComplete}
-                    calzaSuccess={calzaSuccess}
-                    spawningDieOwner={spawningDieOwner}
-                    spawningDieValue={spawningDieValue}
-                    playerId="player"
-                  />
-
-                  {/* AI dice - each in their own card */}
-                  {opponents.map((opponent, oppIdx) => {
-                    const baseIdx = playerHand.length + opponents.slice(0, oppIdx).reduce((sum, o) => sum + o.hand.length, 0);
-                    return (
-                      <PlayerRevealCard
-                        key={opponent.id}
-                        playerName={opponent.name}
-                        hand={opponent.hand}
-                        color={opponent.color}
-                        isEliminated={opponent.isEliminated}
-                        baseIdx={baseIdx}
-                        isRevealed={isPlayerSectionRevealed(baseIdx)}
-                        isPalifico={isPalifico}
-                        isDieRevealed={isDieRevealed}
-                        isDieHighlighted={isDieHighlighted}
-                        isDieMatching={isDieMatching}
-                        dyingDieOwner={dyingDieOwner}
-                        dyingDieIndex={dyingDieIndex}
-                        countingComplete={countingComplete}
-                        calzaSuccess={calzaSuccess}
-                        spawningDieOwner={spawningDieOwner}
-                        spawningDieValue={spawningDieValue}
-                        playerId={opponent.id.toString()}
-                      />
-                    );
-                  })}
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex flex-col items-center gap-3">
-                  {/* Skip button - shown while animation is running */}
-                  {!countingComplete && (
-                    <motion.button
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleSkipReveal}
-                      className="px-6 py-2 bg-purple-mid/80 text-white-soft/70 font-medium rounded-lg text-sm uppercase tracking-wider border border-purple-light/30 hover:bg-purple-light/50 hover:text-white-soft transition-colors"
-                    >
-                      Skip
-                    </motion.button>
-                  )}
-
-                  {/* Continue button - Día de los Muertos style, full width on mobile */}
-                  {countingComplete && (
-                    <motion.button
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      whileHover={{ scale: 1.05, y: -3 }}
-                      whileTap={{ scale: 0.98, y: 0 }}
-                      onClick={startNewRound}
-                      className="group relative flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto mx-auto px-6 py-3 sm:px-8 sm:py-4 rounded-xl font-bold uppercase tracking-wider overflow-hidden"
-                      style={{
-                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
-                        border: '3px solid #fcd34d',
-                        borderBottom: '5px solid #92400e',
-                        color: '#1f2937',
-                        boxShadow: '0 6px 0 0 #78350f, 0 8px 20px 0 rgba(0,0,0,0.4), 0 0 30px rgba(245, 158, 11, 0.3)',
-                      }}
-                    >
-                      {/* Animated shine effect */}
-                      <motion.div
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100"
-                        style={{
-                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
-                          transform: 'skewX(-20deg)',
-                        }}
-                        animate={{ x: ['-100%', '200%'] }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                      />
-                      {/* Icon */}
-                      <motion.div
-                        animate={{ rotate: [0, 360] }}
-                        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                      >
-                        {playerDiceCount === 0 || opponents.every(o => o.isEliminated || o.diceCount === 0)
-                          ? <Trophy className="w-6 h-6" />
-                          : <Dices className="w-6 h-6" />
-                        }
-                      </motion.div>
-                      <span className="text-lg relative z-10">
-                        {playerDiceCount === 0 || opponents.every(o => o.isEliminated || o.diceCount === 0) ? 'SEE RESULTS' : 'CONTINUE'}
-                      </span>
-                    </motion.button>
-                  )}
-                </div>
-              </div>
+              <RevealContent
+                bid={currentBid}
+                lastBidderName={lastBidder === 'player' ? 'You' : opponents.find(o => o.id === lastBidder)?.name || 'Unknown'}
+                lastBidderColor={getLastBidderColor()}
+                isPalifico={isPalifico}
+                actualCount={actualCount}
+                isCalza={calzaCaller !== null}
+                countingComplete={countingComplete}
+                countedDice={getCountedDice()}
+                isCountingStarted={highlightedDiceIndex >= 0 || countingComplete}
+                players={[
+                  { id: 'player', name: 'You', hand: playerHand, color: playerColor, isEliminated: playerDiceCount === 0 },
+                  ...opponents.map(o => ({ id: o.id.toString(), name: o.name, hand: o.hand, color: o.color, isEliminated: o.isEliminated }))
+                ]}
+                getPlayerBaseIdx={(playerId) => {
+                  if (playerId === 'player') return 0;
+                  const oppIdx = opponents.findIndex(o => o.id.toString() === playerId);
+                  if (oppIdx < 0) return 0;
+                  return playerHand.length + opponents.slice(0, oppIdx).reduce((sum, o) => sum + o.hand.length, 0);
+                }}
+                isPlayerSectionRevealed={isPlayerSectionRevealed}
+                isDieRevealed={isDieRevealed}
+                isDieHighlighted={isDieHighlighted}
+                isDieMatching={isDieMatching}
+                dyingDieOwner={dyingDieOwner}
+                dyingDieIndex={dyingDieIndex}
+                calzaSuccess={calzaSuccess}
+                spawningDieOwner={spawningDieOwner}
+                spawningDieValue={spawningDieValue}
+                onSkip={handleSkipReveal}
+                onContinue={startNewRound}
+                isGameOver={playerDiceCount === 0 || opponents.every(o => o.isEliminated || o.diceCount === 0)}
+              />
             </motion.div>
           )}
         </AnimatePresence>
