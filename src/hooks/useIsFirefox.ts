@@ -1,10 +1,15 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 export function useIsFirefox(): boolean {
-  return useMemo(() => {
-    if (typeof navigator === 'undefined') return false;
-    return navigator.userAgent.toLowerCase().includes('firefox');
+  const [isFirefox, setIsFirefox] = useState(false);
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      setIsFirefox(navigator.userAgent.toLowerCase().includes('firefox'));
+    }
   }, []);
+
+  return isFirefox;
 }
