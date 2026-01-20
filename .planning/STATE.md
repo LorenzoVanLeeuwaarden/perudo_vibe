@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v2.1 Animation Performance - Phase 13 complete
+**Current focus:** v2.1 Animation Performance - Phase 14 complete
 
 ## Current Position
 
-Phase: 13 of 15 (DudoOverlay Optimization) - Complete
+Phase: 14 of 15 (Other Component Optimization) - Complete
 Plan: 01 of 01
 Status: Phase complete
-Last activity: 2026-01-20 - Completed 13-01-PLAN.md
+Last activity: 2026-01-20 - Completed 14-01-PLAN.md
 
-Progress: [###-----] 1/3 v2.1 phases complete (33%)
+Progress: [######--] 2/3 v2.1 phases complete (67%)
 
 ## Production URLs
 
@@ -37,9 +37,9 @@ Progress: [###-----] 1/3 v2.1 phases complete (33%)
 - Frontend URL: faroleo.pages.dev
 
 **v2.1 Metrics:**
-- Plans completed: 1
-- Phases complete: 1 of 3 (Phase 13 complete)
-- Total execution time: ~45min
+- Plans completed: 2
+- Phases complete: 2 of 3 (Phase 13, 14 complete)
+- Total execution time: ~51min
 
 ## Accumulated Context
 
@@ -57,6 +57,9 @@ Progress: [###-----] 1/3 v2.1 phases complete (33%)
 | 13-01 | Firefox simplified mode | Solid backgrounds instead of backdrop-blur for Firefox performance |
 | 13-01 | Particle systems disabled on Firefox | Prevents frame drops while maintaining visual experience |
 | 13-01 | useFirefox hook pattern | Reusable browser detection for conditional rendering |
+| 14-01 | useSimplifiedAnimations pattern | Combined Firefox + reduced motion into single guard for cleaner code |
+| 14-01 | Static style fallbacks | Preserve visual appearance when animations disabled |
+| 14-01 | Shared hooks in src/hooks/ | Cross-component reuse for useIsFirefox and useReducedMotion |
 
 ### Pending Todos
 
@@ -69,15 +72,15 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-20T12:00:00Z
-Stopped at: Completed 13-01-PLAN.md
+Last session: 2026-01-20T13:03:49Z
+Stopped at: Completed 14-01-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-Phase 13 complete! DudoOverlay and all animation-heavy components optimized for 60fps on both Chrome and Firefox.
+Phase 14 complete! All targeted animation-heavy components optimized for 60fps on both Chrome and Firefox, plus accessibility support via prefers-reduced-motion.
 
-Next: Run `/gsd:plan-phase` for Phase 14 (Phase Animations) to optimize remaining phase transitions.
+Next: Run `/gsd:plan-phase` for Phase 15 (Cross-Device Testing) to verify performance across browsers and devices.
 
 ---
-*Updated: 2026-01-20 after 13-01-PLAN.md completion*
+*Updated: 2026-01-20 after 14-01-PLAN.md completion*
