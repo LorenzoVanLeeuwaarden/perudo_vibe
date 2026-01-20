@@ -87,6 +87,122 @@ function GhostDie({ index }: { index: number }) {
   );
 }
 
+// Cartoony impact cloud on slam
+function SlamCloud({ isActive, color }: { isActive: boolean; color: PlayerColor }) {
+  const colorConfig = PLAYER_COLORS[color];
+
+  if (!isActive) return null;
+
+  // Generate spiky cloud points
+  const points = 16;
+  const generateCloudPath = () => {
+    let path = '';
+    for (let i = 0; i < points; i++) {
+      const angle = (i / points) * Math.PI * 2;
+      const isSpike = i % 2 === 0;
+      const radius = isSpike ? 85 + Math.random() * 20 : 50 + Math.random() * 15;
+      const x = 100 + Math.cos(angle) * radius;
+      const y = 80 + Math.sin(angle) * radius;
+      path += (i === 0 ? 'M' : 'L') + `${x},${y} `;
+    }
+    return path + 'Z';
+  };
+
+  return (
+    <motion.div
+      className="absolute inset-0 pointer-events-none flex items-center justify-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 1, 1, 0] }}
+      transition={{ duration: 0.4, times: [0, 0.1, 0.6, 1] }}
+    >
+      {/* Main cloud burst */}
+      <motion.svg
+        width="200"
+        height="160"
+        viewBox="0 0 200 160"
+        className="absolute"
+        initial={{ scale: 0, rotate: -10 }}
+        animate={{ scale: [0, 1.3, 1], rotate: [-10, 5, 0] }}
+        transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
+      >
+        <motion.path
+          d={generateCloudPath()}
+          fill={colorConfig.bg}
+          stroke={colorConfig.border}
+          strokeWidth="3"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+        />
+        {/* Inner highlight */}
+        <ellipse
+          cx="100"
+          cy="80"
+          rx="45"
+          ry="35"
+          fill="rgba(255, 255, 255, 0.3)"
+        />
+      </motion.svg>
+
+      {/* Action lines radiating out */}
+      {[...Array(12)].map((_, i) => {
+        const angle = (i / 12) * Math.PI * 2;
+        const startR = 70;
+        const endR = 110 + Math.random() * 30;
+        return (
+          <motion.div
+            key={i}
+            className="absolute w-1 rounded-full"
+            style={{
+              height: endR - startR,
+              left: '50%',
+              top: '50%',
+              transformOrigin: 'center top',
+              transform: `rotate(${angle}rad) translateX(-50%)`,
+              backgroundColor: colorConfig.border,
+            }}
+            initial={{ opacity: 0, scaleY: 0 }}
+            animate={{ opacity: [0, 0.9, 0], scaleY: [0, 1, 0.5] }}
+            transition={{ duration: 0.3, delay: 0.05 }}
+          />
+        );
+      })}
+
+      {/* Small puff clouds around the edges */}
+      {[...Array(6)].map((_, i) => {
+        const angle = (i / 6) * Math.PI * 2 + Math.PI / 6;
+        const distance = 60 + Math.random() * 20;
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+        const size = 20 + Math.random() * 15;
+        return (
+          <motion.div
+            key={`puff-${i}`}
+            className="absolute rounded-full"
+            style={{
+              width: size,
+              height: size,
+              left: '50%',
+              top: '50%',
+              marginLeft: -size / 2,
+              marginTop: -size / 2,
+              backgroundColor: colorConfig.bg,
+              boxShadow: `0 0 10px ${colorConfig.glow}`,
+            }}
+            initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
+            animate={{
+              x: [0, x * 0.5, x],
+              y: [0, y * 0.5, y],
+              scale: [0, 1.2, 0],
+              opacity: [0, 0.9, 0],
+            }}
+            transition={{ duration: 0.4, delay: 0.05 + i * 0.02 }}
+          />
+        );
+      })}
+    </motion.div>
+  );
+}
+
 // Smoke/spark particle effect on slam
 function SlamParticles({ isActive, color }: { isActive: boolean; color: PlayerColor }) {
   const colorConfig = PLAYER_COLORS[color];
@@ -287,6 +403,7 @@ export function DiceCup({
 }: DiceCupProps) {
   const [phase, setPhase] = useState<'waiting' | 'slamming' | 'revealed'>('waiting');
   const [showParticles, setShowParticles] = useState(false);
+  const [showCloud, setShowCloud] = useState(false);
   const colorConfig = PLAYER_COLORS[playerColor];
   const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
@@ -301,6 +418,9 @@ export function DiceCup({
     // Start slam animation
     setPhase('slamming');
 
+    // Show cartoon slam cloud immediately
+    setShowCloud(true);
+
     // Trigger screen shake
     document.body.classList.add('dice-slam-shake');
     setTimeout(() => document.body.classList.remove('dice-slam-shake'), 300);
@@ -311,7 +431,8 @@ export function DiceCup({
       setPhase('revealed');
     }, 250);
 
-    // Hide particles after animation
+    // Hide cloud and particles after animation
+    setTimeout(() => setShowCloud(false), 450);
     setTimeout(() => setShowParticles(false), 900);
   }, [phase, onRoll]);
 
@@ -419,21 +540,62 @@ export function DiceCup({
           </div>
         )}
 
+        {/* Cartoon slam cloud */}
+        <SlamCloud isActive={showCloud} color={playerColor} />
+
         {/* Slam particles */}
         <SlamParticles isActive={showParticles} color={playerColor} />
 
-        {/* Micro-label */}
+        {/* Curved "Slam the Dice" label */}
         <AnimatePresence>
           {phase === 'waiting' && (
             <motion.div
-              className="absolute bottom-2 right-3 text-[10px] font-mono uppercase tracking-[0.12em]"
-              style={{ color: 'rgba(45, 212, 191, 0.4)' }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0.3, 0.6, 0.3] }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
             >
-              [ click to slam ]
+              <motion.svg
+                width="280"
+                height="100"
+                viewBox="0 0 280 100"
+                className="overflow-visible slam-text-glow"
+                style={{
+                  '--slam-glow-color': colorConfig.bg,
+                } as React.CSSProperties}
+                animate={{
+                  y: [0, -4, 0],
+                  scale: [1, 1.02, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              >
+                <defs>
+                  <path
+                    id="slamTextArc"
+                    d="M 20 70 Q 140 20 260 70"
+                    fill="none"
+                  />
+                </defs>
+                <text
+                  fill={colorConfig.bg}
+                  fontSize="22"
+                  fontWeight="bold"
+                  fontFamily="system-ui, sans-serif"
+                  letterSpacing="0.15em"
+                  textAnchor="middle"
+                  stroke={colorConfig.shadow}
+                  strokeWidth="0.5"
+                >
+                  <textPath href="#slamTextArc" startOffset="50%">
+                    SLAM THE DICE
+                  </textPath>
+                </text>
+              </motion.svg>
             </motion.div>
           )}
         </AnimatePresence>
@@ -461,6 +623,22 @@ export function DiceCup({
 
         .dice-slam-shake {
           animation: diceSlamShake 0.3s ease-out;
+        }
+
+        @keyframes slamTextGlow {
+          0%, 100% {
+            filter: drop-shadow(0 0 8px var(--slam-glow-color, rgba(45, 212, 191, 0.6)))
+                    drop-shadow(0 0 16px var(--slam-glow-color, rgba(45, 212, 191, 0.3)));
+          }
+          50% {
+            filter: drop-shadow(0 0 12px var(--slam-glow-color, rgba(45, 212, 191, 0.9)))
+                    drop-shadow(0 0 30px var(--slam-glow-color, rgba(45, 212, 191, 0.5)))
+                    drop-shadow(0 0 50px var(--slam-glow-color, rgba(45, 212, 191, 0.2)));
+          }
+        }
+
+        .slam-text-glow {
+          animation: slamTextGlow 2s ease-in-out infinite;
         }
       `}</style>
     </div>

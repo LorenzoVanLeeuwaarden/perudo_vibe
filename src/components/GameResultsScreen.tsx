@@ -26,6 +26,10 @@ interface PlayerInfo {
   id: string;
   name: string;
   color: PlayerColor;
+  /** Current dice count - used when game is still in progress */
+  diceCount?: number;
+  /** Whether this player has been eliminated */
+  isEliminated?: boolean;
 }
 
 interface GameResultsScreenProps {
@@ -34,6 +38,8 @@ interface GameResultsScreenProps {
   isHost: boolean;
   onReturnToLobby: () => void;
   onLeaveGame: () => void;
+  /** When true, shows "Game In Progress" instead of "Game Over" and hides winner */
+  gameInProgress?: boolean;
 }
 
 const containerVariants = {
@@ -63,8 +69,10 @@ export function GameResultsScreen({
   isHost,
   onReturnToLobby,
   onLeaveGame,
+  gameInProgress = false,
 }: GameResultsScreenProps) {
-  const winner = players.find(p => p.id === stats.winnerId);
+  const winner = !gameInProgress ? players.find(p => p.id === stats.winnerId) : null;
+  const activePlayers = players.filter(p => !p.isEliminated && (p.diceCount === undefined || p.diceCount > 0));
 
   return (
     <motion.div
@@ -82,15 +90,26 @@ export function GameResultsScreen({
         transition={{ delay: 0.1 }}
         className="text-center mb-6"
       >
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <Trophy className="w-8 h-8 text-gold-accent" />
-          <h1 className="text-3xl font-bold text-gold-accent">Game Over</h1>
-          <Trophy className="w-8 h-8 text-gold-accent" />
-        </div>
-        {winner && (
-          <p className="text-xl text-white-soft">
-            <span className="font-bold">{winner.name}</span> wins!
-          </p>
+        {gameInProgress ? (
+          <>
+            <h1 className="text-3xl font-bold text-white-soft mb-2">Your Stats</h1>
+            <p className="text-lg text-white-soft/70">
+              Game still in progress - {activePlayers.length} players remaining
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <Trophy className="w-8 h-8 text-gold-accent" />
+              <h1 className="text-3xl font-bold text-gold-accent">Game Over</h1>
+              <Trophy className="w-8 h-8 text-gold-accent" />
+            </div>
+            {winner && (
+              <p className="text-xl text-white-soft">
+                <span className="font-bold">{winner.name}</span> wins!
+              </p>
+            )}
+          </>
         )}
         <p className="text-white-soft/60 mt-1">
           {stats.roundsPlayed} rounds played - {stats.totalBids} bids made
@@ -118,7 +137,9 @@ export function GameResultsScreen({
                 diceLost: 0,
                 diceGained: 0,
               }}
-              isWinner={player.id === stats.winnerId}
+              isWinner={!gameInProgress && player.id === stats.winnerId}
+              currentDiceCount={gameInProgress ? player.diceCount : undefined}
+              isEliminated={player.isEliminated}
             />
           </motion.div>
         ))}

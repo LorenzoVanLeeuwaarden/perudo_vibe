@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { Dice } from './Dice';
 import { DyingDie } from './DyingDie';
@@ -43,7 +43,7 @@ export function PlayerRevealCard({
   color,
   isEliminated = false,
   baseIdx,
-  isRevealed,
+  isRevealed: _isRevealed, // Kept for API compatibility, card is now always visible
   isPalifico,
   isDieRevealed,
   isDieHighlighted,
@@ -78,65 +78,70 @@ export function PlayerRevealCard({
   // Use xs size on mobile (via compactSize prop or default for grid layout)
   const diceSize = compactSize ? 'xs' : 'xs';
 
+  // Calculate placeholder slots to reserve space for 5 dice
+  // This prevents layout jumping as dice are revealed
+  const maxDice = 5;
+  const placeholderSlots = Math.max(0, maxDice - hand.length);
+
   return (
-    <AnimatePresence>
-      {isRevealed && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          className={`flex flex-col items-center p-2 sm:p-3 rounded-lg bg-purple-deep/50 border min-w-0 ${
-            isEliminated ? 'border-red-danger/50 opacity-50' : 'border-purple-mid'
-          }`}
-        >
-          <p className="text-[10px] sm:text-xs text-white-soft/60 uppercase mb-1 sm:mb-2 font-semibold truncate max-w-full">
-            <span style={{ color: colorConfig.bg }}>{playerName}</span>
-            {isEliminated && <span className="ml-1 text-red-danger">✗</span>}
-          </p>
-          <div className="flex flex-wrap justify-center gap-0.5 sm:gap-1">
-            {hand.map((value, i) => {
-              const globalIdx = baseIdx + i;
-              const isHighlighted = isDieHighlighted(globalIdx);
-              const isMatching = isDieMatching(value);
-              const isRevealed = isDieRevealed(globalIdx);
-              const isDying = isOwner(dyingDieOwner) && dyingDieIndex === i;
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0, rotate: -180 }}
-                  animate={isRevealed ? { opacity: 1, scale: 1, rotate: 0 } : { opacity: 0, scale: 0, rotate: -180 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                >
-                  {isDying ? (
-                    <DyingDie value={value} color={color} size={diceSize} />
-                  ) : (
-                    <Dice
-                      value={value}
-                      index={baseIdx + i}
-                      size={diceSize}
-                      isPalifico={isPalifico}
-                      color={color}
-                      highlighted={isHighlighted}
-                      dimmed={countingComplete && !isMatching}
-                    />
-                  )}
-                </motion.div>
-              );
-            })}
-            {/* Spawning die for Calza success */}
-            {countingComplete && calzaSuccess && isOwner(spawningDieOwner) && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.3 }}
-              >
-                <SpawningDie value={spawningDieValue} color={color} size={diceSize} />
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div
+      className={`flex flex-col items-center p-2 sm:p-3 rounded-lg bg-purple-deep/50 border ${
+        isEliminated ? 'border-red-danger/50 opacity-50' : 'border-purple-mid'
+      }`}
+    >
+      <p className="text-[10px] sm:text-xs text-white-soft/60 uppercase mb-1 sm:mb-2 font-semibold truncate max-w-full">
+        <span style={{ color: colorConfig.bg }}>{playerName}</span>
+        {isEliminated && <span className="ml-1 text-red-danger">✗</span>}
+      </p>
+      {/* Dice container with fixed min-width for 5 dice: 5 * w-7 (28px) + 4 * gap-1 (4px) = 156px */}
+      <div className="flex flex-wrap justify-center gap-0.5 sm:gap-1 min-w-[148px] sm:min-w-[156px]">
+        {hand.map((value, i) => {
+          const globalIdx = baseIdx + i;
+          const isHighlighted = isDieHighlighted(globalIdx);
+          const isMatching = isDieMatching(value);
+          const dieIsRevealed = isDieRevealed(globalIdx);
+          const isDying = isOwner(dyingDieOwner) && dyingDieIndex === i;
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0, rotate: -180 }}
+              animate={dieIsRevealed ? { opacity: 1, scale: 1, rotate: 0 } : { opacity: 0, scale: 0, rotate: -180 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+              className="w-7 h-7"
+            >
+              {isDying ? (
+                <DyingDie value={value} color={color} size={diceSize} />
+              ) : (
+                <Dice
+                  value={value}
+                  index={baseIdx + i}
+                  size={diceSize}
+                  isPalifico={isPalifico}
+                  color={color}
+                  highlighted={isHighlighted}
+                  dimmed={countingComplete && !isMatching}
+                />
+              )}
+            </motion.div>
+          );
+        })}
+        {/* Invisible placeholder slots to maintain width for up to 5 dice */}
+        {Array.from({ length: placeholderSlots }).map((_, i) => (
+          <div key={`placeholder-${i}`} className="w-7 h-7" />
+        ))}
+        {/* Spawning die for Calza success */}
+        {countingComplete && calzaSuccess && isOwner(spawningDieOwner) && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.3 }}
+            className="w-7 h-7"
+          >
+            <SpawningDie value={spawningDieValue} color={color} size={diceSize} />
+          </motion.div>
+        )}
+      </div>
+    </div>
   );
 }
 

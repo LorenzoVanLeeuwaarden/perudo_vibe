@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Target, ThumbsUp, ThumbsDown, Dice1, Trophy } from 'lucide-react';
 import type { PlayerColor } from '@/lib/types';
 import { PLAYER_COLORS } from '@/lib/types';
+import { Dice } from './Dice';
 
 interface PlayerStats {
   bidsPlaced: number;
@@ -20,20 +21,24 @@ interface StatCardProps {
   color: PlayerColor;
   stats: PlayerStats;
   isWinner: boolean;
+  /** Current dice count - when provided, shows actual dice instead of winner trophy */
+  currentDiceCount?: number;
+  /** Whether this player is still in the game */
+  isEliminated?: boolean;
 }
 
-export function StatCard({ playerName, color, stats, isWinner }: StatCardProps) {
+export function StatCard({ playerName, color, stats, isWinner, currentDiceCount, isEliminated = false }: StatCardProps) {
   const colorConfig = PLAYER_COLORS[color];
   const dudoAccuracy = stats.dudosCalled > 0
     ? Math.round((stats.dudosSuccessful / stats.dudosCalled) * 100)
     : 0;
-  const calzaAccuracy = stats.calzasCalled > 0
-    ? Math.round((stats.calzasSuccessful / stats.calzasCalled) * 100)
-    : 0;
+
+  // Show game in progress state when currentDiceCount is provided
+  const gameInProgress = currentDiceCount !== undefined;
 
   return (
     <motion.div
-      className="retro-panel p-4 relative overflow-hidden"
+      className={`retro-panel p-4 relative overflow-hidden ${isEliminated ? 'opacity-60' : ''}`}
       style={{
         borderColor: isWinner ? '#ffd700' : colorConfig.border,
         boxShadow: isWinner ? '0 0 20px rgba(255, 215, 0, 0.3)' : undefined,
@@ -51,8 +56,35 @@ export function StatCard({ playerName, color, stats, isWinner }: StatCardProps) 
           className="w-4 h-4 rounded-full"
           style={{ backgroundColor: colorConfig.bg }}
         />
-        <h3 className="font-bold text-lg text-white-soft">{playerName}</h3>
+        <h3 className="font-bold text-lg text-white-soft">
+          {playerName}
+          {isEliminated && <span className="text-red-400 ml-2 text-sm">Eliminated</span>}
+        </h3>
       </div>
+
+      {/* Current dice display for game in progress */}
+      {gameInProgress && !isEliminated && currentDiceCount > 0 && (
+        <div className="mb-3 p-2 bg-purple-deep/50 rounded-lg">
+          <p className="text-xs text-white-soft/60 uppercase mb-2">Current Dice:</p>
+          <div className="flex flex-wrap gap-1 justify-center">
+            {Array.from({ length: currentDiceCount }).map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: i * 0.05, type: 'spring', stiffness: 400 }}
+              >
+                <Dice
+                  value={((i % 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6}
+                  index={i}
+                  size="xs"
+                  color={color}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-2 text-sm">
@@ -70,9 +102,9 @@ export function StatCard({ playerName, color, stats, isWinner }: StatCardProps) 
 
         <div className="flex items-center gap-2">
           <ThumbsDown className="w-4 h-4 text-orange-400" />
-          <span className="text-white-soft/70">Dudo:</span>
+          <span className="text-white-soft/70">Successful Dudo&apos;s:</span>
           <span className="text-white-soft font-medium">
-            {stats.dudosSuccessful}/{stats.dudosCalled}
+            {stats.dudosSuccessful}
             {stats.dudosCalled > 0 && (
               <span className="text-white-soft/50 ml-1">({dudoAccuracy}%)</span>
             )}
@@ -81,13 +113,8 @@ export function StatCard({ playerName, color, stats, isWinner }: StatCardProps) 
 
         <div className="flex items-center gap-2">
           <ThumbsUp className="w-4 h-4 text-green-400" />
-          <span className="text-white-soft/70">Calza:</span>
-          <span className="text-white-soft font-medium">
-            {stats.calzasSuccessful}/{stats.calzasCalled}
-            {stats.calzasCalled > 0 && (
-              <span className="text-white-soft/50 ml-1">({calzaAccuracy}%)</span>
-            )}
-          </span>
+          <span className="text-white-soft/70">Dice won via Calza:</span>
+          <span className="text-white-soft font-medium">{stats.diceGained}</span>
         </div>
       </div>
     </motion.div>
