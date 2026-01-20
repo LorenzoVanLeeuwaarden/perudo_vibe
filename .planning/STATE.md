@@ -72,8 +72,9 @@ None.
 ### Tech Debt
 
 Addressed in Phase 16:
-- [x] DudoOverlay, ShaderBackground, DiceRoller3D now use shared useIsFirefox (HOOKS-01 to HOOKS-04)
-- [x] All 3 components now respect prefers-reduced-motion (HOOKS-05)
+- [x] DudoOverlay, ShaderBackground now use shared useIsFirefox (HOOKS-01 to HOOKS-03)
+- [x] DiceRoller3D deleted (unused dead code) — HOOKS-04 satisfied by removal
+- [x] All animated components now respect prefers-reduced-motion (HOOKS-05)
 
 Remaining:
 - Tooling issues (Phase 17)
@@ -88,7 +89,7 @@ Resume file: None
 
 ## Next Steps
 
-Run `/gsd:plan-phase 17` to create plan for Tooling phase.
+Run `/gsd:plan-phase 17` to create plan for Game UI Unification phase.
 
 ---
 *Updated: 2026-01-20 after Phase 16 completion*

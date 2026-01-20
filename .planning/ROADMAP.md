@@ -100,7 +100,7 @@
 **Plans**: 1 plan
 
 Plans:
-- [ ] 16-01-PLAN.md — Migrate DudoOverlay, ShaderBackground, DiceRoller3D to shared hooks
+- [x] 16-01-PLAN.md — Migrate DudoOverlay, ShaderBackground to shared hooks; DiceRoller3D deleted (unused)
 
 ### Phase 17: Game UI Unification
 **Goal**: Multiplayer uses single-player game UI styling consistently
@@ -154,11 +154,11 @@ Phases 1-15 complete. v2.2 starts at Phase 16.
 | 1-9 | v1.0 | 22/22 | Complete | 2026-01-18 |
 | 10-12 | v2.0 | 4/4 | Complete | 2026-01-19 |
 | 13-15 | v2.1 | 3/3 | Complete | 2026-01-20 |
-| 16. Shared Hooks | v2.2 | 0/1 | Planned | - |
+| 16. Shared Hooks | v2.2 | 1/1 | Complete | 2026-01-20 |
 | 17. Game UI | v2.2 | 0/TBD | Not started | - |
 | 18. Lobby UI | v2.2 | 0/TBD | Not started | - |
 | 19. End Game & Tooling | v2.2 | 0/TBD | Not started | - |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-20 after Phase 16 planning*
+*Last updated: 2026-01-20 after Phase 16 execution*

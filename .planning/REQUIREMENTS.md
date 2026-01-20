@@ -29,11 +29,11 @@ Requirements for UI Unification & Tech Debt milestone. Each maps to roadmap phas
 
 ### Shared Hooks
 
-- [ ] **HOOKS-01**: Create shared useIsFirefox hook in /src/hooks/
-- [ ] **HOOKS-02**: DudoOverlay uses shared useIsFirefox hook
-- [ ] **HOOKS-03**: ShaderBackground uses shared useIsFirefox hook
-- [ ] **HOOKS-04**: DiceRoller3D uses shared useIsFirefox hook
-- [ ] **HOOKS-05**: All animation components use shared useReducedMotion hook
+- [x] **HOOKS-01**: Create shared useIsFirefox hook in /src/hooks/
+- [x] **HOOKS-02**: DudoOverlay uses shared useIsFirefox hook
+- [x] **HOOKS-03**: ShaderBackground uses shared useIsFirefox hook
+- [x] **HOOKS-04**: DiceRoller3D uses shared useIsFirefox hook (satisfied by deletion — unused component)
+- [x] **HOOKS-05**: All animation components use shared useReducedMotion hook
 
 ### Tooling
 
@@ -69,11 +69,11 @@ Which phases cover which requirements.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HOOKS-01 | Phase 16 | Pending |
-| HOOKS-02 | Phase 16 | Pending |
-| HOOKS-03 | Phase 16 | Pending |
-| HOOKS-04 | Phase 16 | Pending |
-| HOOKS-05 | Phase 16 | Pending |
+| HOOKS-01 | Phase 16 | Complete |
+| HOOKS-02 | Phase 16 | Complete |
+| HOOKS-03 | Phase 16 | Complete |
+| HOOKS-04 | Phase 16 | Complete |
+| HOOKS-05 | Phase 16 | Complete |
 | GAME-01 | Phase 17 | Pending |
 | GAME-02 | Phase 17 | Pending |
 | GAME-03 | Phase 17 | Pending |
@@ -94,4 +94,4 @@ Which phases cover which requirements.
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-20 after v2.2 roadmap creation*
+*Last updated: 2026-01-20 after Phase 16 completion*
