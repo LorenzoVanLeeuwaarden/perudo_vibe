@@ -9,10 +9,10 @@ Requirements for UI Unification & Tech Debt milestone. Each maps to roadmap phas
 
 ### End Game Unification
 
-- [ ] **END-01**: Single-player shows stats page after Victory/Defeat celebration
-- [ ] **END-02**: Multiplayer shows Victory/Defeat celebration before stats page
-- [ ] **END-03**: Stats page works identically in both modes (same component)
-- [ ] **END-04**: Single-player tracks game stats (bids, dudo/calza accuracy, dice lost/gained)
+- [x] **END-01**: Single-player shows stats page after Victory/Defeat celebration
+- [x] **END-02**: Multiplayer shows Victory/Defeat celebration before stats page
+- [x] **END-03**: Stats page works identically in both modes (same component)
+- [x] **END-04**: Single-player tracks game stats (bids, dudo/calza accuracy, dice lost/gained)
 
 ### Game UI Unification
 
@@ -37,7 +37,7 @@ Requirements for UI Unification & Tech Debt milestone. Each maps to roadmap phas
 
 ### Tooling
 
-- [ ] **TOOL-01**: npm run lint / next lint works without directory error
+- [x] **TOOL-01**: npm run lint / next lint works without directory error
 
 ## Future Requirements
 
@@ -81,11 +81,11 @@ Which phases cover which requirements.
 | LOBBY-01 | Phase 18 | Complete |
 | LOBBY-02 | Phase 18 | Complete |
 | LOBBY-03 | Phase 18 | Complete |
-| END-01 | Phase 19 | Pending |
-| END-02 | Phase 19 | Pending |
-| END-03 | Phase 19 | Pending |
-| END-04 | Phase 19 | Pending |
-| TOOL-01 | Phase 19 | Pending |
+| END-01 | Phase 19 | Complete |
+| END-02 | Phase 19 | Complete |
+| END-03 | Phase 19 | Complete |
+| END-04 | Phase 19 | Complete |
+| TOOL-01 | Phase 19 | Complete |
 
 **Coverage:**
 - v2.2 requirements: 17 total
@@ -94,4 +94,4 @@ Which phases cover which requirements.
 
 ---
 *Requirements defined: 2026-01-20*
-*Last updated: 2026-01-20 after Phase 18 completion*
+*Last updated: 2026-01-20 after Phase 19 completion (v2.2 complete)*

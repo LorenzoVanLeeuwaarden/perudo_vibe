@@ -5,7 +5,7 @@
 - [x] **v1.0 MVP** - Phases 1-9 (shipped 2026-01-18) — [archive](milestones/v1.0-ROADMAP.md)
 - [x] **v2.0 Cloudflare Deployment** - Phases 10-12 (shipped 2026-01-19) — [archive](milestones/v2.0-ROADMAP.md)
 - [x] **v2.1 Animation Performance** - Phases 13-15 (shipped 2026-01-20) — [archive](milestones/v2.1-ROADMAP.md)
-- [ ] **v2.2 UI Unification & Tech Debt** - Phases 16-19 (in progress)
+- [x] **v2.2 UI Unification & Tech Debt** - Phases 16-19 (shipped 2026-01-20) — [archive](milestones/v2.2-ROADMAP.md)
 
 ## Phases
 
@@ -144,8 +144,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 19-01-PLAN.md — ESLint configuration migration (flat config for Next.js 16)
-- [ ] 19-02-PLAN.md — Single-player stats tracking and end game flow
+- [x] 19-01-PLAN.md — ESLint configuration migration (flat config for Next.js 16)
+- [x] 19-02-PLAN.md — Single-player stats tracking and end game flow
 
 ## Progress
 
@@ -160,8 +160,8 @@ Phases 1-15 complete. v2.2 starts at Phase 16.
 | 16. Shared Hooks | v2.2 | 1/1 | Complete | 2026-01-20 |
 | 17. Game UI | v2.2 | 2/2 | Complete | 2026-01-20 |
 | 18. Lobby UI | v2.2 | 2/2 | Complete | 2026-01-20 |
-| 19. End Game & Tooling | v2.2 | 0/2 | Not started | - |
+| 19. End Game & Tooling | v2.2 | 2/2 | Complete | 2026-01-20 |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-20 after Phase 19 planning*
+*Last updated: 2026-01-20 after Phase 19 execution (v2.2 complete)*
