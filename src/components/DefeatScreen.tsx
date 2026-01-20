@@ -348,7 +348,7 @@ export function DefeatScreen({ playerColor, onPlayAgain }: DefeatScreenProps) {
             animate={{ x: ['-100%', '100%'] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
-          <span className="relative z-10">Try Again</span>
+          <span className="relative z-10">Show Stats</span>
         </motion.button>
       </motion.div>
     </motion.div>

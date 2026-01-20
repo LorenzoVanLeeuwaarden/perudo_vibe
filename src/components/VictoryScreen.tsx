@@ -403,7 +403,7 @@ export function VictoryScreen({ playerColor, onPlayAgain }: VictoryScreenProps) 
             animate={{ x: ['-100%', '100%'] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
-          <span className="relative z-10">Play Again</span>
+          <span className="relative z-10">Show Stats</span>
         </motion.button>
       </div>
 
