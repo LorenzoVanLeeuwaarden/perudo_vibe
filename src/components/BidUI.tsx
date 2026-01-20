@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown, AlertTriangle, Send, Target, Bot, Lock } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
-import { Bid, PlayerColor } from '@/lib/types';
+import { Bid, PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { isValidBid } from '@/lib/gameLogic';
 import { Dice } from './Dice';
 
@@ -141,6 +141,16 @@ export function BidUI({
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       className="retro-panel p-4 sm:p-6 max-w-md w-full"
+      style={{
+        borderColor: PLAYER_COLORS[playerColor].border,
+        boxShadow: `
+          0 4px 0 0 #061212,
+          0 6px 10px 0 rgba(0, 0, 0, 0.5),
+          0 10px 20px 0 rgba(0, 0, 0, 0.3),
+          0 0 20px ${PLAYER_COLORS[playerColor].glow},
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.05)
+        `,
+      }}
     >
       {isPalifico && (
         <motion.div
@@ -193,8 +203,12 @@ export function BidUI({
               </motion.div>
             ))}
           </div>
-          <p className="text-center text-[10px] font-mono uppercase tracking-[0.2em] text-white-soft/40 mt-2">
-            Current bid
+          {/* Count badge */}
+          <p
+            className="text-center text-2xl font-black text-marigold mt-2"
+            style={{ textShadow: '0 0 10px var(--marigold)' }}
+          >
+            {currentBid.count}×
           </p>
         </div>
       )}
@@ -213,13 +227,7 @@ export function BidUI({
                 >
                   <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-white-soft" />
                 </motion.button>
-                <div
-                  className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg border-2 border-turquoise-dark overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(135deg, var(--purple-mid) 0%, var(--bg-dark) 100%)',
-                    boxShadow: '0 4px 0 0 #061212, 0 6px 10px 0 rgba(0, 0, 0, 0.5)',
-                  }}
-                >
+                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center overflow-hidden">
                   {/* Tumbler animation container */}
                   <AnimatePresence mode="popLayout" initial={false} custom={countDirection}>
                     <motion.span
@@ -253,17 +261,17 @@ export function BidUI({
             </div>
 
             {/* Large multiplication sign */}
-            <span className="text-4xl sm:text-5xl font-black text-white-soft/30 mt-4">×</span>
+            <span className="text-4xl sm:text-5xl font-black text-white-soft/30">×</span>
 
             {/* VALUE selector */}
             <div className="flex flex-col items-center relative">
-              {/* Icon label - Lock when value is locked, or empty (dice visual is self-explanatory) */}
+              {/* Icon label - Lock when value is locked */}
               {isValueLocked && (
                 <div className="absolute -top-1 left-1/2 -translate-x-1/2 bg-purple-deep px-1.5 py-0.5 rounded-sm z-10">
                   <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-danger/70" />
                 </div>
               )}
-              <div className="flex flex-col items-center gap-1 pt-3">
+              <div className="flex flex-col items-center gap-1">
                 <motion.button
                   whileHover={!isValueLocked ? { scale: 1.1 } : {}}
                   whileTap={!isValueLocked ? { scale: 0.95 } : {}}
@@ -277,7 +285,7 @@ export function BidUI({
                 >
                   <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-white-soft" />
                 </motion.button>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center overflow-hidden relative">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center overflow-hidden">
                   {/* Tumbler animation for dice */}
                   <AnimatePresence mode="popLayout" initial={false} custom={valueDirection}>
                     <motion.div

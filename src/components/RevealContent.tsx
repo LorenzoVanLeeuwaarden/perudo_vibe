@@ -163,11 +163,16 @@ export function RevealContent({
           style={{ borderColor: bidderConfig.border }}
         >
           <p
-            className="text-[10px] sm:text-xs uppercase font-bold mb-2 sm:mb-3 tracking-wider"
+            className="text-[10px] sm:text-xs uppercase font-bold tracking-wider"
             style={{ color: bidderConfig.bg }}
           >
             The Bid
-            <span className="ml-1 sm:ml-2 opacity-70">({lastBidderName})</span>
+          </p>
+          <p
+            className="text-[9px] sm:text-[10px] font-mono opacity-60 mb-2 sm:mb-3"
+            style={{ color: bidderConfig.bg }}
+          >
+            by {lastBidderName}
           </p>
           <div className="flex flex-wrap justify-center gap-1 mb-1 sm:mb-2">
             {Array.from({ length: bid.count }).map((_, i) => (
@@ -212,7 +217,7 @@ export function RevealContent({
           <p
             className={`text-[10px] sm:text-xs uppercase font-bold mb-2 sm:mb-3 tracking-wider ${getActualBlockTextColor()}`}
           >
-            Actual
+            The Truth
           </p>
           <div className="flex flex-wrap justify-center gap-1 mb-1 sm:mb-2 min-h-[28px] sm:min-h-[40px]">
             {isCountingStarted ? (

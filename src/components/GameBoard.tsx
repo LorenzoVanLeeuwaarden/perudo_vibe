@@ -281,10 +281,11 @@ export function GameBoard({
                         boxShadow: `
                           inset 0 4px 20px rgba(0, 0, 0, 0.8),
                           inset 0 2px 4px rgba(0, 0, 0, 0.5),
-                          inset 0 -2px 10px rgba(45, 212, 191, 0.05),
-                          0 4px 20px rgba(0, 0, 0, 0.4)
+                          inset 0 -2px 10px ${lastBidderColor ? PLAYER_COLORS[lastBidderColor].glow : 'rgba(45, 212, 191, 0.05)'},
+                          0 4px 20px rgba(0, 0, 0, 0.4),
+                          0 0 20px ${lastBidderColor ? PLAYER_COLORS[lastBidderColor].glow : 'transparent'}
                         `,
-                        border: '2px solid rgba(45, 212, 191, 0.15)',
+                        border: `2px solid ${lastBidderColor ? PLAYER_COLORS[lastBidderColor].border : 'rgba(45, 212, 191, 0.15)'}`,
                         transformOrigin: 'center bottom',
                       }}
                       animate={useSimplifiedAnimations ? {} : {
@@ -325,10 +326,12 @@ export function GameBoard({
                           </motion.div>
                         ))}
                       </div>
-
-                      {/* Current bid label */}
-                      <p className="text-center text-[10px] font-mono uppercase tracking-[0.2em] text-white-soft/40 mt-2">
-                        Current bid
+                      {/* Count badge */}
+                      <p
+                        className="text-center text-2xl font-black text-marigold mt-1"
+                        style={{ textShadow: '0 0 10px var(--marigold)' }}
+                      >
+                        {gameState.currentBid.count}×
                       </p>
                     </motion.div>
                   </motion.div>
