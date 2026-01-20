@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-20)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** Planning next milestone
+**Current focus:** v2.2 UI Unification & Tech Debt
 
 ## Current Position
 
-Phase: 15 of 15 complete
-Plan: All complete
-Status: Ready for next milestone
-Last activity: 2026-01-20 — v2.1 milestone shipped
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v2.2
+Last activity: 2026-01-20 — Milestone v2.2 started
 
-Progress: [###############] 15/15 phases complete (v1.0 + v2.0 + v2.1)
+Progress: [###############] 15/15 phases complete (v1.0 + v2.0 + v2.1) | v2.2 in planning
 
 ## Production URLs
 
@@ -74,15 +74,15 @@ Resume file: None
 
 ## Next Steps
 
-**v2.1 Animation Performance milestone is SHIPPED!**
+**v2.2 UI Unification & Tech Debt** in progress.
 
-Ready for next milestone. Options:
-- Sound effects (replace placeholder audio)
-- Additional accessibility (colorblind mode)
-- New game features
-- Tech debt cleanup
+Defining requirements for:
+- Unified UI components (single-player base)
+- Stats page in single-player
+- Shared animation hooks
+- Lint fix
 
-To start: `/gsd:new-milestone`
+Next: Complete requirements definition → create roadmap
 
 ---
-*Updated: 2026-01-20 after v2.1 milestone completion*
+*Updated: 2026-01-20 after v2.2 milestone start*

@@ -40,7 +40,12 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 
 ### Active
 
-(No active requirements — planning next milestone)
+**v2.2 UI Unification & Tech Debt:**
+- [ ] Unified UI components used in both single-player and multiplayer
+- [ ] Single-player stats page (port from multiplayer)
+- [ ] Shared useIsFirefox hook (replace local implementations)
+- [ ] Shared useReducedMotion hook for accessibility
+- [ ] Fix npm run lint / next lint directory error
 
 ### Out of Scope
 
@@ -49,6 +54,16 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - Spectator mode — only active players in game
 - Matchmaking/random lobbies — private rooms via link sharing only
 - Mobile app — web-only, but responsive design works on mobile browsers
+
+## Current Milestone: v2.2 UI Unification & Tech Debt
+
+**Goal:** Consolidate single-player and multiplayer UI into one unified component set, using single-player UI as the base, and clean up tech debt.
+
+**Target features:**
+- Unified UI components (single-player base, used in both modes)
+- Stats page in single-player (ported from multiplayer)
+- Shared animation hooks (useIsFirefox, useReducedMotion)
+- Fix lint tooling
 
 ## Current State (v2.1 shipped 2026-01-20)
 
@@ -96,4 +111,4 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 | useSimplifiedAnimations pattern | Combined Firefox + reduced motion into single guard for cleaner code | ✓ Good |
 
 ---
-*Last updated: 2026-01-20 after v2.1 milestone*
+*Last updated: 2026-01-20 after v2.2 milestone start*
