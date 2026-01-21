@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 
 ## Current Position
 
-Phase: 21 - Leaderboard System (IN PROGRESS)
-Plan: 5 of 5 in phase
-Status: Phase complete - ready for Phase 22
-Last activity: 2026-01-21 — Completed 21-05-PLAN.md (Leaderboard UI Components)
+Phase: 22 - Achievement System (IN PROGRESS)
+Plan: 1 of 3 in phase
+Status: Phase in progress
+Last activity: 2026-01-21 — Completed 22-01-PLAN.md (Achievement System Foundation)
 
-Progress: [████████████████    ] 8/9 plans complete across v3.0 phases (20: 3/3, 21: 5/5, 22: 0/3)
+Progress: [█████████████████   ] 9/9 plans complete across v3.0 phases (20: 3/3, 21: 5/5, 22: 1/3)
 
 ## Production URLs
 
@@ -111,6 +111,13 @@ Phase 21-05 Decisions:
 - Personal best displayed on game over screen to contextualize submission
 - Secondary actions row for Submit/View buttons below primary restart button
 
+Phase 22-01 Decisions:
+- Achievement store uses partialize to persist only unlockedAchievements, not runStats
+- Run statistics reset on new gauntlet run to track per-run achievements
+- Storage key 'gauntlet_achievements' for localStorage persistence
+- 7 hidden achievements: last-die-standing, comeback-kid, truth-seeker, bold-bluffer, perfect-read, ice-in-veins, poker-face
+- Milestone thresholds: 5, 10, 25, 50, 100 for progressive difficulty
+
 ### Pending Todos
 
 None.
@@ -130,13 +137,14 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 21-05-PLAN.md (Leaderboard UI Components)
+Stopped at: Completed 22-01-PLAN.md (Achievement System Foundation)
 Resume file: None
 
 ## Next Steps
 
-1. Phase 22: Achievement system (ready to begin)
-2. Complete v3.0 The Gauntlet feature set
+1. Phase 22-02: Achievement unlock logic integration
+2. Phase 22-03: Achievement UI components
+3. Complete v3.0 The Gauntlet feature set
 
 ---
-*Updated: 2026-01-21 after completing 21-05*
+*Updated: 2026-01-21 after completing 22-01*
