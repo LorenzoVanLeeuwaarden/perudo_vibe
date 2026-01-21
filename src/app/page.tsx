@@ -1584,16 +1584,6 @@ export default function LastDieGame() {
         />
       </div>
 
-      {/* Header - only in Lobby */}
-      {gameState === 'Lobby' && (
-        <motion.header
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="text-center mb-6 relative z-10"
-        >
-          <CasinoLogo color={playerColor} />
-        </motion.header>
-      )}
 
       {/* Dice count display - fixed at top (only for non-Bidding game states) */}
       {gameState !== 'ModeSelection' && gameState !== 'Lobby' && gameState !== 'Bidding' && gameState !== 'Gauntlet' && (

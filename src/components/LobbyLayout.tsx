@@ -57,9 +57,9 @@ export function LobbyLayout({
         }}
       />
 
-      <div className="min-h-screen flex flex-col items-center justify-start pt-8 sm:pt-12 p-4">
+      <div className="min-h-screen flex flex-col items-center justify-start pt-6 sm:pt-10 p-4">
         {/* Casino Logo */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-5 sm:mb-6">
           <CasinoLogo />
         </div>
 
