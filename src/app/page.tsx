@@ -36,6 +36,8 @@ import {
 import type { SessionMemory, Personality, MemoryEvent } from '@/lib/ai';
 import { GameResultsScreen } from '@/components/GameResultsScreen';
 import type { PlayerStats, GameStats } from '@/shared/types';
+import { GauntletModeScreen } from '@/components/gauntlet';
+import { useGauntletStore } from '@/stores/gauntletStore';
 
 // AI thinking prompts - varied and fun
 const AI_THINKING_PROMPTS = [
@@ -249,8 +251,13 @@ export default function FaroleoGame() {
   }, [setPreferredMode, router]);
 
   const handleSelectGauntlet = useCallback(() => {
-    // TODO: Wire up gauntlet flow in plan 03
-    console.log('Gauntlet mode selected - coming soon');
+    setGameState('Gauntlet');
+  }, []);
+
+  const handleExitGauntlet = useCallback(() => {
+    setGameState('ModeSelection');
+    // Reset gauntlet store
+    useGauntletStore.getState().exitToMenu();
   }, []);
 
   // Calculate total dice
@@ -1537,8 +1544,8 @@ export default function FaroleoGame() {
       {/* Scanlines & Vignette overlay */}
       <div className="scanlines-overlay" />
 
-      {/* Quit button - top right corner (only during game, not on mode selection or end screens) */}
-      {gameState !== 'ModeSelection' && gameState !== 'Lobby' && gameState !== 'Victory' && gameState !== 'Defeat' && (
+      {/* Quit button - top right corner (only during game, not on mode selection, gauntlet, or end screens) */}
+      {gameState !== 'ModeSelection' && gameState !== 'Lobby' && gameState !== 'Victory' && gameState !== 'Defeat' && gameState !== 'Gauntlet' && (
         <motion.button
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -1746,6 +1753,14 @@ export default function FaroleoGame() {
                 </div>
               </div>
             </LobbyLayout>
+          )}
+
+          {/* GAUNTLET MODE */}
+          {gameState === 'Gauntlet' && (
+            <GauntletModeScreen
+              playerColor={playerColor}
+              onExit={handleExitGauntlet}
+            />
           )}
 
           {/* ROLLING */}
