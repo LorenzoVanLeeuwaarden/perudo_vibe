@@ -155,7 +155,7 @@ export function SortedDiceDisplay({
               }}
               style={{
                 cursor: 'grab',
-                filter: isHighlighted ? `drop-shadow(0 0 12px ${glowColor}) drop-shadow(0 0 24px ${glowColor})` : 'none',
+                filter: 'none', // Removed glow effect
                 zIndex: isHighlighted ? 5 : 1,
               }}
             >
@@ -221,7 +221,7 @@ export function SortedDiceDisplay({
                 },
               }}
               style={{
-                filter: isHighlighted ? `drop-shadow(0 0 12px ${glowColor}) drop-shadow(0 0 24px ${glowColor})` : 'none',
+                filter: 'none', // Removed glow effect
                 zIndex: isHighlighted ? 5 : 1,
               }}
             >

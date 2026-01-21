@@ -97,6 +97,7 @@ export function GauntletGameplay({
   const [loser, setLoser] = useState<'player' | string | null>(null);
   const [showDudoOverlay, setShowDudoOverlay] = useState(false);
   const [dudoOverlayComplete, setDudoOverlayComplete] = useState(false);
+  const [showRevealContent, setShowRevealContent] = useState(false);
   const [highlightedDiceIndex, setHighlightedDiceIndex] = useState(-1);
   const [countingComplete, setCountingComplete] = useState(false);
   const [dyingDieOwner, setDyingDieOwner] = useState<'player' | string | null>(null);
@@ -203,6 +204,8 @@ export function GauntletGameplay({
       setCountingComplete(false);
       setShowDudoOverlay(true);
       setDudoOverlayComplete(false);
+      setShowRevealContent(false);
+      setCountingComplete(false);
       setDyingDieOwner(null);
       setDyingDieIndex(-1);
       setSpawningDieOwner(null);
@@ -470,6 +473,16 @@ export function GauntletGameplay({
     }
   }, [gameState, isRolling, handleRoll]);
 
+  // Auto-complete counting after reveal content shows
+  useEffect(() => {
+    if (showRevealContent && !countingComplete) {
+      const timer = setTimeout(() => {
+        setCountingComplete(true);
+      }, 2000); // Give time to see the reveal
+      return () => clearTimeout(timer);
+    }
+  }, [showRevealContent, countingComplete]);
+
   return (
     <div className="relative w-full h-full overflow-hidden">
       <ShaderBackground />
@@ -498,8 +511,8 @@ export function GauntletGameplay({
           </div>
         )}
 
-        {/* Opponent dice - Revealed during reveal phase */}
-        {opponent && gameState === 'Reveal' && dudoOverlayComplete && (
+        {/* Opponent dice - Revealed during reveal phase (hidden when RevealContent shows) */}
+        {opponent && gameState === 'Reveal' && dudoOverlayComplete && !showRevealContent && (
           <div className="mb-8">
             <SortedDiceDisplay
               dice={opponent.hand}
@@ -603,7 +616,7 @@ export function GauntletGameplay({
           </div>
         )}
 
-        {/* Player dice - ABSOLUTE BOTTOM - Using SortedDiceDisplay with glow */}
+        {/* Player dice - ABSOLUTE BOTTOM */}
         <div className="pb-4">
           {gameState === 'Rolling' && (
             <DiceCup
@@ -615,7 +628,17 @@ export function GauntletGameplay({
             />
           )}
 
-          {(gameState === 'Bidding' || gameState === 'Reveal') && (
+          {/* Show player dice during bidding, and during reveal but hide when RevealContent shows */}
+          {gameState === 'Bidding' && (
+            <SortedDiceDisplay
+              dice={playerHand}
+              color={playerColor}
+              isPalifico={isPalifico}
+              highlightValue={currentBid?.value || null}
+            />
+          )}
+
+          {gameState === 'Reveal' && !showRevealContent && (
             <SortedDiceDisplay
               dice={playerHand}
               color={playerColor}
@@ -645,8 +668,95 @@ export function GauntletGameplay({
             onComplete={() => {
               setShowDudoOverlay(false);
               setDudoOverlayComplete(true);
+              // Show reveal content after overlay completes
+              setTimeout(() => {
+                setShowRevealContent(true);
+              }, 300);
             }}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Reveal Content - dice counting animation */}
+      <AnimatePresence>
+        {showRevealContent && gameState === 'Reveal' && currentBid && opponent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[90] flex items-center justify-center p-4"
+            style={{
+              background: 'rgba(0, 0, 0, 0.85)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <RevealContent
+              bid={currentBid}
+              lastBidderName={lastBidder === 'player' ? 'You' : opponent.name}
+              lastBidderColor={lastBidder === 'player' ? playerColor : opponent.color}
+              isPalifico={isPalifico}
+              actualCount={actualCount}
+              isCalza={calzaCaller !== null}
+              countingComplete={countingComplete}
+              countedDice={[]}
+              isCountingStarted={true}
+              players={[
+                {
+                  id: 'player',
+                  name: 'YOU',
+                  hand: playerHand,
+                  color: playerColor,
+                  isEliminated: false,
+                },
+                {
+                  id: opponent.id,
+                  name: opponent.name,
+                  hand: opponent.hand,
+                  color: opponent.color,
+                  isEliminated: false,
+                },
+              ]}
+              getPlayerBaseIdx={(playerId) => (playerId === 'player' ? 0 : playerHand.length)}
+              isPlayerSectionRevealed={() => true}
+              isDieRevealed={() => true}
+              isDieHighlighted={(globalIdx) => {
+                const allDice = [...playerHand, ...opponent.hand];
+                const value = allDice[globalIdx];
+                if (!value || !currentBid) return false;
+                if (value === currentBid.value) return true;
+                if (!isPalifico && value === 1 && currentBid.value !== 1) return true;
+                return false;
+              }}
+              isDieMatching={(value) => {
+                if (!currentBid) return false;
+                if (value === currentBid.value) return true;
+                if (!isPalifico && value === 1 && currentBid.value !== 1) return true;
+                return false;
+              }}
+              dyingDieOwner={dyingDieOwner}
+              dyingDieIndex={dyingDieIndex}
+              calzaSuccess={calzaSuccess}
+              spawningDieOwner={spawningDieOwner}
+              spawningDieValue={spawningDieValue}
+              onSkip={() => {
+                setCountingComplete(true);
+              }}
+              onContinue={() => {
+                setShowRevealContent(false);
+                // Check for victory/defeat
+                setTimeout(() => {
+                  if (playerDiceCount === 0) {
+                    setGameState('Defeat');
+                  } else if (opponent.diceCount === 0) {
+                    setGameState('Victory');
+                  } else {
+                    handleCelebrationComplete();
+                  }
+                }, 300);
+              }}
+              isGameOver={playerDiceCount === 0 || opponent.diceCount === 0}
+            />
+          </motion.div>
         )}
       </AnimatePresence>
 
