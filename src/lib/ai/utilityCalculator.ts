@@ -14,6 +14,7 @@ import {
   calculateExpectedTotalCount,
 } from './probabilityEngine';
 import { applyPersonalityVariance } from './personalities';
+import { countMatching } from '../gameLogic';
 
 // =============================================================================
 // Dudo Utility Calculation
@@ -35,6 +36,23 @@ export function calculateDudoUtility(context: AgentContext): UtilityScore {
     return {
       action: 'dudo',
       utility: -100, // Cannot dudo without a bid
+      components: {
+        baseProbability: 0,
+        opponentAdjustment: 0,
+        personalityAdjustment: 0,
+        positionalAdjustment: 0,
+        riskAdjustment: 0,
+      },
+    };
+  }
+
+  // CRITICAL: If our hand alone satisfies the bid, dudo is GUARANTEED to fail
+  // Never call dudo on something we already have in our own hand
+  const matchingInOurHand = countMatching(hand, currentBid.value, isPalifico);
+  if (matchingInOurHand >= currentBid.count) {
+    return {
+      action: 'dudo',
+      utility: -100, // Guaranteed loss - we have the bid ourselves
       components: {
         baseProbability: 0,
         opponentAdjustment: 0,
@@ -87,9 +105,12 @@ export function calculateDudoUtility(context: AgentContext): UtilityScore {
   const bidRatio = calculateBidRatio(currentBid, totalDice, isPalifico);
 
   // High bid ratio means bid is aggressive, more likely to be a bluff
-  if (bidRatio > 0.85) {
+  // BUT: Don't encourage dudo if we have significant coverage of the bid
+  const ourCoverage = matchingInOurHand / currentBid.count;
+  if (bidRatio > 0.85 && ourCoverage < 0.5) {
+    // Only add positional bonus if we don't have much of the bid ourselves
     positionalAdjustment += 2;
-  } else if (bidRatio > 0.75) {
+  } else if (bidRatio > 0.75 && ourCoverage < 0.5) {
     positionalAdjustment += 1;
   }
 

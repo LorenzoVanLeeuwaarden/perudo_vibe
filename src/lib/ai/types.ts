@@ -165,6 +165,8 @@ export interface Personality {
  * Complete context for AI decision making
  */
 export interface AgentContext {
+  /** AI player's own ID */
+  aiId: string;
   /** AI player's own hand */
   hand: number[];
   /** Current bid on the table (null if opening) */

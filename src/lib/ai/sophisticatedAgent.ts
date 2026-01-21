@@ -63,6 +63,7 @@ export function createAgentContext(
   const personality = getPersonalityForName(aiName);
 
   return {
+    aiId,
     hand,
     currentBid,
     totalDice,
@@ -159,10 +160,7 @@ export function makeDecision(context: AgentContext): AIDecision {
 
   // Calculate calza utility (only if AI didn't make the last bid)
   let calzaUtility: UtilityScore | null = null;
-  const aiId = Object.keys(context.opponentDiceCounts).find(
-    (id) => context.opponentDiceCounts[id] === context.myDiceCount
-  );
-  const canCalza = lastBidderId !== aiId && lastBidderId !== null;
+  const canCalza = lastBidderId !== context.aiId && lastBidderId !== null;
   if (canCalza) {
     calzaUtility = calculateCalzaUtility(effectiveContext);
   }
@@ -182,7 +180,49 @@ export function makeDecision(context: AgentContext): AIDecision {
   );
 
   // Check if we should force dudo (no valid bids)
+  // BUT: Don't force dudo if dudo utility is very negative (we know the bid is likely correct)
+  // In that case, prefer calza if available and reasonable
   if (shouldForceDudo(bidUtilities)) {
+    // If dudo is clearly bad but we have no bids, try calza if available
+    if (dudoUtility.utility < -50 && calzaUtility && calzaUtility.utility > -20) {
+      return {
+        action: 'calza',
+        thoughtProcess: generateThoughtProcess(
+          dudoUtility,
+          calzaUtility,
+          null,
+          'calza',
+          context
+        ),
+        utilities: {
+          dudo: dudoUtility.utility,
+          calza: calzaUtility.utility,
+          bids: [],
+        },
+      };
+    }
+
+    // Only force dudo if it's actually reasonable
+    if (dudoUtility.utility > -50) {
+      return {
+        action: 'dudo',
+        thoughtProcess: generateThoughtProcess(
+          dudoUtility,
+          calzaUtility,
+          null,
+          'dudo',
+          context
+        ),
+        utilities: {
+          dudo: dudoUtility.utility,
+          calza: calzaUtility?.utility || -100,
+          bids: [],
+        },
+      };
+    }
+
+    // Dudo is terrible and no calza - this shouldn't happen in normal play
+    // but if it does, we must dudo (game rules require an action)
     return {
       action: 'dudo',
       thoughtProcess: generateThoughtProcess(
@@ -191,7 +231,7 @@ export function makeDecision(context: AgentContext): AIDecision {
         null,
         'dudo',
         context
-      ),
+      ) + ' [FORCED - no valid options]',
       utilities: {
         dudo: dudoUtility.utility,
         calza: calzaUtility?.utility || -100,
@@ -268,6 +308,7 @@ export function getAIBid(context: AgentContext): Bid | null {
  * Used when full memory isn't available
  */
 export function createSimpleContext(
+  aiId: string,
   aiName: string,
   hand: number[],
   currentBid: Bid | null,
@@ -289,6 +330,7 @@ export function createSimpleContext(
   };
 
   return {
+    aiId,
     hand,
     currentBid,
     totalDice,
