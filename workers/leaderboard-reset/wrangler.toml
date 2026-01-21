@@ -1,0 +1,13 @@
+name = "gauntlet-leaderboard-reset"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+# Cron trigger for midnight UTC daily
+[triggers]
+crons = ["0 0 * * *"]
+
+# D1 database binding - same database as PartyKit app
+[[d1_databases]]
+binding = "LEADERBOARD_DB"
+database_name = "gauntlet-leaderboard"
+database_id = "118b7a4f-6f1f-483c-b9ae-cedbb1cba65a"
