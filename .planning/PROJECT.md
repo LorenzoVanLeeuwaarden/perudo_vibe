@@ -2,11 +2,21 @@
 
 ## What This Is
 
-A browser-based Perudo (liar's dice) game with real-time multiplayer support. Players create rooms with shareable links, invite up to 6 friends, and play together with a polished, animated experience featuring a Dia de los Muertos visual theme. Also supports single-player against AI opponents.
+A browser-based Perudo (liar's dice) game with real-time multiplayer support. Players create rooms with shareable links, invite up to 6 friends, and play together with a polished, animated experience featuring a Dia de los Muertos visual theme. Also supports single-player against AI opponents, and a Gauntlet mode for competitive high-score chasing.
 
 ## Core Value
 
 Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction — just share a link and play.
+
+## Current Milestone: v3.0 The Gauntlet
+
+**Goal:** Add a fast-paced endurance mode where players face sequential 1v1 duels against AI, carrying dice between matches until eliminated.
+
+**Target features:**
+- Gauntlet mode: rapid 1v1 duels with persistent dice
+- Escalating AI difficulty as streak grows
+- Global leaderboard with nickname submission
+- Achievements for milestone streaks
 
 ## Requirements
 
@@ -45,7 +55,16 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 
 ### Active
 
-(No active requirements — planning next milestone)
+- Gauntlet mode selection from main menu
+- 1v1 duel game loop with persistent player dice
+- AI opponent always starts with 5 dice
+- Escalating AI difficulty (Turtle → Calculator → Shark)
+- Streak counter displayed during run
+- Game over when player loses all dice
+- Global leaderboard backend (Cloudflare KV or D1)
+- Leaderboard submission with nickname prompt
+- Leaderboard display (top scores)
+- Achievement system for streak milestones
 
 ### Out of Scope
 
@@ -54,6 +73,8 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - Spectator mode — only active players in game
 - Matchmaking/random lobbies — private rooms via link sharing only
 - Mobile app — web-only, but responsive design works on mobile browsers
+- Healing mechanics — once a die is lost, it's gone (pure endurance)
+- Cosmetic unlocks — defer to future milestone
 
 ## Current State (v2.2 shipped 2026-01-20)
 
@@ -68,6 +89,7 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - GPU-optimized animations with Firefox simplified mode
 - Unified UI components across single-player and multiplayer
 - Zero lint errors (ESLint flat config)
+- Sophisticated AI with 6 personalities, session memory, pattern recognition
 
 **Known Issues:**
 - Sound files are placeholders (need download from royalty-free sources)
@@ -82,6 +104,7 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - **Platform**: Cloudflare ecosystem (Pages + Workers) for unified deployment
 - **UX**: Polished experience required — smooth animations and clear feedback
 - **Latency**: Real-time gameplay requires low-latency sync (sub-200ms achieved)
+- **Leaderboard**: Must use Cloudflare KV or D1 (free tier compatible)
 
 ## Key Decisions
 
@@ -99,6 +122,9 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 | Cloudflare for deployment | Single platform for frontend + backend, generous free tier, PartyKit now native to Cloudflare | ✓ Good |
 | Firefox simplified mode | Solid backgrounds instead of backdrop-blur for Firefox performance | ✓ Good |
 | useSimplifiedAnimations pattern | Combined Firefox + reduced motion into single guard for cleaner code | ✓ Good |
+| No healing in Gauntlet | Pure endurance test, creates tension, mobile-friendly short sessions | — Pending |
+| Opponents always 5 dice | Fair start each duel, player's disadvantage grows naturally | — Pending |
+| Escalating AI difficulty | Rewards skill, early runs accessible, late runs challenging | — Pending |
 
 ---
-*Last updated: 2026-01-20 after v2.2 milestone completion*
+*Last updated: 2026-01-21 after v3.0 milestone start*
