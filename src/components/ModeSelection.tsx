@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bot, Users, Swords } from 'lucide-react';
+import { Bot, Users, Swords, HelpCircle } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { CasinoLogo } from '@/components/CasinoLogo';
 
@@ -10,12 +10,13 @@ interface ModeSelectionProps {
   onSelectAI: () => void;
   onSelectMultiplayer: () => void;
   onSelectGauntlet: () => void;
+  onSelectTutorial: () => void;
   playerColor: PlayerColor;
 }
 
-type GameMode = 'ai' | 'multiplayer' | 'gauntlet' | null;
+type GameMode = 'ai' | 'multiplayer' | 'gauntlet' | 'tutorial' | null;
 
-export function ModeSelection({ onSelectAI, onSelectMultiplayer, onSelectGauntlet, playerColor }: ModeSelectionProps) {
+export function ModeSelection({ onSelectAI, onSelectMultiplayer, onSelectGauntlet, onSelectTutorial, playerColor }: ModeSelectionProps) {
   const [selectedMode, setSelectedMode] = useState<GameMode>(null);
   const [isLocalhost, setIsLocalhost] = useState(false);
   const colorConfig = PLAYER_COLORS[playerColor];
@@ -52,6 +53,14 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, onSelectGauntle
     }, 500);
   }, [selectedMode, onSelectGauntlet]);
 
+  const handleSelectTutorial = useCallback(() => {
+    if (selectedMode !== null) return; // Prevent double-click
+    setSelectedMode('tutorial');
+    setTimeout(() => {
+      onSelectTutorial();
+    }, 300); // Shorter delay - less dramatic than game modes
+  }, [selectedMode, onSelectTutorial]);
+
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto px-4">
       {/* Logo/Title */}
@@ -70,7 +79,7 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, onSelectGauntle
         <motion.button
           initial={{ opacity: 0, y: 50 }}
           animate={{
-            opacity: selectedMode === 'multiplayer' || selectedMode === 'gauntlet' ? 0 : 1,
+            opacity: selectedMode && selectedMode !== 'ai' ? 0 : 1,
             y: 0,
             scale: selectedMode === 'ai' ? 1.1 : 1,
             filter: selectedMode === 'ai' ? 'brightness(1.2)' : 'brightness(1)',
@@ -117,7 +126,7 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, onSelectGauntle
         <motion.button
           initial={{ opacity: 0, y: 50 }}
           animate={{
-            opacity: selectedMode === 'ai' || selectedMode === 'gauntlet' ? 0 : 1,
+            opacity: selectedMode && selectedMode !== 'multiplayer' ? 0 : 1,
             y: 0,
             scale: selectedMode === 'multiplayer' ? 1.1 : 1,
             filter: selectedMode === 'multiplayer' ? 'brightness(1.2)' : 'brightness(1)',
@@ -165,7 +174,7 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, onSelectGauntle
           <motion.button
             initial={{ opacity: 0, y: 50 }}
             animate={{
-              opacity: selectedMode === 'ai' || selectedMode === 'multiplayer' ? 0 : 1,
+              opacity: selectedMode && selectedMode !== 'gauntlet' ? 0 : 1,
               y: 0,
               scale: selectedMode === 'gauntlet' ? 1.1 : 1,
               filter: selectedMode === 'gauntlet' ? 'brightness(1.2)' : 'brightness(1)',
@@ -210,6 +219,19 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, onSelectGauntle
         )}
 
       </div>
+
+      {/* How to Play - subtle secondary link */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: selectedMode && selectedMode !== 'tutorial' ? 0 : 1 }}
+        transition={{ delay: 0.8, duration: 0.3 }}
+        onClick={handleSelectTutorial}
+        disabled={selectedMode !== null}
+        className="flex items-center justify-center gap-2 text-sm text-white-soft/60 hover:text-white-soft underline-offset-4 hover:underline transition-colors mt-6 disabled:cursor-default"
+      >
+        <HelpCircle className="w-4 h-4" />
+        How to Play
+      </motion.button>
     </div>
   );
 }
