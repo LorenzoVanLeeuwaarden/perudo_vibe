@@ -68,31 +68,31 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FLOW-01 | TBD | Pending |
-| FLOW-02 | TBD | Pending |
-| FLOW-03 | TBD | Pending |
-| FLOW-04 | TBD | Pending |
-| FLOW-05 | TBD | Pending |
-| FLOW-06 | TBD | Pending |
-| GAME-01 | TBD | Pending |
-| GAME-02 | TBD | Pending |
-| GAME-03 | TBD | Pending |
-| GAME-04 | TBD | Pending |
-| GAME-05 | TBD | Pending |
-| CONT-01 | TBD | Pending |
-| CONT-02 | TBD | Pending |
-| CONT-03 | TBD | Pending |
-| CONT-04 | TBD | Pending |
-| VIS-01 | TBD | Pending |
-| VIS-02 | TBD | Pending |
-| VIS-03 | TBD | Pending |
-| VIS-04 | TBD | Pending |
+| FLOW-01 | Phase 23 | Pending |
+| FLOW-02 | Phase 25 | Pending |
+| FLOW-03 | Phase 25 | Pending |
+| FLOW-04 | Phase 25 | Pending |
+| FLOW-05 | Phase 25 | Pending |
+| FLOW-06 | Phase 25 | Pending |
+| GAME-01 | Phase 23 | Pending |
+| GAME-02 | Phase 23 | Pending |
+| GAME-03 | Phase 24 | Pending |
+| GAME-04 | Phase 24 | Pending |
+| GAME-05 | Phase 23 | Pending |
+| CONT-01 | Phase 25 | Pending |
+| CONT-02 | Phase 25 | Pending |
+| CONT-03 | Phase 25 | Pending |
+| CONT-04 | Phase 25 | Pending |
+| VIS-01 | Phase 24 | Pending |
+| VIS-02 | Phase 24 | Pending |
+| VIS-03 | Phase 24 | Pending |
+| VIS-04 | Phase 23 | Pending |
 
 **Coverage:**
 - v3.1 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19
+- Mapped to phases: 19
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-21*
-*Last updated: 2026-01-21 after initial definition*
+*Last updated: 2026-01-21 after roadmap created*

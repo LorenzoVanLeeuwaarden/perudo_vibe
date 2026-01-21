@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 23 - Tutorial Foundation
 Plan: —
-Status: Defining requirements
-Last activity: 2026-01-21 — Milestone v3.1 started
+Status: Ready to plan
+Last activity: 2026-01-21 — Roadmap created for v3.1
 
-Progress: [░░░░░░░░░░░░░░░░░░░░] 0/0 plans (requirements phase)
+Progress: [░░░░░░░░░░░░░░░░░░░░] 0/? plans (Phase 23 not yet planned)
 
 ## Production URLs
 
@@ -52,6 +52,11 @@ Progress: [░░░░░░░░░░░░░░░░░░░░] 0/0 pla
 - Plans: 11/11 complete
 - Requirements: 23/24 complete (ACHI-04 descoped per user request)
 - Features shipped: Gauntlet mode, Leaderboard, Achievements
+
+**v3.1 Target:**
+- Phases: 3 (Phases 23-25)
+- Requirements: 19 total
+- Goal: Tutorial mode teaching all core rules
 
 ## Accumulated Context
 
@@ -153,14 +158,14 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Defining v3.1 requirements
+Stopped at: Roadmap created for v3.1
 Resume file: None
 
 ## Next Steps
 
-1. Complete requirements definition
-2. Create roadmap
-3. Run `/gsd:plan-phase [N]` to start execution
+1. Run `/gsd:plan-phase 23` to create plans for Tutorial Foundation
+2. Execute Phase 23 plans
+3. Continue with Phase 24-25
 
 ---
-*Updated: 2026-01-21 after v3.1 milestone started*
+*Updated: 2026-01-21 after v3.1 roadmap created*

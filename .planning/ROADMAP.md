@@ -7,6 +7,7 @@
 - [x] **v2.1 Animation Performance** - Phases 13-15 (shipped 2026-01-20) — [archive](milestones/v2.1-ROADMAP.md)
 - [x] **v2.2 UI Unification & Tech Debt** - Phases 16-19 (shipped 2026-01-20) — [archive](milestones/v2.2-ROADMAP.md)
 - [x] **v3.0 The Gauntlet** - Phases 20-22 (shipped 2026-01-21)
+- [ ] **v3.1 Tutorial** - Phases 23-25 (in progress)
 
 ## Phases
 
@@ -181,10 +182,71 @@ Plans:
 
 </details>
 
+<details open>
+<summary>v3.1 Tutorial (Phases 23-25) - IN PROGRESS</summary>
+
+### Phase 23: Tutorial Foundation
+**Goal**: Tutorial infrastructure exists with scripted gameplay that reuses existing components
+
+**Dependencies**: None (builds on existing single-player infrastructure)
+
+**Requirements**: FLOW-01, GAME-01, GAME-02, GAME-05, VIS-04
+
+**Success Criteria:**
+1. User can click "How to Play" button on main menu and enter tutorial mode
+2. Tutorial presents a 3-player game with user and 2 AI opponents
+3. Dice rolls produce predetermined values that create specific teaching scenarios
+4. Tutorial uses actual game components (BidUI, Dice, SortedDiceDisplay) for authentic feel
+5. No real game penalties apply — tutorial is explicitly a safe learning environment
+
+**Plans:** TBD (created during plan-phase)
+
+---
+
+### Phase 24: Tutorial Guidance
+**Goal**: Interactive guidance system teaches through constrained choices with inline explanations
+
+**Dependencies**: Phase 23 (requires tutorial gameplay skeleton)
+
+**Requirements**: GAME-03, GAME-04, VIS-01, VIS-02, VIS-03
+
+**Success Criteria:**
+1. User's move choices are constrained to the intended tutorial action at each step
+2. Disabled options show tooltip explaining why they are unavailable ("First, let's learn basic bidding")
+3. Inline tooltips appear with 1-2 sentence explanations at each teaching moment
+4. Visual cues (highlights, subtle arrows) draw attention to interactive elements
+5. Dice relevant to the current explanation pulse or glow to focus attention
+
+**Plans:** TBD (created during plan-phase)
+
+---
+
+### Phase 25: Tutorial Content & Polish
+**Goal**: Complete tutorial teaches all core rules with skip/progress UX and completion celebration
+
+**Dependencies**: Phase 24 (requires guidance system infrastructure)
+
+**Requirements**: FLOW-02, FLOW-03, FLOW-04, FLOW-05, FLOW-06, CONT-01, CONT-02, CONT-03, CONT-04
+
+**Success Criteria:**
+1. User learns basic bidding (what a bid is, how to make one)
+2. User learns calling Dudo (when to challenge, what happens when you call)
+3. User learns wild ones rule (ones count as any face value)
+4. User learns Calza as optional advanced concept (exact match challenge)
+5. User can skip tutorial at any point via visible skip button
+6. Progress indicator shows current step and total steps throughout tutorial
+7. User can exit mid-tutorial and return to main menu
+8. Celebration (confetti/toast) plays on tutorial completion
+9. Tutorial completion persists — app does not auto-prompt returning players
+
+**Plans:** TBD (created during plan-phase)
+
+</details>
+
 ## Progress
 
 **Execution Order:**
-All phases complete. v3.0 milestone complete.
+Phase 23 is next. Phases 23-25 form v3.1 Tutorial milestone.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -195,7 +257,10 @@ All phases complete. v3.0 milestone complete.
 | 20 | v3.0 | 3/3 | Complete | 2026-01-21 |
 | 21 | v3.0 | 5/5 | Complete | 2026-01-21 |
 | 22 | v3.0 | 3/3 | Complete | 2026-01-21 |
+| 23 | v3.1 | 0/? | Pending | — |
+| 24 | v3.1 | 0/? | Pending | — |
+| 25 | v3.1 | 0/? | Pending | — |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-21 after v3.0 completion*
+*Last updated: 2026-01-21 after v3.1 roadmap created*
