@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Trophy, Dices, Check, Users, Minus, Plus, X, Settings } from 'lucide-react';
+import { Play, Dices, Check, Users, Minus, Plus, X, Settings } from 'lucide-react';
 import { createRoomCode } from '@/lib/roomCode';
 import { GameState, Bid, PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { DiceCup } from '@/components/DiceCup';
@@ -15,7 +15,6 @@ import { VictoryScreen } from '@/components/VictoryScreen';
 import { DefeatScreen } from '@/components/DefeatScreen';
 import { DudoOverlay } from '@/components/DudoOverlay';
 import { PlayerDiceBadge } from '@/components/PlayerDiceBadge';
-import { PlayerRevealCard } from '@/components/PlayerRevealCard';
 import { SortedDiceDisplay } from '@/components/SortedDiceDisplay';
 import { RevealContent } from '@/components/RevealContent';
 import { ModeSelection } from '@/components/ModeSelection';
@@ -26,10 +25,15 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import {
   rollDice,
   countMatching,
-  generateAIBid,
-  shouldAICallDudo,
-  shouldAICallCalza
 } from '@/lib/gameLogic';
+import {
+  createSessionMemory,
+  updateMemory,
+  getPersonalityForName,
+  makeDecision,
+  createAgentContext,
+} from '@/lib/ai';
+import type { SessionMemory, Personality, MemoryEvent } from '@/lib/ai';
 import { GameResultsScreen } from '@/components/GameResultsScreen';
 import type { PlayerStats, GameStats } from '@/shared/types';
 
@@ -183,6 +187,11 @@ export default function FaroleoGame() {
   } | null>(null);
   const [showStats, setShowStats] = useState(false);
 
+  // Sophisticated AI state
+  const [sessionMemory, setSessionMemory] = useState<SessionMemory | null>(null);
+  const [, setAiPersonalities] = useState<Map<number, Personality>>(new Map());
+  const sessionMemoryRef = useRef<SessionMemory | null>(null);
+
   // Refs to track latest state for AI turns (avoids stale closures)
   const opponentsRef = useRef(opponents);
   const currentBidRef = useRef(currentBid);
@@ -207,6 +216,9 @@ export default function FaroleoGame() {
   useEffect(() => {
     roundStarterRef.current = roundStarter;
   }, [roundStarter]);
+  useEffect(() => {
+    sessionMemoryRef.current = sessionMemory;
+  }, [sessionMemory]);
 
   // Clear selected bid value when turn changes away from player
   useEffect(() => {
@@ -277,6 +289,20 @@ export default function FaroleoGame() {
     const anyPalifico = palificoEnabled && (playerDiceCount === 1 || newOpponents.some(o => o.diceCount === 1));
     setIsPalifico(anyPalifico);
     isPalificoRef.current = anyPalifico; // Sync update
+
+    // Initialize sophisticated AI system
+    const opponentIds = newOpponents.map(o => o.id.toString());
+    const newMemory = createSessionMemory(`game-${Date.now()}`, opponentIds);
+    setSessionMemory(newMemory);
+    sessionMemoryRef.current = newMemory;
+
+    // Assign personalities to opponents
+    const personalities = new Map<number, Personality>();
+    newOpponents.forEach((opp) => {
+      const personality = getPersonalityForName(opp.name);
+      personalities.set(opp.id, personality);
+    });
+    setAiPersonalities(personalities);
 
     // Initialize stats tracking
     const emptyStats: PlayerStats = {
@@ -614,38 +640,84 @@ export default function FaroleoGame() {
   ) => {
     const opps = opponentsRef.current;
     const opponent = opps[opponentIdx];
-
+    const memory = sessionMemoryRef.current;
 
     if (!opponent || opponent.isEliminated || opponent.diceCount === 0) {
       return false;
     }
 
-
     const currentTotalDice = playerDiceCount + opps.reduce((sum, o) => sum + o.diceCount, 0);
     const palifico = isPalificoRef.current;
 
-
-    // Check if AI wants to call Calza (only if they didn't make the last bid)
-    if (lastBidderValue !== opponentIdx) {
-      const wantsCalza = shouldAICallCalza(bidValue, opponent.hand, currentTotalDice, palifico);
-      if (wantsCalza) {
-        // Track AI calza call
-        setGameStats(prev => prev ? {
-          ...prev,
-          opponents: {
-            ...prev.opponents,
-            [opponentIdx]: { ...prev.opponents[opponentIdx], calzasCalled: prev.opponents[opponentIdx].calzasCalled + 1 },
-          },
-        } : prev);
-        handleReveal(opponent.id, true);
-        return true; // Round ended
+    // Build opponent dice counts for context
+    const opponentDiceCounts: Record<string, number> = {};
+    opps.forEach(o => {
+      if (!o.isEliminated && o.diceCount > 0) {
+        opponentDiceCounts[o.id.toString()] = o.diceCount;
       }
-    } else {
+    });
+    opponentDiceCounts['player'] = playerDiceCount;
+
+    // Find next player in turn order
+    let nextPlayerId: string | null = null;
+    for (let i = opponentIdx + 1; i < opps.length; i++) {
+      if (!opps[i].isEliminated && opps[i].diceCount > 0) {
+        nextPlayerId = opps[i].id.toString();
+        break;
+      }
+    }
+    if (!nextPlayerId && playerDiceCount > 0) {
+      nextPlayerId = 'player';
     }
 
-    // Check if AI wants to call Dudo
-    const wantsDudo = shouldAICallDudo(bidValue, opponent.hand, currentTotalDice, palifico);
-    if (wantsDudo) {
+    // Create agent context
+    const context = createAgentContext(
+      opponent.id.toString(),
+      opponent.name,
+      opponent.hand,
+      bidValue,
+      currentTotalDice,
+      palifico,
+      lastBidderValue === 'player' ? 'player' : lastBidderValue.toString(),
+      memory || createSessionMemory('temp', opps.map(o => o.id.toString())),
+      opponent.diceCount,
+      opponentDiceCounts,
+      opps.filter(o => !o.isEliminated && o.diceCount > 0).length + (playerDiceCount > 0 ? 1 : 0),
+      nextPlayerId
+    );
+
+    // Make decision using sophisticated agent
+    const decision = makeDecision(context);
+    console.log(`[AI ${opponent.name}] ${decision.thoughtProcess}`);
+
+    // Update memory with bid event
+    if (memory && decision.action === 'bid' && decision.bid) {
+      const bidEvent: MemoryEvent = {
+        type: 'bid_placed',
+        playerId: opponent.id.toString(),
+        bid: decision.bid,
+        previousBid: bidValue,
+      };
+      const updatedMemory = updateMemory(memory, bidEvent);
+      setSessionMemory(updatedMemory);
+      sessionMemoryRef.current = updatedMemory;
+    }
+
+    // Handle decision
+    if (decision.action === 'calza' && lastBidderValue !== opponentIdx) {
+      // Track AI calza call
+      setGameStats(prev => prev ? {
+        ...prev,
+        opponents: {
+          ...prev.opponents,
+          [opponentIdx]: { ...prev.opponents[opponentIdx], calzasCalled: prev.opponents[opponentIdx].calzasCalled + 1 },
+        },
+      } : prev);
+      handleReveal(opponent.id, true);
+      return true; // Round ended
+    }
+
+    if (decision.action === 'dudo') {
       // Track AI dudo call
       setGameStats(prev => prev ? {
         ...prev,
@@ -658,33 +730,32 @@ export default function FaroleoGame() {
       return true; // Round ended
     }
 
-    // Generate a bid
-    const aiBid = generateAIBid(bidValue, opponent.hand, currentTotalDice, palifico);
-    if (aiBid === null) {
-      // Track AI dudo call (forced dudo when can't bid)
+    // AI makes a bid
+    if (decision.bid) {
+      // Track AI bid
       setGameStats(prev => prev ? {
         ...prev,
+        totalBids: prev.totalBids + 1,
         opponents: {
           ...prev.opponents,
-          [opponentIdx]: { ...prev.opponents[opponentIdx], dudosCalled: prev.opponents[opponentIdx].dudosCalled + 1 },
+          [opponentIdx]: { ...prev.opponents[opponentIdx], bidsPlaced: prev.opponents[opponentIdx].bidsPlaced + 1 },
         },
       } : prev);
-      handleReveal(opponent.id, false);
-      return true; // Round ended
+
+      onContinue(decision.bid, opponent.id);
+      return false; // Continue to next opponent
     }
 
-    // AI makes a bid - track stats
+    // Fallback: if no valid bid, call dudo
     setGameStats(prev => prev ? {
       ...prev,
-      totalBids: prev.totalBids + 1,
       opponents: {
         ...prev.opponents,
-        [opponentIdx]: { ...prev.opponents[opponentIdx], bidsPlaced: prev.opponents[opponentIdx].bidsPlaced + 1 },
+        [opponentIdx]: { ...prev.opponents[opponentIdx], dudosCalled: prev.opponents[opponentIdx].dudosCalled + 1 },
       },
     } : prev);
-
-    onContinue(aiBid, opponent.id);
-    return false; // Continue to next opponent
+    handleReveal(opponent.id, false);
+    return true;
   }, [playerDiceCount, handleReveal]);
 
   // Helper to get random thinking prompt
@@ -796,58 +867,76 @@ export default function FaroleoGame() {
     setAiThinkingPrompt(getRandomThinkingPrompt()); // Random thinking prompt
 
     setTimeout(() => {
-      // AI makes an opening bid - should be competitive based on total dice
+      const memory = sessionMemoryRef.current;
       const currentTotalDice = playerDiceCount + opps.reduce((sum, o) => sum + o.diceCount, 0);
+      const palifico = isPalificoRef.current;
 
-      // Count what AI has (including jokers for each value)
-      const valueCounts: Record<number, number> = {};
-      for (let v = 2; v <= 6; v++) {
-        valueCounts[v] = starter.hand.filter(d => d === v || d === 1).length;
-      }
+      // Build opponent dice counts for context
+      const opponentDiceCounts: Record<string, number> = {};
+      opps.forEach(o => {
+        if (!o.isEliminated && o.diceCount > 0) {
+          opponentDiceCounts[o.id.toString()] = o.diceCount;
+        }
+      });
+      opponentDiceCounts['player'] = playerDiceCount;
 
-      // Find best value (what AI has most of)
-      let bestValue = 2;
-      let bestCount = 0;
-      for (let v = 2; v <= 6; v++) {
-        if (valueCounts[v] > bestCount) {
-          bestCount = valueCounts[v];
-          bestValue = v;
+      // Find next player in turn order after starter
+      let nextPlayerId: string | null = null;
+      for (let i = starterIdx + 1; i < opps.length; i++) {
+        if (!opps[i].isEliminated && opps[i].diceCount > 0) {
+          nextPlayerId = opps[i].id.toString();
+          break;
         }
       }
+      if (!nextPlayerId && playerDiceCount > 0) {
+        nextPlayerId = 'player';
+      }
 
-      // Calculate competitive opening bid based on total dice
-      // Expected count for any non-ace value = totalDice * (2/6) = totalDice / 3
-      // (because both the value AND jokers count)
-      const expectedTotal = currentTotalDice / 3;
-
-      // Opening bid should be more aggressive for larger games
-      // Base: 30-50% of expected total
-      const baseFromExpected = Math.floor(expectedTotal * (0.3 + Math.random() * 0.2));
-
-      // Bonus from having good dice in hand
-      const bonusFromHand = Math.floor(bestCount * 0.7);
-
-      // Minimum bid scales with total dice count:
-      // - For 10 dice: min ~2
-      // - For 20 dice: min ~4
-      // - For 30 dice: min ~6
-      const minimumBid = Math.max(2, Math.floor(currentTotalDice * 0.2));
-
-      // Maximum: 60% of expected (leaves room for game progression)
-      const maximumBid = Math.floor(expectedTotal * 0.6);
-
-      // Final count calculation
-      const openingCount = Math.max(
-        minimumBid,
-        Math.min(baseFromExpected + bonusFromHand, maximumBid)
+      // Create agent context for opening bid (no current bid)
+      const context = createAgentContext(
+        starter.id.toString(),
+        starter.name,
+        starter.hand,
+        null, // No current bid for opening
+        currentTotalDice,
+        palifico,
+        null, // No last bidder for opening
+        memory || createSessionMemory('temp', opps.map(o => o.id.toString())),
+        starter.diceCount,
+        opponentDiceCounts,
+        opps.filter(o => !o.isEliminated && o.diceCount > 0).length + (playerDiceCount > 0 ? 1 : 0),
+        nextPlayerId
       );
 
-      // Sometimes pick a random high value for variety
-      const finalValue = Math.random() > 0.7
-        ? Math.floor(Math.random() * 3) + 4 // Random 4, 5, or 6
-        : bestValue;
+      // Make decision using sophisticated agent
+      const decision = makeDecision(context);
+      console.log(`[AI ${starter.name}] ${decision.thoughtProcess}`);
 
-      const openingBid = { count: openingCount, value: finalValue };
+      // Get the opening bid from decision
+      const openingBid = decision.bid || { count: 2, value: 2 }; // Fallback if no bid
+
+      // Update memory with bid event
+      if (memory) {
+        const bidEvent: MemoryEvent = {
+          type: 'bid_placed',
+          playerId: starter.id.toString(),
+          bid: openingBid,
+        };
+        const updatedMemory = updateMemory(memory, bidEvent);
+        setSessionMemory(updatedMemory);
+        sessionMemoryRef.current = updatedMemory;
+      }
+
+      // Track stats
+      setGameStats(prev => prev ? {
+        ...prev,
+        totalBids: prev.totalBids + 1,
+        opponents: {
+          ...prev.opponents,
+          [starterIdx]: { ...prev.opponents[starterIdx], bidsPlaced: prev.opponents[starterIdx].bidsPlaced + 1 },
+        },
+      } : prev);
+
       setCurrentBid(openingBid);
       currentBidRef.current = openingBid; // Sync update
       setLastBidder(starterIdx);
@@ -935,11 +1024,27 @@ export default function FaroleoGame() {
 
   const handleBid = useCallback(
     (bid: Bid) => {
+      const memory = sessionMemoryRef.current;
+      const previousBid = currentBidRef.current;
+
       setCurrentBid(bid);
       currentBidRef.current = bid; // Sync update to avoid stale closure
       setLastBidder('player');
       lastBidderRef.current = 'player'; // Sync update to avoid stale closure
       setIsMyTurn(false);
+
+      // Update session memory with player bid
+      if (memory) {
+        const bidEvent: MemoryEvent = {
+          type: 'bid_placed',
+          playerId: 'player',
+          bid,
+          previousBid: previousBid || undefined,
+        };
+        const updatedMemory = updateMemory(memory, bidEvent);
+        setSessionMemory(updatedMemory);
+        sessionMemoryRef.current = updatedMemory;
+      }
 
       // Track player bid stats
       setGameStats(prev => prev ? {
@@ -994,6 +1099,18 @@ export default function FaroleoGame() {
       // Player won - show victory screen
       setGameState('Victory');
     } else {
+      // Update session memory for new round
+      const memory = sessionMemoryRef.current;
+      if (memory) {
+        const roundStartEvent: MemoryEvent = {
+          type: 'round_start',
+          playerId: 'system',
+        };
+        const updatedMemory = updateMemory(memory, roundStartEvent);
+        setSessionMemory(updatedMemory);
+        sessionMemoryRef.current = updatedMemory;
+      }
+
       // Continue with next round, preserving dice counts
       setGameState('Rolling');
       setPlayerHand([]);
@@ -1046,6 +1163,10 @@ export default function FaroleoGame() {
     isPalificoRef.current = false;
     setGameStats(null);
     setShowStats(false);
+    // Reset AI state
+    setSessionMemory(null);
+    sessionMemoryRef.current = null;
+    setAiPersonalities(new Map());
     setGameState('Lobby');
   }, []);
 
@@ -1068,6 +1189,10 @@ export default function FaroleoGame() {
     isPalificoRef.current = false;
     setGameStats(null);
     setShowStats(false);
+    // Reset AI state
+    setSessionMemory(null);
+    sessionMemoryRef.current = null;
+    setAiPersonalities(new Map());
     // Clear preferred mode so user sees mode selection again
     clearPreferredMode();
     setGameState('ModeSelection');

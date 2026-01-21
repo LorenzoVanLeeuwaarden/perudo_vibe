@@ -1,198 +1,250 @@
 # AI Bidding Logic
 
-This document explains exactly how the AI opponents make decisions in Faroleo (Perudo).
+This document explains how the sophisticated AI opponents make decisions in Faroleo (Perudo).
+
+## Architecture Overview
+
+The AI system is located in `src/lib/ai/` and consists of:
+
+| Module | Purpose |
+|--------|---------|
+| `types.ts` | Type definitions for profiles, memory, personalities, decisions |
+| `sessionMemory.ts` | Tracks opponent behavior across the game session |
+| `personalities.ts` | 6 distinct AI personalities with tunable parameters |
+| `probabilityEngine.ts` | Weighted probability calculations |
+| `utilityCalculator.ts` | Utility-based scoring for all actions |
+| `bidStrategies.ts` | Advanced bidding tactics |
+| `sophisticatedAgent.ts` | Main orchestrator |
+
+---
 
 ## Core Philosophy
 
 **The goal is to NOT LOSE.**
 
-In Perudo, you lose dice by making bad calls (Dudo/Calza) or by having your bid challenged incorrectly. The AI's strategy is built around this principle:
+In Perudo, you lose dice by making bad calls (Dudo/Calza) or by having your bid challenged. The AI's strategy:
 
-- **Competitive bids reduce exposure** - A low bid (like 2x6 with 30 dice) will cycle around the table and come back to you, forcing you to bid again at a higher, riskier level
-- **Don't challenge too early** - Calling Dudo on a reasonable bid is risky
-- **Hand awareness** - Bid on values you actually have when possible
+- **Competitive bids reduce exposure** - Low bids cycle back, forcing riskier raises
+- **Opponent modeling** - Track who bluffs, who's aggressive, who's conservative
+- **Personality-driven decisions** - Different AIs have different risk tolerances
+- **Utility maximization** - Choose the action with highest expected value
 
 ---
 
 ## Decision Flow
 
-When it's an AI's turn, decisions are made in this order:
+When it's an AI's turn:
 
 ```
-1. Should I call Calza? (exact match bet)
-2. Should I call Dudo? (challenge the bid)
-3. Generate a bid
+1. Load personality parameters
+2. Check for Boring Game mode (dice advantage adjustment)
+3. Calculate Dudo utility
+4. Calculate Calza utility (if eligible)
+5. Generate bid candidates with strategies
+6. Score each candidate with utility calculation
+7. Select best action based on utilities
+8. Log thoughtProcess string (debug)
 ```
 
 ---
 
-## 1. Calza Decision (`shouldAICallCalza`)
+## Session Memory
 
-Calza is called when the AI believes the current bid is **exactly correct**.
+The AI tracks opponent behavior throughout the game session.
 
-### Probability Calculation
+### Player Behavior Profile
+
+For each opponent, the AI tracks:
+
+| Metric | Description | Usage |
+|--------|-------------|-------|
+| `bluffIndex` | successful bluffs / total bluffs | Adjust dudo threshold |
+| `confidenceRatio` | bids on own dice / total bids | Predict bid reliability |
+| `aggressionLevel` | aggressive bids / total bids | Anticipate big jumps |
+| `avgIncrement` | average bid count increase | Pattern recognition |
+| `dudoAccuracy` | successful dudos / total dudos | Assess threat level |
+
+### Memory Events
+
+Memory updates on:
+- `bid_placed` - Records bid, updates value frequency
+- `dudo_called` - Tracks challenger stats
+- `round_revealed` - Updates bluff success/caught, dudo accuracy
+- `round_start` - Clears current round data
+
+### Weighted Probability
+
+Bid history affects probability estimates:
 
 ```
-Expected total = AI's matching dice + (other dice × probability)
+If 3+ bids on value X this round:
+  expectedCount *= 1.20  (20% boost)
 
-Where probability:
-- Aces: 1/6 (only aces match)
-- Non-aces: 2/6 (value OR aces match, since aces are wild)
+If 4+ bids on value X:
+  expectedCount *= 1.35  (35% boost)
 ```
 
-### Decision Thresholds
-
-| Confidence Level | Conditions | Calza Chance |
-|-----------------|------------|--------------|
-| Strong | AI has 50%+ of bid AND difference < 0.5 | 40% |
-| Pretty confident | AI has bid-2 matching AND difference < 1.0 | 25% |
-| Moderate | Difference < 0.8 | 18% |
-| Slight | Difference < 1.2 | 8% |
-| Perfect match | Round(expected) = bid exactly | 20% |
+Rationale: Multiple players bidding the same value likely have those dice.
 
 ---
 
-## 2. Dudo Decision (`shouldAICallDudo`)
+## Personality System
 
-Dudo is called when the AI believes the current bid is **too high**.
+### 6 Distinct Personalities
 
-### Probability Calculation
+| Personality | Playstyle | Key Traits |
+|-------------|-----------|------------|
+| **Shark** | Aggressive predator | Low dudo threshold (0.55), high adaptability, punishes bluffers |
+| **Turtle** | Conservative | High dudo threshold (0.85), low bluffing (8%), risk averse |
+| **Chaos** | Unpredictable | High unpredictability (0.9), high bluff rate (45%), random |
+| **Calculator** | Pure math | Zero unpredictability, balanced thresholds, optimal play |
+| **Bluffer** | Deception master | Very high bluff rate (55%), reluctant to call dudo (0.88) |
+| **Trapper** | Positional expert | High positional awareness (0.95), squeeze specialist |
 
-Same expected total calculation as Calza.
+### Personality Parameters
 
-### Decision Thresholds
+Each personality has tunable parameters:
 
-| Condition | Dudo Chance |
-|-----------|-------------|
-| Bid > 1.8× expected (very unlikely) | 80% |
-| Bid > 1.3× expected (exceeds expected) | 40% |
-| Bid > 60% of total dice (high absolute) | 30% |
-
-Random factors prevent predictability - AI won't always challenge even when conditions are met.
-
----
-
-## 3. Bid Generation (`generateAIBid`)
-
-This is the core bidding logic. The AI generates multiple potential strategies and weights them to select the best bid.
-
-### Step 1: Assess the Current Bid
-
-```
-Expected count = totalDice / 3  (for non-aces)
-               = totalDice / 6  (for aces)
-
-Bid ratio = currentBid.count / expectedCount
-```
-
-| Bid Ratio | Classification | Example (30 dice, non-ace) |
-|-----------|---------------|----------------------------|
-| < 35% | Very low bid | 1-3 (expected ~10) |
-| 35-55% | Low bid | 4-5 |
-| 55-75% | Moderate bid | 6-7 |
-| > 75% | High bid | 8+ |
-
-### Step 2: Calculate Competitive Minimum
-
-For low bids, the AI calculates where it *should* bid to be competitive:
-
-```javascript
-if (isVeryLowBid) {
-  // Jump to 40-55% of expected
-  competitiveMin = expectedCount × (0.4 to 0.55)
-}
-else if (isLowBid) {
-  // Jump to 55-70% of expected
-  competitiveMin = expectedCount × (0.55 to 0.70)
-}
-else if (isModerateBid) {
-  // Small jump: +2-3
-  competitiveMin = currentBid.count + 2 to 4
+```typescript
+interface PersonalityParams {
+  dudoThreshold: number;      // 0.55-0.88 (probability to call dudo)
+  calzaThreshold: number;     // 0.3-0.8 (deviation tolerance for calza)
+  bluffFrequency: number;     // 0.08-0.55 (how often to bluff)
+  aggression: number;         // 0.15-0.75 (bid jump tendency)
+  riskTolerance: number;      // 0.2-0.7 (willingness to take risks)
+  adaptability: number;       // 0.3-0.8 (opponent modeling weight)
+  unpredictability: number;   // 0.0-0.9 (random variance)
+  positionalAwareness: number; // 0.3-0.95 (squeeze/trap tactics)
 }
 ```
 
-**Example:** With 30 dice and a bid of "1× 6":
-- Expected sixes ≈ 10 (30 × 2/6)
-- Bid ratio = 1/10 = 10% → Very low bid
-- Competitive minimum = 4-5 sixes
+### Name to Personality Mapping
 
-Instead of just bidding "2× 6", the AI will jump to "4× 6" or "5× 6".
-
-### Step 3: Generate Strategies
-
-The AI considers these bidding options:
-
-| # | Strategy | When Used |
-|---|----------|-----------|
-| 1 | Competitive jump | Low/very low bids |
-| 2 | Conservative (+1 count) | Reasonable bids only |
-| 3 | Higher value, same count | Value < 6 |
-| 4 | Best value in hand | Always |
-| 5 | Risky count jump (+2-3) | 35% chance, not on low bids |
-| 6 | Super risky (jump to 5s/6s) | 12% chance |
-| 7 | Switch TO aces | Have aces, 40% chance |
-| 8 | Switch FROM aces | Currently on aces, 60% chance |
-| 9 | Bluff (value we don't have) | 12% chance, need joker backup |
-
-### Step 4: Weight and Select
-
-Each valid bid gets a weight:
-
-```javascript
-weight = 1
-weight += ourCount × 2           // Prefer values we have
-weight += 3 if competitive bid   // Bonus for competitive bids on low bids
-weight -= 1 if count > 80% expected
-weight -= 3 if count > expected
-weight -= 2 if bluffing (no dice of that value)
-weight += 1 if switching from aces
-weight += random(0, 0.5)         // Unpredictability
-```
-
-**Selection:**
-- 70% chance: Pick highest weighted bid
-- 30% chance: Pick 2nd or 3rd best (for variety)
+| AI Name | Personality |
+|---------|-------------|
+| El Bloffo, La Serpiente, El Bandido, El Zorro Viejo | Shark |
+| Doña Suerte, Tía Pícara, Señora Riesgo, Don Peligro | Turtle |
+| La Mentirosa, El Calaverón, La Calavera Loca, Señorita Dados | Chaos |
+| Profesor Huesos, Don Dinero, Capitán Dados, Conde Cubiletes | Calculator |
+| El Tramposo, Madame Fortuna, El Embustero, Doña Trampa | Bluffer |
+| Señor Dudoso, Don Calzón, Don Faroleo, El Gran Jugador, El Tahúr | Trapper |
 
 ---
 
-## Ace Rules
+## Utility-Based Decision Making
 
-The game has special rules for aces (jokers):
+Instead of fixed thresholds, the AI calculates utility scores for each action.
 
-### Switching TO Aces
-- Minimum ace count = ceil(previous count / 2)
-- Example: 6× 4s → minimum 3× aces
+### Dudo Utility
 
-### Switching FROM Aces
-- Minimum count = (ace count × 2) + 1
-- Example: 3× aces → minimum 7× any value
+```
+utility = (failureProbability - threshold) × 10
+        + opponentBluffAdjustment × 10
+        + positionalAdjustment
+        + riskAdjustment
+        + personalityVariance
+```
 
-The AI understands these rules and will:
-- Switch to aces when it has them (40% chance when applicable)
-- Switch from aces to numbers it holds (60% chance when applicable)
+**Opponent Bluff Adjustment:**
+```
+If opponent bluffIndex > 0.5: +0.15 bonus (they bluff often)
+If opponent aggressionLevel > 0.6: +0.05 bonus (overextenders)
+```
+
+**Positional Adjustment:**
+```
+If bidRatio > 0.85: +2 (very aggressive bid)
+If bidRatio > 0.75: +1 (aggressive bid)
+If myDiceCount <= 2: -1 (risky when vulnerable)
+```
+
+### Calza Utility
+
+```
+utility = exactMatchProbability × 15
+        + opponentAdjustment × 5
+        + personalityAdjustment
+        + positionalAdjustment
+        + riskAdjustment
+        - 3  (base penalty - calza is inherently risky)
+```
+
+### Bid Utility
+
+```
+utility = baseStrategyScore
+        + successProbability × 8
+        + personalityAlignment
+        + positionalAdjustment
+        + matchingDiceBonus × 1.5
+        - bidRatioPenalty
+```
+
+### Action Selection
+
+All utilities are compared, highest wins:
+
+```typescript
+allOptions = [dudoUtility, calzaUtility?, ...bidUtilities]
+allOptions.sort((a, b) => b.utility - a.utility)
+return allOptions[0]
+```
 
 ---
 
-## Palifico Mode
+## Advanced Bidding Strategies
 
-When a player has exactly 1 die remaining, that round is "Palifico":
-- Can only increase count, not change value
-- Aces are NOT wild
-- AI simply bids +1 on the current count
+### The Squeeze (BID-01)
 
----
+**Trigger:** Bid at 75%+ of expected AND next player has ≤2 dice
 
-## Timeout AI (Conservative Fallback)
-
-When a player times out, a **penalty AI** takes over with intentionally conservative play:
+**Action:** Jump by +2 to pressure vulnerable opponent
 
 ```
-- Never calls Calza
-- Only calls Dudo if >80% probability bid is wrong
-- Otherwise makes minimum valid bid (+1 count or +1 value)
+If bidRatio >= 0.75 && nextPlayerDice <= 2:
+  squeezeBid = { count: currentBid.count + 2, value: currentBid.value }
 ```
 
-This uses proper binomial distribution calculations for accuracy.
+**Used by:** Trapper personality (high positionalAwareness)
+
+### Ace Flushing (BID-02)
+
+**Trigger:** Early in round, have aces, bid not on aces
+
+**Action:** Switch to aces to force information reveal
+
+```
+If acesInHand >= 1 && bidsMade <= 4 && currentBid.value != 1:
+  aceFlushBid = { count: ceil(currentBid.count / 2), value: 1 }
+```
+
+**Rationale:** Forces opponents to respond, revealing hand composition.
+
+### Boring Game (BID-03)
+
+**Trigger:** AI has 3+ dice advantage over average opponent
+
+**Action:** Play ultra-conservative to preserve advantage
+
+```
+If myDice - avgOpponentDice >= 3:
+  bluffFrequency = 0.05 (minimal bluffing)
+  dudoThreshold = 0.90 (only dudo when certain)
+  prefer minimum bids
+```
+
+**Rationale:** When ahead, don't take risks. Let opponents eliminate each other.
+
+### Standard Strategies
+
+| Strategy | Description | Base Score |
+|----------|-------------|------------|
+| `minimum` | Smallest valid bid | 2 |
+| `competitive` | Jump to reasonable level (40-70% expected) | 4 |
+| `aggressive` | Large jump (+2-3) to pressure | 2 + aggression × 2 |
+| `value` | Bid on dice we have | 3 + matchCount × 1.5 |
+| `bluff` | Bid on value we don't have | 1 + bluffFrequency × 3 |
+| `switch` | Switch to/from aces | 2-3 |
 
 ---
 
@@ -200,7 +252,7 @@ This uses proper binomial distribution calculations for accuracy.
 
 ### Binomial Distribution
 
-The probability of exactly `k` dice matching out of `n` dice:
+Probability of exactly `k` dice matching out of `n` dice:
 
 ```
 P(X = k) = C(n,k) × p^k × (1-p)^(n-k)
@@ -211,65 +263,93 @@ Where:
 - p = 2/6 for non-aces (value + wild aces)
 ```
 
-### Failure Probability
-
-Probability a bid is wrong = P(actual count < bid count):
+### Success Probability
 
 ```
-P(failure) = Σ P(X = k) for k = 0 to (needed - 1)
+P(bid succeeds) = P(actual >= bid.count)
+                = Σ P(X = k) for k = needed to unknownDice
 
 Where needed = bid.count - knownMatching
 ```
 
----
+### Weighted Expected Count
 
-## Example Scenario
-
-**Setup:** 6 players, 30 total dice. Player bids "1× 6".
-
-**AI Analysis:**
 ```
-Expected 6s = 30 × (2/6) = 10
-Bid ratio = 1/10 = 10% → VERY LOW BID
+baseExpected = totalDice × probability
+weightedExpected = baseExpected × bidBoost
 
-Competitive minimum = 10 × 0.45 = 4-5
-
-AI has: [2, 3, 6, 6, 1] = two 6s + one joker = 3 matching
-
-Strategies generated:
-1. Competitive: 5× 6 (weight: 1 + 6 + 3 = 10)
-2. Best value: 5× 6 (same as above)
-3. Higher value: 1× 6 → not valid, already at 6
-
-AI bids: "5× 6"
+Where bidBoost = 1.0 (default)
+              = 1.10 if 2+ bids on value
+              = 1.20 if 3+ bids on value
+              = 1.35 if 4+ bids on value
 ```
-
-This is much more reasonable than "2× 6" - it's 50% of expected and competitive.
 
 ---
 
-## Tuning Parameters
+## Ace Rules
 
-Key values that control AI behavior:
+### Switching TO Aces
+- Minimum ace count = ceil(previous count / 2)
+- Example: 6× 4s → minimum 3× aces
 
-| Parameter | Value | Effect |
-|-----------|-------|--------|
-| Very low bid threshold | 35% of expected | Below this, AI jumps aggressively |
-| Low bid threshold | 55% of expected | Below this, AI is more competitive |
-| Competitive cap | 85% of expected | AI won't bid above this on jumps |
-| Aggressive chance | 35% | Probability of risky plays |
-| Super aggressive chance | 12% | Probability of very risky plays |
-| Dudo very unlikely | 80% | Call rate when bid > 1.8× expected |
-| Dudo exceeds expected | 40% | Call rate when bid > 1.3× expected |
+### Switching FROM Aces
+- Minimum count = (ace count × 2) + 1
+- Example: 3× aces → minimum 7× any value
+
+---
+
+## Palifico Mode
+
+When a player has exactly 1 die, that round is "Palifico":
+- Can only increase count, not change value
+- Aces are NOT wild
+- AI generates minimum bid only (+1 count)
+
+---
+
+## Debug: thoughtProcess
+
+Each decision logs a debug string:
+
+```
+[Personality] | Bid: CxV by player | Dudo utility: X.X (p=Y.YY) |
+Calza utility: X.X (p=Y.YY) | Best bid: CxV utility: X.X | Chose: ACTION
+```
+
+**Example:**
+```
+[Shark] | Bid: 5x6 by 0 | Dudo utility: 1.8 (p=0.49) |
+Best bid: 11x6 utility: 5.4 | Chose: BID
+```
+
+This is logged to console only (not displayed in UI).
+
+---
+
+## Timeout AI (Conservative Fallback)
+
+For multiplayer timeouts, a **penalty AI** in `gameLogic.ts` takes over:
+
+```
+- Never calls Calza
+- Only calls Dudo if >80% probability bid is wrong
+- Otherwise makes minimum valid bid (+1 count or +1 value)
+```
+
+Uses binomial distribution for accuracy. Intentionally conservative as a penalty.
 
 ---
 
 ## Summary
 
-The AI is designed to:
+The sophisticated AI system provides:
 
-1. **Not be a pushover** - It won't just bid +1 on obviously low bids
-2. **Play competitively** - It calculates expected values and bids accordingly
-3. **Be unpredictable** - Random factors and variety prevent exploitation
-4. **Prefer hand-based bids** - Weights favor values the AI actually holds
-5. **Understand the meta** - Low bids are bad because they cycle back to you
+1. **Distinct personalities** - 6 different playstyles based on name
+2. **Opponent modeling** - Tracks bluffs, aggression, accuracy
+3. **Utility-based decisions** - Calculates expected value for all actions
+4. **Advanced tactics** - Squeeze plays, ace flushing, boring game
+5. **Memory across rounds** - Learns opponent patterns within session
+6. **Weighted probability** - Bid history affects expectations
+7. **Debug logging** - thoughtProcess strings for analysis
+
+The goal: competitive, varied, personality-driven AI that feels like playing different opponents.
