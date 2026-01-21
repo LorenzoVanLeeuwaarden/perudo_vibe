@@ -194,7 +194,7 @@ export function generateTimeoutAIMove(
 // =============================================================================
 
 /**
- * Validates a bid according to Faroleo rules:
+ * Validates a bid according to Perudo rules:
  * 1. Normal bid: increase count (with same or higher value) OR increase value (with same or higher count)
  * 2. You can ONLY decrease value when switching TO aces
  * 3. Bidding aces from non-aces: minimum count is ceil(previous_count / 2)
@@ -281,7 +281,7 @@ export function isValidBid(
 }
 
 /**
- * Count matching dice according to Faroleo rules
+ * Count matching dice according to Perudo rules
  */
 export function countMatching(dice: number[], value: number, isPalifico: boolean): number {
   if (isPalifico) {

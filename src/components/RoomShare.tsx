@@ -33,7 +33,7 @@ export function RoomShare({ roomCode, playerColor }: RoomShareProps) {
 
   const handleShare = useCallback(async () => {
     const shareData = {
-      title: 'Join my Faroleo game!',
+      title: 'Join my Last Die game!',
       text: `Join room ${roomCode}`,
       url,
     };

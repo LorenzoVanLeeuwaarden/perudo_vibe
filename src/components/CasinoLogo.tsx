@@ -222,7 +222,7 @@ export function CasinoLogo({ color }: CasinoLogoProps = {}) {
             }}
           >
             {/* Animated letters - guard textShadow animation for Firefox/reduced motion */}
-            {'FAROLEO'.split('').map((letter, i) => (
+            {'THE LAST DIE'.split('').map((letter, i) => (
               <motion.span
                 key={i}
                 className="inline-block"

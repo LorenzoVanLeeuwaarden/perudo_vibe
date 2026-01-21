@@ -18,7 +18,7 @@ const AI_NAMES = [
   'La Serpiente',
   'El Bandido',
   'Señora Riesgo',
-  'Don Faroleo',
+  'El Último',
   'El Zorro Viejo',
   'Profesor Huesos',
   'La Calavera Loca',

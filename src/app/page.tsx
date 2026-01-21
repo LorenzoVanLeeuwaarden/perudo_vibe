@@ -101,7 +101,7 @@ const AI_NAMES = [
   'La Serpiente',
   'El Bandido',
   'Señora Riesgo',
-  'Don Faroleo',
+  'El Último',
   'El Zorro Viejo',
   'Profesor Huesos',
   'La Calavera Loca',
@@ -126,7 +126,7 @@ interface Opponent {
 
 const COLOR_OPTIONS: PlayerColor[] = ['blue', 'green', 'orange', 'yellow', 'purple', 'red'];
 
-export default function FaroleoGame() {
+export default function LastDieGame() {
   // Router for navigation
   const router = useRouter();
 

@@ -3,7 +3,7 @@ import { Toaster } from 'sonner';
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Faroleo - Liar's Dice",
+  title: "The Last Die - Liar's Dice",
   description: "A Balatro-inspired retro Liar's Dice game with skulls and style",
 };
 

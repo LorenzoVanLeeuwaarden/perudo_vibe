@@ -187,7 +187,7 @@ const NAME_TO_PERSONALITY: Record<string, string> = {
   // TRAPPER - Strategic, cunning names
   'Señor Dudoso': 'trapper',
   'Don Calzón': 'trapper',
-  'Don Faroleo': 'trapper',
+  'El Último': 'trapper',
   'El Gran Jugador': 'trapper',
   'El Tahúr': 'trapper',
 };

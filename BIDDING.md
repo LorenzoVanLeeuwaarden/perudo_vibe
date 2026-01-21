@@ -1,6 +1,6 @@
 # AI Bidding Logic
 
-This document explains how the sophisticated AI opponents make decisions in Faroleo (Perudo).
+This document explains how the sophisticated AI opponents make decisions in The Last Die (Perudo).
 
 ## Architecture Overview
 
@@ -151,7 +151,7 @@ interface PersonalityParams {
 | La Mentirosa, El Calaverón, La Calavera Loca, Señorita Dados | Chaos |
 | Profesor Huesos, Don Dinero, Capitán Dados, Conde Cubiletes | Calculator |
 | El Tramposo, Madame Fortuna, El Embustero, Doña Trampa | Bluffer |
-| Señor Dudoso, Don Calzón, Don Faroleo, El Gran Jugador, El Tahúr | Trapper |
+| Señor Dudoso, Don Calzón, El Último, El Gran Jugador, El Tahúr | Trapper |
 
 ---
 
