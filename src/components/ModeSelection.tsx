@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Bot, Users, Swords } from 'lucide-react';
+import { Bot, Users, Swords, Trophy } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { CasinoLogo } from '@/components/CasinoLogo';
 
@@ -10,12 +10,13 @@ interface ModeSelectionProps {
   onSelectAI: () => void;
   onSelectMultiplayer: () => void;
   onSelectGauntlet: () => void;
+  onShowAchievements: () => void;
   playerColor: PlayerColor;
 }
 
 type GameMode = 'ai' | 'multiplayer' | 'gauntlet' | null;
 
-export function ModeSelection({ onSelectAI, onSelectMultiplayer, onSelectGauntlet, playerColor }: ModeSelectionProps) {
+export function ModeSelection({ onSelectAI, onSelectMultiplayer, onSelectGauntlet, onShowAchievements, playerColor }: ModeSelectionProps) {
   const [selectedMode, setSelectedMode] = useState<GameMode>(null);
   const colorConfig = PLAYER_COLORS[playerColor];
 
@@ -196,6 +197,45 @@ export function ModeSelection({ onSelectAI, onSelectMultiplayer, onSelectGauntle
             <div className="flex-1">
               <h2 className="text-lg sm:text-xl font-bold text-white-soft mb-0.5 sm:mb-1">The Gauntlet</h2>
               <p className="text-xs sm:text-sm text-white-soft/60">Endless 1v1 survival</p>
+            </div>
+          </div>
+        </motion.button>
+
+        {/* Achievements Button */}
+        <motion.button
+          initial={{ opacity: 0, y: 50 }}
+          animate={{
+            opacity: selectedMode === null ? 1 : 0,
+            y: 0,
+          }}
+          transition={{
+            opacity: { duration: 0.3 },
+            y: { duration: 0.5, delay: 0.8 },
+          }}
+          whileHover={selectedMode === null ? { scale: 1.05 } : undefined}
+          whileTap={selectedMode === null ? { scale: 0.98 } : undefined}
+          onClick={onShowAchievements}
+          disabled={selectedMode !== null}
+          className="retro-panel p-3 sm:p-4 w-full text-left transition-all disabled:cursor-default"
+          style={{
+            background: `linear-gradient(135deg, rgba(3, 15, 15, 0.7) 0%, rgba(10, 31, 31, 0.6) 100%)`,
+            border: `2px solid rgba(251, 191, 36, 0.4)`,
+            boxShadow: `0 4px 0 0 rgba(217, 119, 6, 0.3)`,
+          }}
+        >
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
+                boxShadow: '0 3px 0 0 #b45309',
+              }}
+            >
+              <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-base sm:text-lg font-bold text-white-soft">Achievements</h3>
+              <p className="text-xs text-white-soft/60">View your collection</p>
             </div>
           </div>
         </motion.button>

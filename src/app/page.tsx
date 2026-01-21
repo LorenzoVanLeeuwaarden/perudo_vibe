@@ -36,7 +36,7 @@ import {
 import type { SessionMemory, Personality, MemoryEvent } from '@/lib/ai';
 import { GameResultsScreen } from '@/components/GameResultsScreen';
 import type { PlayerStats, GameStats } from '@/shared/types';
-import { GauntletModeScreen } from '@/components/gauntlet';
+import { GauntletModeScreen, AchievementGallery } from '@/components/gauntlet';
 import { useGauntletStore } from '@/stores/gauntletStore';
 
 // AI thinking prompts - varied and fun
@@ -258,6 +258,14 @@ export default function FaroleoGame() {
     setGameState('ModeSelection');
     // Reset gauntlet store
     useGauntletStore.getState().exitToMenu();
+  }, []);
+
+  const handleShowAchievements = useCallback(() => {
+    setGameState('AchievementGallery' as GameState);
+  }, []);
+
+  const handleHideAchievements = useCallback(() => {
+    setGameState('ModeSelection');
   }, []);
 
   // Calculate total dice
@@ -1655,6 +1663,7 @@ export default function FaroleoGame() {
                 onSelectAI={handleSelectAI}
                 onSelectMultiplayer={handleSelectMultiplayer}
                 onSelectGauntlet={handleSelectGauntlet}
+                onShowAchievements={handleShowAchievements}
                 playerColor={playerColor}
               />
             </motion.div>
@@ -1760,6 +1769,13 @@ export default function FaroleoGame() {
             <GauntletModeScreen
               playerColor={playerColor}
               onExit={handleExitGauntlet}
+            />
+          )}
+
+          {/* ACHIEVEMENT GALLERY */}
+          {gameState === 'AchievementGallery' && (
+            <AchievementGallery
+              onBack={handleHideAchievements}
             />
           )}
 
