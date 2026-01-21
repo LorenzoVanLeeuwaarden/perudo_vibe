@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { getPersonalBest, updatePersonalBest, PersonalBest } from '@/lib/personal-best';
+import { MILESTONE_ACHIEVEMENTS, Achievement } from '@/lib/achievements';
+import { useAchievementStore } from '@/stores/achievementStore';
 
 // AI names pool for gauntlet opponents
 const AI_NAMES = [
@@ -53,6 +55,9 @@ interface GauntletState {
   // Leaderboard state
   hasSubmittedScore: boolean;
 
+  // Achievement state
+  pendingAchievement: Achievement | null;
+
   // Actions
   startGauntlet: () => void;
   winDuel: () => void;
@@ -67,6 +72,8 @@ interface GauntletState {
   showLeaderboard: () => void;
   hideLeaderboard: () => void;
   setScoreSubmitted: () => void;
+  setPendingAchievement: (achievement: Achievement | null) => void;
+  clearPendingAchievement: () => void;
 
   // Derived getters
   getDifficultyTier: () => DifficultyTier;
@@ -106,10 +113,16 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
   screen: 'rules',
   personalBest: null,
   hasSubmittedScore: false,
+  pendingAchievement: null,
 
   // Actions
   startGauntlet: () => {
     const opponent = selectOpponentForRound(1);
+
+    // Reset run statistics for new gauntlet run
+    const achievementStore = useAchievementStore.getState();
+    achievementStore.resetRunStats();
+
     set({
       playerDiceCount: 5,
       streak: 0,
@@ -123,11 +136,28 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
   },
 
   winDuel: () => {
-    set((state) => ({
-      streak: state.streak + 1,
-      currentRound: state.currentRound + 1,
-      screen: 'victory',
-    }));
+    set((state) => {
+      const newStreak = state.streak + 1;
+
+      // Check if this streak matches any milestone achievement threshold
+      const achievementStore = useAchievementStore.getState();
+      let achievementToShow: Achievement | null = null;
+
+      for (const milestone of MILESTONE_ACHIEVEMENTS) {
+        if (milestone.threshold === newStreak && !achievementStore.isUnlocked(milestone.id)) {
+          achievementStore.unlockAchievement(milestone.id);
+          achievementToShow = milestone;
+          break;
+        }
+      }
+
+      return {
+        streak: newStreak,
+        currentRound: state.currentRound + 1,
+        screen: 'victory',
+        pendingAchievement: achievementToShow,
+      };
+    });
   },
 
   loseDie: () => {
@@ -179,6 +209,11 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
 
   restartGauntlet: () => {
     const opponent = selectOpponentForRound(1);
+
+    // Reset run statistics for new gauntlet run
+    const achievementStore = useAchievementStore.getState();
+    achievementStore.resetRunStats();
+
     set({
       playerDiceCount: 5,
       streak: 0,
@@ -227,6 +262,14 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
 
   setScoreSubmitted: () => {
     set({ hasSubmittedScore: true });
+  },
+
+  setPendingAchievement: (achievement: Achievement | null) => {
+    set({ pendingAchievement: achievement });
+  },
+
+  clearPendingAchievement: () => {
+    set({ pendingAchievement: null });
   },
 
   // Derived getters
