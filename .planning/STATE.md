@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-21)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v3.0 The Gauntlet — COMPLETE
+**Current focus:** v3.1 Tutorial
 
 ## Current Position
 
-Phase: 22 - Achievement System (COMPLETE)
-Plan: 3 of 3 in phase
-Status: Milestone complete — v3.0 shipped
-Last activity: 2026-01-21 — Completed Phase 22 (Achievement System)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-01-21 — Milestone v3.1 started
 
-Progress: [████████████████████] 11/11 plans complete across v3.0 phases (20: 3/3, 21: 5/5, 22: 3/3)
+Progress: [░░░░░░░░░░░░░░░░░░░░] 0/0 plans (requirements phase)
 
 ## Production URLs
 
@@ -153,13 +153,14 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: v3.0 Milestone complete
+Stopped at: Defining v3.1 requirements
 Resume file: None
 
 ## Next Steps
 
-1. Run `/gsd:new-milestone` to start next milestone
-2. Or take a break - v3.0 is shipped!
+1. Complete requirements definition
+2. Create roadmap
+3. Run `/gsd:plan-phase [N]` to start execution
 
 ---
-*Updated: 2026-01-21 after v3.0 milestone archived*
+*Updated: 2026-01-21 after v3.1 milestone started*

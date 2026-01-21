@@ -8,15 +8,15 @@ A browser-based Perudo (liar's dice) game with real-time multiplayer support. Pl
 
 Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction — just share a link and play.
 
-## Current Milestone: Planning Next
+## Current Milestone: v3.1 Tutorial
 
-**Status:** v3.0 shipped. Ready for next milestone planning.
+**Goal:** Guide new players through their first game with a scripted tutorial that teaches all core rules.
 
-**Potential directions:**
-- Sound effects (replace placeholder audio)
-- Cosmetic unlocks (dice skins, themes)
-- Multiplayer gauntlet mode
-- Weekly leaderboard alongside daily
+**Target features:**
+- Tutorial option in main menu (always accessible, replayable)
+- Scripted 3-player game with predetermined dice rolls
+- Guided moves with inline tooltips explaining each concept
+- Teaches: bidding basics, calling Dudo, wild ones, Calza
 
 ## Requirements
 
@@ -69,7 +69,10 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 
 ### Active
 
-(None — planning next milestone)
+- [ ] Tutorial mode accessible from main menu
+- [ ] Scripted game with predetermined dice
+- [ ] Constrained move selection with inline guidance
+- [ ] Covers bidding, Dudo, wild ones, and Calza rules
 
 ### Out of Scope
 
@@ -140,4 +143,4 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 | Gallery in Gauntlet section | Contextually appropriate, achievements only apply to Gauntlet | ✓ Good |
 
 ---
-*Last updated: 2026-01-21 after v3.0 milestone completion*
+*Last updated: 2026-01-21 after v3.1 milestone started*
