@@ -1,2 +1,3 @@
 export { TutorialGameplay } from './TutorialGameplay';
-// TutorialScreen will be added in Plan 03
+export { TutorialScreen } from './TutorialScreen';
+export { TutorialComplete } from './TutorialComplete';
