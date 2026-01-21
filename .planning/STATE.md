@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 23 - Tutorial Foundation
-Plan: —
-Status: Ready to plan
-Last activity: 2026-01-21 — Roadmap created for v3.1
+Plan: 01 of 3 complete
+Status: In progress
+Last activity: 2026-01-21 — Completed 23-01-PLAN.md (Tutorial Entry Point)
 
-Progress: [░░░░░░░░░░░░░░░░░░░░] 0/? plans (Phase 23 not yet planned)
+Progress: [███░░░░░░░░░░░░░░░░░] 1/3 plans (Phase 23)
 
 ## Production URLs
 
@@ -139,6 +139,13 @@ Phase 22-03 Decisions:
 - Hidden achievements show "???" mystery state until unlocked
 - Locked milestones show requirements ("Defeat X opponents")
 
+Phase 23-01 Decisions:
+- Tutorial store uses same Zustand pattern as gauntletStore
+- "How to Play" button styled as subtle text link (not card)
+- Tutorial completion persists to localStorage (tutorial_completed key)
+- 300ms transition delay for tutorial (shorter than game modes)
+- totalSteps set to 8 as placeholder (actual steps defined in Plan 02)
+
 ### Pending Todos
 
 None.
@@ -158,14 +165,14 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Roadmap created for v3.1
-Resume file: None
+Stopped at: Completed 23-01-PLAN.md (Tutorial Entry Point)
+Resume file: .planning/phases/23-tutorial-foundation/23-02-PLAN.md
 
 ## Next Steps
 
-1. Run `/gsd:plan-phase 23` to create plans for Tutorial Foundation
-2. Execute Phase 23 plans
+1. Execute 23-02-PLAN.md (Tutorial Types and Script Data)
+2. Execute 23-03-PLAN.md (Tutorial Screen Component)
 3. Continue with Phase 24-25
 
 ---
-*Updated: 2026-01-21 after v3.1 roadmap created*
+*Updated: 2026-01-21 after completing 23-01-PLAN.md*
