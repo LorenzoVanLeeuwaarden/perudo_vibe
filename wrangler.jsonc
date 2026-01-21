@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/wrangler",
+  "name": "faroleo",
+  "main": "party/index.ts",
+  "compatibility_date": "2024-01-01",
+  "d1_databases": [
+    {
+      "binding": "LEADERBOARD_DB",
+      "database_name": "gauntlet-leaderboard",
+      "database_id": "YOUR_DATABASE_ID_HERE"
+    }
+  ]
+}
