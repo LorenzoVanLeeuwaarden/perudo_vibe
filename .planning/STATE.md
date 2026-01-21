@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 21 - Leaderboard System (IN PROGRESS)
-Plan: 2 of 3 in phase
+Plan: 3 of 5 in phase
 Status: In progress
-Last activity: 2026-01-21 — Completed 21-02-PLAN.md
+Last activity: 2026-01-21 — Completed 21-03-PLAN.md
 
-Progress: [████████            ] 5/9 plans complete across v3.0 phases (20: 3/3, 21: 2/3, 22: 0/3)
+Progress: [████████████        ] 6/9 plans complete across v3.0 phases (20: 3/3, 21: 3/5, 22: 0/3)
 
 ## Production URLs
 
@@ -97,6 +97,13 @@ Phase 21-02 Decisions:
 - SSR-safe with typeof window checks
 - updatePersonalBest returns boolean to indicate new record
 
+Phase 21-03 Decisions:
+- Cursor format is 'score:id' for pagination with tie-breaking
+- Daily filtering uses submitted_at >= date('now', 'start of day')
+- GET /near returns 3 above and 3 below (reversed for above to show highest first)
+- Client validates nickname before submission (2-30 chars, alphanumeric + spaces)
+- Rank calculation uses COUNT(*) + 1 for efficiency
+
 ### Pending Todos
 
 None.
@@ -108,7 +115,6 @@ None.
 ### Blockers/Concerns
 
 - Sound files (victory.mp3, pop.mp3, dice-rattle.mp3) are placeholders
-- D1 database binding needs configuration in wrangler.toml
 
 ### Tech Debt
 
@@ -117,7 +123,7 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 21-02-PLAN.md (Personal Best Tracking)
+Stopped at: Completed 21-03-PLAN.md (Leaderboard API Implementation)
 Resume file: None
 
 ## Next Steps
@@ -126,4 +132,4 @@ Resume file: None
 2. Phase 22: Achievement system
 
 ---
-*Updated: 2026-01-21 after completing 21-02*
+*Updated: 2026-01-21 after completing 21-03*
