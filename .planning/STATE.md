@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 20 - Core Gauntlet Loop & Transitions
-Plan: — (awaiting plan creation)
-Status: Roadmap complete, ready for planning
-Last activity: 2026-01-21 — v3.0 roadmap created
+Plan: 01 of 3 in phase
+Status: In progress
+Last activity: 2026-01-21 — Completed 20-01-PLAN.md
 
-Progress: [                    ] 0/3 phases (v3.0)
+Progress: [█                   ] 1/3 plans complete in phase 20 (1/3 phases v3.0)
 
 ## Production URLs
 
@@ -78,6 +78,12 @@ v3.0 Decisions:
 - Daily leaderboard resets at midnight UTC
 - Achievements stored in localStorage (no account needed)
 
+Phase 20-01 Decisions:
+- AI difficulty escalates by round: turtle (1-3), calculator (4-6), shark (7+)
+- GameMode type extended to include 'gauntlet' alongside 'ai' and 'multiplayer'
+- RulesScreen uses ominous dark purple/red styling to differentiate from regular game modes
+- Gauntlet store manages screen state machine with explicit transitions
+
 ### Pending Todos
 
 None.
@@ -93,16 +99,16 @@ None (cleared in v2.2)
 
 ## Session Continuity
 
-Last session: 2026-01-21
-Stopped at: Roadmap created for v3.0
+Last session: 2026-01-21 10:46 UTC
+Stopped at: Completed 20-01-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-1. Run `/gsd:plan-phase 20` to create execution plan for Core Gauntlet Loop
-2. Phase 20 delivers: Gauntlet mode entry, 1v1 duels, persistent dice, AI escalation, transitions
-3. Phase 21 delivers: Leaderboard backend and UI
-4. Phase 22 delivers: Achievement system
+1. Execute 20-02-PLAN.md (Fight Card & Victory/GameOver screens)
+2. Execute 20-03-PLAN.md (Gameplay wiring)
+3. Phase 21: Leaderboard backend and UI
+4. Phase 22: Achievement system
 
 ---
-*Updated: 2026-01-21 after v3.0 roadmap creation*
+*Updated: 2026-01-21 10:46 UTC after completing plan 20-01*
