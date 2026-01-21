@@ -6,4 +6,5 @@ export { StreakCounter } from './StreakCounter';
 export { GauntletModeScreen } from './GauntletModeScreen';
 export { GauntletGameplay } from './GauntletGameplay';
 export { AchievementProgress } from './AchievementProgress';
+export { AchievementGallery } from './AchievementGallery';
 export { AchievementToast } from './AchievementToast';
