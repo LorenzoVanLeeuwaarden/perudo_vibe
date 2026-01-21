@@ -1,469 +1,390 @@
-# Domain Pitfalls: Real-Time Multiplayer Browser Games
+# Pitfalls Research: Gauntlet Mode
 
-**Domain:** Browser-based real-time multiplayer game (Perudo/dice game)
-**Researched:** 2026-01-18
-**Confidence:** MEDIUM-HIGH (WebSearch verified with official documentation patterns)
-
-## Executive Summary
-
-Adding multiplayer to an existing single-player browser game is significantly harder than building multiplayer-first. The current Perudo codebase has 40+ useState hooks in `page.tsx` with client-side state management -- this is the #1 risk factor. The research reveals consistent patterns of failure around: (1) trusting client state, (2) poor reconnection handling, (3) room management edge cases, and (4) state synchronization timing issues.
+**Project:** Perudo - The Gauntlet
+**Researched:** 2026-01-21
+**Mode:** Ecosystem (Pitfalls Dimension)
 
 ---
 
 ## Critical Pitfalls
 
-Mistakes that cause rewrites or major issues. Address these first or pay heavily later.
-
-### Pitfall 1: Client-Side State Authority
-
-**What goes wrong:** The current game runs all logic client-side. Refactoring this to multiplayer often leads to developers keeping game logic on clients and only syncing results. Cheaters can then send fake dice rolls, fake bids, or claim wins they did not earn.
-
-**Why it happens:** It feels easier to keep existing client logic and "just add networking." The mindset is "sync state between clients" rather than "server decides, clients display."
-
-**Consequences:**
-- Cheating becomes trivial (modify JS in browser dev tools)
-- State conflicts between clients (who rolled first? whose bid counts?)
-- Race conditions when two players act simultaneously
-- "Desync" bugs where players see different game states
-
-**Prevention:**
-1. Server is the single source of truth for ALL game state
-2. Clients send only intentions/actions: `{ type: "BID", count: 5, value: 3 }`
-3. Server validates actions using `gameLogic.ts` (already extracted -- good!)
-4. Server broadcasts authoritative state to all clients
-5. Clients are "dumb terminals" that render server state
-
-**Detection (warning signs you are doing this wrong):**
-- Game logic running in React components instead of server
-- Clients generating random numbers (dice rolls)
-- Clients directly modifying shared state
-- "Player X sees different state than Player Y" bugs
-
-**Phase to address:** Phase 1 (Architecture) -- this is foundational. Cannot be deferred.
-
-**Sources:**
-- [SmartFoxServer: Security for HTML5 Games](https://smartfoxserver.com/blog/security-for-html5-games/)
-- [Gabriel Gambetta: Client-Server Game Architecture](https://www.gabrielgambetta.com/client-server-game-architecture.html)
+These mistakes cause significant rework, broken features, or abandoned functionality.
 
 ---
 
-### Pitfall 2: Refactoring Single-Player to Multiplayer (The "Convert Later" Trap)
+### 1. State Coupling Between Game Modes
 
-**What goes wrong:** The current architecture has 40+ useState hooks tightly coupled in `page.tsx`. Developers attempt to "add multiplayer" by syncing these hooks, creating a tangled mess of local state fighting with server state.
+**Risk:** Gauntlet mode logic becomes entangled with existing single-player/multiplayer code, causing bugs in both modes when either is modified.
 
-**Why it happens:** The single-player code works. The temptation is to preserve it and layer networking on top. This creates dual-authority problems where React state and server state compete.
-
-**Consequences:**
-- State conflicts: local optimistic updates vs server corrections
-- Animation timing breaks (animations tied to local state changes)
-- Complex debugging: "is this bug in local state, server state, or sync?"
-- Eventually requires full rewrite anyway
+**Warning Signs:**
+- Conditional branches like `if (gameMode === 'gauntlet')` scattered throughout existing components
+- Shared state objects (gameStore, roomState) growing with gauntlet-specific fields
+- Existing test cases start failing after gauntlet code is added
+- Multiplayer mode behaves differently after gauntlet implementation
 
 **Prevention:**
-1. Accept that multiplayer is a different architecture, not an addon
-2. Create clear separation: `ServerGameState` vs `UIState` (animations, selections)
-3. Server state flows DOWN only (server -> client, never client -> server mutations)
-4. Local UI state is purely ephemeral (hover states, animation flags, etc.)
-5. Existing `gameLogic.ts` moves to server; clients only get `types.ts`
+1. Create a separate `GauntletStore` using Zustand (similar to existing `gameStore.ts`)
+2. Isolate gauntlet game logic in dedicated files: `src/lib/gauntlet/` directory
+3. Use composition over modification - gauntlet components should wrap/reuse existing UI components rather than modifying them
+4. Existing PartyKit server (`party/index.ts`) should NOT be modified for single-player gauntlet - gauntlet runs entirely client-side
 
-**Recommended refactor approach:**
-```
-Current: page.tsx (40+ useState) -> renders game
-Target:
-  - Server: game state machine + gameLogic.ts
-  - Client: useGameConnection() hook -> renders server state
-  - UIState: only animation/interaction state (useState still okay here)
-```
-
-**Detection:**
-- Multiple sources of truth for the same data
-- `useState` holding game state that also exists on server
-- Needing to "sync" local state with server state
-- Race conditions between local and server updates
-
-**Phase to address:** Phase 1 (Architecture) -- must establish clean architecture before building features.
-
-**Sources:**
-- [Quora: Is it a good idea to start single player first?](https://www.quora.com/Is-it-a-good-idea-to-start-making-a-game-with-single-player-first-and-then-after-everything-is-ready-convert-it-into-multiplayer-Unity-5) -- consensus is "no"
-- [Lance.gg: Architecture of a Multiplayer Game](https://lance-gg.github.io/docs_out/tutorial-overview_architecture.html)
+**Phase to Address:** Phase 1 (Architecture Setup) - Define clear boundaries before any implementation
 
 ---
 
-### Pitfall 3: Naive Reconnection Handling
+### 2. Cloudflare KV Write Rate Limit (1 write/sec/key)
 
-**What goes wrong:** Player closes laptop lid, switches tabs, or has brief network hiccup. Connection drops. On reconnect, player either loses their place in the game, sees stale state, or causes the game to break for everyone.
+**Risk:** Using a single key for the leaderboard (e.g., `leaderboard:global`) causes write failures when multiple players submit scores within the same second. On free tier, this is strictly enforced.
 
-**Why it happens:** Developers test on stable localhost connections. Reconnection is treated as edge case rather than normal operation. Mobile users switch networks constantly.
-
-**Consequences:**
-- Players lose games due to technical issues (rage quit, bad reviews)
-- Zombie sessions: server thinks player is connected, they are not
-- State corruption: player rejoins mid-action
-- Full game state re-download on every reconnect (bandwidth/latency)
+**Warning Signs:**
+- Intermittent score submission failures in testing
+- Scores appearing to "not save" during high-traffic periods
+- 429 errors or similar rate limiting responses from Cloudflare
 
 **Prevention:**
-1. **Session persistence:** Store session ID in localStorage, not just WebSocket connection
-2. **Heartbeat mechanism:** Server pings clients every 10-30 seconds; client responds
-3. **Grace period:** Do not immediately remove player on disconnect (30-60 second window)
-4. **AI takeover:** If grace period expires, AI takes over (PROJECT.md already specifies this)
-5. **State recovery:** On reconnect, send only delta from last known state
-6. **Exponential backoff:** Client reconnection attempts: 1s, 2s, 4s, 8s... up to max
+1. **Buffer writes in Durable Objects**: Use PartyKit's Durable Object storage to batch leaderboard updates, then flush to KV periodically (every 5-10 seconds)
+2. **Shard the leaderboard by time**: Use keys like `leaderboard:2026-01-21:00` (hourly shards), aggregate on read
+3. **Optimistic UI**: Show score submission immediately, handle backend conflicts gracefully
+4. **Consider D1 instead of KV**: Cloudflare D1 (SQLite) has better write semantics for frequently updated data
 
-**Implementation approach for Perudo:**
-```
-Client disconnects:
-  -> Server marks player as "disconnected" (not removed)
-  -> AI takes over player's turns if needed
-  -> Grace period timer starts (60s)
+**Specific Limits (Free Tier):**
+- 1,000 writes per day to different keys
+- 1 write per second per key
+- 100,000 reads per day
 
-Client reconnects within grace period:
-  -> Validate session ID
-  -> Restore player to game
-  -> Send current game state
-  -> Resume as human player
-
-Client does not reconnect:
-  -> AI continues for remainder of game
-  -> Session can still reconnect as spectator? (out of scope per PROJECT.md)
-```
-
-**Detection:**
-- No explicit disconnect handling in code
-- Player removal happens immediately on WebSocket close
-- No session ID persistence
-- Full state sent on every reconnect
-- No heartbeat mechanism
-
-**Phase to address:** Phase 2 (Core Multiplayer) -- but architecture must support it from Phase 1.
-
-**Sources:**
-- [Socket.IO: Connection State Recovery](https://socket.io/docs/v4/connection-state-recovery)
-- [AccelByte: Lobby WebSocket Recovery](https://docs.accelbyte.io/gaming-services/knowledge-base/graceful-disruption-handling/lobby-websocket-recovery/)
+**Phase to Address:** Phase 2 (Leaderboard Implementation) - Design data model before building API
 
 ---
 
-### Pitfall 4: Room Management Edge Cases
+### 3. Score Verification Without Authentication
 
-**What goes wrong:** Multiple players try to join at once, host leaves mid-game, room fills while someone is joining, player joins just as game starts. Each edge case breaks the game in different ways.
+**Risk:** Players can trivially fake scores since there's no authentication. A curl request or browser devtools can submit any score with any nickname.
 
-**Why it happens:** Happy path testing: "Alice creates room, Bob joins, they play." Real world: "Alice creates room while Bob and Charlie race to join the last spot while Dave's connection is flaky and Eve is trying to kick Fred."
+**Warning Signs:**
+- Unrealistic scores appearing (e.g., "999 AI defeated" within minutes of launch)
+- Multiple identical nicknames with varying scores
+- Community complaints about leaderboard integrity
 
-**Consequences:**
-- Players stuck in broken rooms
-- Games starting with wrong number of players
-- Host migration failures leave room orphaned
-- Duplicate player entries
-- Room state corruption
+**Prevention:**
+1. **Server-side game replay verification**: Store move history during gauntlet run, verify on submission
+   - Each round: player dice, AI dice, bids made, outcome
+   - Server replays the game logic to verify the score is achievable
+2. **Session tokens**: Generate a server-signed token at gauntlet start, require it for submission
+3. **Rate limiting per client**: Max 1 score submission per minute per browser fingerprint
+4. **Shadow-banning over deletion**: Flag suspicious scores but don't delete - show them to the cheater only
+5. **Percentile validation**: Reject scores statistically impossible (e.g., > 99.99th percentile from day 1)
 
-**Prevention (room lifecycle state machine):**
-```
-Room States:
-  WAITING -> STARTING -> IN_GAME -> ENDED
+**What NOT to do:**
+- Don't trust any client-submitted score directly
+- Don't assume obfuscation is security
 
-Transitions:
-  - WAITING: players can join/leave, host can configure, host can start
-  - STARTING: brief lock period, validate all players ready, roll all dice
-  - IN_GAME: no join/leave (disconnect -> AI takeover)
-  - ENDED: return to WAITING for rematch, or dispose room
-```
-
-**Key edge cases to handle explicitly:**
-
-| Edge Case | Solution |
-|-----------|----------|
-| Host leaves in WAITING | Promote next player to host |
-| Host leaves in IN_GAME | Game continues, host powers transfer |
-| Player joins during STARTING | Reject with "game starting" message |
-| Room fills while joining | Race condition -- use atomic join operation |
-| Last player leaves | Dispose room after timeout |
-| Player joins twice (race) | Dedupe by session ID |
-
-**Detection:**
-- No explicit room state machine
-- Join/leave operations not atomic
-- Host leaving not handled
-- No "starting" transition state
-
-**Phase to address:** Phase 2 (Rooms & Lobby) -- but room state design is Phase 1 architecture.
-
-**Sources:**
-- [Playroom Kit: Multiplayer Edge Cases](https://docs.joinplayroom.com/blog/multiplayeredgecases)
-- [Gamedeveloper: Working with Generic Room-Based Matchmaking](https://www.gamedeveloper.com/programming/working-with-generic-room-based-matchmaking)
+**Phase to Address:** Phase 2 (Leaderboard Implementation) - Build verification into the submission endpoint
 
 ---
 
-## Moderate Pitfalls
+### 4. Endless Mode Difficulty Scaling Causing Frustration
 
-Mistakes that cause delays or technical debt. Plan for these but can address iteratively.
+**Risk:** AI difficulty escalates too fast or in frustrating ways (pure stat inflation), causing players to feel cheated rather than challenged. Research shows this is the #1 complaint in endless modes.
 
-### Pitfall 5: Turn Timing and Timeout Handling
-
-**What goes wrong:** It is Player A's turn. They walk away. Game freezes for everyone else. Or: timeout fires, but Player A was actually playing -- they just had lag.
-
-**Why it happens:** Turn-based games need timeouts, but implementing them correctly is tricky. Network latency makes "is player active?" hard to answer.
+**Warning Signs:**
+- Players consistently quitting at the same "wall" level
+- Community feedback: "AI cheats" or "impossible after round X"
+- Very few players reaching mid-game scores
+- Bimodal score distribution (lots of early exits, few mid-game)
 
 **Prevention:**
-1. Server-side turn timer (never trust client timer)
-2. Generous timeout: 60-90 seconds for Perudo (thinking time matters)
-3. Activity detection: reset timer on any client activity, not just final action
-4. Warning at 15 seconds remaining
-5. Auto-action on timeout: AI makes the move for them
+1. **Transparent difficulty progression**: Show players what's changing (e.g., "AI now bids more aggressively")
+2. **Multiple difficulty dimensions**, not just "AI gets smarter":
+   - Bluffing frequency
+   - Risk tolerance for dudo/calza calls
+   - Bid aggression
+   - Memory of player patterns
+3. **Difficulty plateaus**: Every 3-5 rounds, maintain difficulty level to give breathing room
+4. **Avoid pure stat changes**: Don't give AI more dice or better luck - keep the game mathematically fair
+5. **Playtesting milestones**: Target 50% of players reaching round 5, 25% reaching round 10, 10% reaching round 20
 
-**For Perudo specifically:**
-- On timeout: AI makes a reasonable bid or calls Dudo
-- Player retains control next turn (not permanently AI)
-- Show countdown timer to all players
-
-**Detection:**
-- Client-side timers for turns
-- No timeout handling at all
-- Timeout causes game to break
-
-**Phase to address:** Phase 2 (Core Multiplayer)
+**Phase to Address:** Phase 3 (AI Difficulty Scaling) - Design difficulty curve before implementing AI variants
 
 ---
 
-### Pitfall 6: Animation and State Sync Conflicts
+### 5. localStorage Loss of Gauntlet Progress
 
-**What goes wrong:** Server sends state update. Client is mid-animation. Animation gets interrupted, looks janky. Or animation finishes, but state has already changed again.
+**Risk:** Players lose gauntlet progress when clearing browser data, using incognito mode, or switching devices. This causes rage-quits and negative reviews.
 
-**Why it happens:** Current Perudo has extensive Framer Motion animations. Server updates are immediate; animations take time. Without coordination, they fight.
-
-**Prevention:**
-1. Separate "game state" from "presentation state"
-2. Server state updates queue, presentation consumes at animation speed
-3. Critical updates (turn change) can interrupt; visual updates (dice rolling) complete
-4. Use animation completion callbacks to signal "ready for next state"
-
-**Architecture approach:**
-```
-Server: GameState (immediate, authoritative)
-Client:
-  - GameState (synced from server)
-  - PresentationState (derived from GameState, animated)
-  - AnimationQueue (pending visual updates)
-```
-
-**For Perudo:**
-- Dice roll animation: queue until complete before showing results
-- Bid announcement: can be immediate
-- Dudo reveal: animate reveal, then update totals
-- Player elimination: complete death animation before removing from board
-
-**Detection:**
-- Animations getting cut off
-- State changes visible before animations complete
-- Jarring visual jumps
-
-**Phase to address:** Phase 3 (Polish) -- but architecture in Phase 1 must support animation queuing.
-
----
-
-### Pitfall 7: Message Ordering and Race Conditions
-
-**What goes wrong:** Player A bids, Player B calls Dudo. Messages arrive at server in wrong order. Or: two players both try to act "at the same time."
-
-**Why it happens:** WebSocket messages can arrive out of order due to network jitter. Two players on fast connections can create legitimate race conditions.
+**Warning Signs:**
+- Support requests about "lost progress"
+- Players reporting different scores on different devices
+- Scores disappearing after browser updates
 
 **Prevention:**
-1. **Sequence numbers:** Each message has incrementing sequence ID
-2. **Action validation:** Server rejects actions that do not match current game state
-3. **Turn enforcement:** Only current player's actions are accepted
-4. **Idempotent actions:** Receiving same action twice is harmless
+1. **Auto-save with explicit feedback**: Show "Progress saved" after each round
+2. **Export/import functionality**: Let players download their run state as JSON
+3. **Graceful degradation**: Detect when localStorage is unavailable (private mode), warn user upfront
+4. **Limit stored data**: localStorage has ~5MB limit per origin; store only essential state:
+   - Current streak count
+   - Player dice remaining
+   - Round number
+   - Last 3-5 rounds of history (not full game log)
+5. **Server-side checkpoints** (optional): If player wants to "save to cloud", store state in Durable Object keyed by a generated recovery code
 
-**For Perudo (turn-based, simpler than real-time):**
-- Only current player can bid/dudo/calza
-- Actions from non-current-player are rejected (not queued)
-- Sequence numbers still useful for duplicate detection
-
-**Detection:**
-- "Impossible" game states occurring
-- Actions being applied in wrong order
-- Same action being processed multiple times
-
-**Phase to address:** Phase 2 (Core Multiplayer)
-
----
-
-### Pitfall 8: Visibility and Hidden Information
-
-**What goes wrong:** Player A's dice are visible to Player B. Or: server sends all dice to all clients, trusting clients to only show their own. Cheaters inspect network traffic and see everyone's hands.
-
-**Why it happens:** It is easier to send full state to all clients. Hidden information requires per-player state filtering.
-
-**Consequences:**
-- Cheating: players can see each other's dice
-- Trust violation: even if UI hides it, data is exposed
-
-**Prevention:**
-1. Server filters state per-player before sending
-2. Each player only receives: their own dice, public info (bids, dice counts)
-3. Reveal sequence: server sends revealed dice only after Dudo is called
-4. Never send data client "should not see" even if UI hides it
-
-**Implementation for Perudo:**
+**Technical Implementation:**
 ```typescript
-// Server sends to Player A:
-{
-  myHand: [1, 3, 4, 5, 6],  // Only A's dice
-  players: [
-    { id: "A", diceCount: 5 },  // No hand visible
-    { id: "B", diceCount: 4 },
-    { id: "C", diceCount: 5 }
-  ],
-  currentBid: { count: 7, value: 3 },
-  currentPlayer: "B"
-}
-
-// After Dudo:
-{
-  revealedHands: {
-    "A": [1, 3, 4, 5, 6],
-    "B": [2, 3, 3, 5],
-    "C": [1, 1, 3, 4, 6]
+// Wrap localStorage access
+function saveGauntletState(state: GauntletState) {
+  try {
+    localStorage.setItem('gauntlet_state', JSON.stringify(state));
+  } catch (e) {
+    // QuotaExceededError or SecurityError (private mode)
+    console.warn('Could not save gauntlet state:', e);
+    // Show user warning
   }
 }
 ```
 
-**Detection:**
-- Sending full game state to all clients
-- Client-side filtering of visible data
-- Dice visible in network inspector
-
-**Phase to address:** Phase 2 (Core Multiplayer) -- must be correct from the start.
+**Phase to Address:** Phase 1 (Architecture Setup) - Design persistence strategy before implementing game loop
 
 ---
 
-## Minor Pitfalls
+## Medium Pitfalls
 
-Annoying but fixable issues.
+These cause delays, technical debt, or degraded user experience.
 
-### Pitfall 9: Socket.IO Overhead
+---
 
-**What goes wrong:** Using Socket.IO without understanding its overhead. Initial connection uses polling before upgrading to WebSocket. Extra latency on first connection.
+### 6. Achievement Unlock Timing and Feedback
+
+**Risk:** Achievements feel hollow because they unlock without ceremony, or unlock at unexpected times breaking game flow.
+
+**Warning Signs:**
+- Players don't notice they earned achievements
+- Achievement notifications interrupt critical game moments
+- Confusion about why/when an achievement was earned
 
 **Prevention:**
-- Configure Socket.IO to use WebSocket transport only: `{ transports: ['websocket'] }`
-- Or use PartyKit/Colyseus which handle this correctly
-- Or use raw WebSocket if full control needed
+1. **Queue notifications**: Don't show achievement popups during active bidding - queue for round end or game over
+2. **Contextual messaging**: "You called DUDO successfully 10 times!" not just "DUDO Master unlocked"
+3. **Visual hierarchy**: First-time achievements get fanfare; repeated views are subtle
+4. **Progress indicators**: For incremental achievements, show "7/10 DUDO calls" during run
+5. **Persist immediately**: Write achievement unlock to localStorage the moment it triggers - don't wait for game end
 
-**Phase to address:** Phase 1 (Stack Selection)
-
-**Sources:**
-- [Seangoedecke: Building multiplayer games with socket.io](https://www.seangoedecke.com/socket-io-game/)
+**Phase to Address:** Phase 4 (Achievement System) - Design notification UX before implementing triggers
 
 ---
 
-### Pitfall 10: No Rate Limiting
+### 7. Nickname Collision and Impersonation
 
-**What goes wrong:** Malicious or buggy client sends hundreds of messages per second. Server CPU spikes, game lags for everyone.
+**Risk:** Without accounts, two players can use the same nickname. This enables impersonation ("stealing" leaderboard glory) and causes confusion.
+
+**Warning Signs:**
+- Multiple entries with identical nicknames and different scores
+- Players complaining someone "stole their name"
+- Ambiguity in leaderboard about who is who
 
 **Prevention:**
-- Rate limit per client: max 10-20 messages per second for Perudo
-- Ignore excess messages (do not queue indefinitely)
-- Disconnect clients that consistently exceed limits
-- Log rate limit violations for debugging
+1. **Nickname + discriminator**: Auto-append a 4-digit number (e.g., "ProPlayer#3847")
+2. **Browser fingerprint binding**: Associate nickname with a hashed fingerprint; warn if mismatch
+3. **First-come-first-served per session**: Once someone uses "ProPlayer" today, others get "ProPlayer#2"
+4. **Optional verification**: Let players "claim" a nickname by linking an email (optional, not required)
+5. **Display recent history**: Show "ProPlayer (3 submissions today)" to indicate activity pattern
 
-**Phase to address:** Phase 3 (Hardening)
+**Phase to Address:** Phase 2 (Leaderboard Implementation) - Design nickname policy with score submission
 
 ---
 
-### Pitfall 11: Insufficient Logging for Debugging
+### 8. Breaking Existing Single-Player Mode
 
-**What goes wrong:** Production bug: "Game broke for room XYZ." No logs to understand what happened.
+**Risk:** The existing single-player mode (vs AI) shares components with multiplayer. Gauntlet modifications accidentally break this mode.
+
+**Warning Signs:**
+- Single-player games behave differently after gauntlet merge
+- AI personalities stop working correctly in original mode
+- Victory/defeat screens show gauntlet-specific content in regular games
 
 **Prevention:**
-- Log all state transitions (room state, game state)
-- Log all client messages (with timestamps)
-- Log all disconnections/reconnections
-- Structured logging (JSON) for searchability
-- Include room ID and player IDs in all logs
+1. **Feature flags**: Add `ENABLE_GAUNTLET` flag; gauntlet code is dead code when disabled
+2. **Regression tests**: Document current single-player behavior; add tests before gauntlet work
+3. **Mode-aware components**: Pass `gameMode` prop to components that need conditional rendering
+4. **Preserve existing entry points**: Don't modify `src/app/page.tsx` game start logic - add new route `/gauntlet`
 
-**Phase to address:** Phase 3 (Launch Prep)
+**Phase to Address:** Phase 1 (Architecture Setup) - Add regression tests before modifying any shared code
 
 ---
 
-### Pitfall 12: Testing Only Happy Path
+### 9. Cloudflare Free Tier Request Exhaustion
 
-**What goes wrong:** Tests cover "normal game flow." Production sees: disconnects, simultaneous actions, malformed messages, timeouts.
+**Risk:** 100K requests/day sounds like a lot, but leaderboard polling, score submissions, and achievement syncing can burn through it quickly.
+
+**Warning Signs:**
+- Leaderboard stops updating mid-day
+- 429 errors appearing in console
+- Features working in morning but failing by evening (UTC reset)
 
 **Prevention:**
-- Test disconnect during each game phase
-- Test reconnect during each game phase
-- Test simultaneous actions (race conditions)
-- Test malformed/invalid messages
-- Test room edge cases (host leave, full room, etc.)
+1. **Calculate expected usage**:
+   - If 100 players do 10 gauntlet runs/day, each run = 1 submit + 5 leaderboard polls = 6 requests
+   - 100 * 10 * 6 = 6,000 requests/day (safe)
+   - But if leaderboard auto-refreshes every 10 seconds while viewing: 1 player * 360 req/hour = big problem
+2. **Aggressive caching**: Cache leaderboard responses for 60+ seconds client-side
+3. **Manual refresh only**: Don't auto-poll leaderboard; add "Refresh" button
+4. **Batch operations**: Submit score + fetch rank in single request where possible
+5. **Monitor usage**: Add logging to track daily request count; alert at 80% threshold
 
-**Phase to address:** All phases -- test as you build.
-
----
-
-## Phase-Specific Warnings
-
-| Phase | Likely Pitfall | Mitigation |
-|-------|---------------|------------|
-| Phase 1 (Architecture) | Keeping client authority | Design server-authoritative from day 1 |
-| Phase 1 (Architecture) | Not separating game/UI state | Explicit state separation in types |
-| Phase 2 (Rooms) | Race conditions on join | Atomic room operations |
-| Phase 2 (Rooms) | Host leaving breaks game | Host migration logic |
-| Phase 2 (Game) | Dice visible to all clients | Per-player state filtering |
-| Phase 2 (Game) | Reconnect loses game state | Session persistence + grace period |
-| Phase 3 (Polish) | Animations break on updates | Animation queue system |
-| Phase 3 (Hardening) | No rate limiting | Add before launch |
+**Phase to Address:** Phase 2 (Leaderboard Implementation) - Build with caching and rate awareness from start
 
 ---
 
-## Perudo-Specific Considerations
+### 10. Dice Carryover Bug: Negative or Zero Dice Edge Cases
 
-Given the existing codebase analysis:
+**Risk:** Gauntlet's "dice carry over" mechanic (no healing between rounds) creates edge cases when player has 0 dice, triggering crashes or undefined behavior.
 
-**Existing strengths:**
-- `gameLogic.ts` is already separated from UI -- can move to server
-- `types.ts` defines clean data structures
-- Turn-based game simpler than real-time action
+**Warning Signs:**
+- Crash when starting new AI opponent with 0 player dice
+- Game continues with invisible/zero dice
+- AI behavior breaks when player has 1 die (palifico edge case)
 
-**Existing risks:**
-- 40+ useState hooks in `page.tsx` -- high refactor complexity
-- Animations tightly coupled to state changes
-- All random (dice rolls) happens client-side
+**Prevention:**
+1. **Explicit game-over check**: After each round, `if (playerDice <= 0) endGauntlet()`
+2. **Minimum dice validation**: Never allow negative dice; clamp to 0
+3. **Palifico handling**: Decide upfront if palifico rules apply in gauntlet (probably not - it's 1v1)
+4. **Unit tests for edge cases**:
+   - Player loses last die
+   - Player wins with exactly 1 die
+   - AI has 1 die (would trigger palifico in normal rules)
 
-**Recommended architecture for Perudo multiplayer:**
-
-```
-Server (PartyKit or similar):
-├── RoomState (players, host, settings, status)
-├── GameState (hands, bids, current player, round)
-├── gameLogic.ts (validation, AI, game rules)
-└── Event handlers (join, leave, bid, dudo, etc.)
-
-Client (Next.js):
-├── useRoom() hook (connection, room state)
-├── useGame() hook (game state, my hand only)
-├── UIState (animations, selections, hover)
-└── Components (mostly unchanged, but read from hooks)
-```
+**Phase to Address:** Phase 3 (Game Loop Implementation) - Add edge case tests with game logic
 
 ---
 
-## Sources Summary
+## Low Pitfalls
 
-**Architecture & Security:**
-- [Gabriel Gambetta: Client-Server Game Architecture](https://www.gabrielgambetta.com/client-server-game-architecture.html) - HIGH confidence
-- [SmartFoxServer: Security for HTML5 Games](https://smartfoxserver.com/blog/security-for-html5-games/) - HIGH confidence
-- [Genieee: Top Security Risks in HTML5 Multiplayer Games](https://genieee.com/top-security-risks-in-html5-multiplayer-games-and-how-to-fix-them/) - MEDIUM confidence
+These cause minor friction or are easily recoverable.
 
-**State Synchronization:**
-- [Socket.IO: Connection State Recovery](https://socket.io/docs/v4/connection-state-recovery) - HIGH confidence
-- [Pusher: WebSockets in Realtime Gaming](https://pusher.com/blog/websockets-realtime-gaming-low-latency/) - MEDIUM confidence
-- [Medium: Making a multiplayer web game scalable](https://medium.com/@dragonblade9x/making-a-multiplayer-web-game-with-websocket-that-can-be-scalable-to-millions-of-users-923cc8bd4d3b) - MEDIUM confidence
+---
 
-**Room Management:**
-- [Playroom Kit: Multiplayer Edge Cases](https://docs.joinplayroom.com/blog/multiplayeredgecases) - HIGH confidence
-- [Gamedeveloper: Working with Generic Room-Based Matchmaking](https://www.gamedeveloper.com/programming/working-with-generic-room-based-matchmaking) - MEDIUM confidence
+### 11. Achievement Progress Reset on Browser Clear
 
-**Reconnection:**
-- [AccelByte: Lobby WebSocket Recovery](https://docs.accelbyte.io/gaming-services/knowledge-base/graceful-disruption-handling/lobby-websocket-recovery/) - HIGH confidence
-- [Ably: WebSocket Architecture Best Practices](https://ably.com/topic/websocket-architecture-best-practices) - MEDIUM confidence
+**Risk:** Players lose achievement progress when clearing localStorage, which is less frustrating than losing a gauntlet run but still annoying.
 
-**Turn-Based Games:**
-- [LinkedIn: Best Practices for Synchronizing Networks in Turn-Based Games](https://www.linkedin.com/advice/0/what-best-practices-synchronizing-networks-turn-based-7yg3e) - MEDIUM confidence
+**Warning Signs:**
+- Players asking "how do I get my achievements back?"
+- Achievement counts reset to 0 unexpectedly
+
+**Prevention:**
+1. **Separate storage**: Store achievements in IndexedDB (more persistent) rather than localStorage
+2. **Achievement export**: Include achievements in the export/import feature
+3. **Re-earning notification**: "Welcome back! Some achievements may need to be re-earned"
+4. **Cumulative achievements server-side**: If score is on leaderboard, certain achievements are provable
+
+**Phase to Address:** Phase 4 (Achievement System) - Design storage strategy with achievements
+
+---
+
+### 12. Leaderboard UI Performance with Large Data
+
+**Risk:** Loading 1000+ leaderboard entries causes UI jank on mobile devices.
+
+**Warning Signs:**
+- Leaderboard page takes >2 seconds to render
+- Scrolling through leaderboard is choppy
+- Mobile devices freeze briefly when opening leaderboard
+
+**Prevention:**
+1. **Pagination**: Only load top 100, add "Load more" button
+2. **Virtual scrolling**: If showing large lists, use virtualized list (react-window or similar)
+3. **Server-side limit**: API returns max 100 entries per request
+4. **Minimal data transfer**: Only send nickname, score, rank - not full game history
+
+**Phase to Address:** Phase 2 (Leaderboard Implementation) - Design API with pagination from start
+
+---
+
+### 13. Time Zone Confusion for Daily/Weekly Leaderboards
+
+**Risk:** If implementing daily/weekly leaderboards, players get confused about reset times.
+
+**Warning Signs:**
+- "Why did my score reset? It's still Tuesday for me!"
+- Complaints about unfair advantage for certain time zones
+
+**Prevention:**
+1. **Always use UTC**: Reset at midnight UTC, display countdown
+2. **Show reset timer**: "Resets in 5h 23m"
+3. **Document clearly**: "All times are UTC"
+4. **Consider rolling windows**: "Last 24 hours" instead of "today" avoids hard resets
+
+**Phase to Address:** Phase 2 (Leaderboard Implementation) - Define time semantics before building
+
+---
+
+### 14. Missing Offline State Handling
+
+**Risk:** If player loses internet mid-gauntlet, the game may behave unexpectedly.
+
+**Warning Signs:**
+- Leaderboard submission silently fails
+- Player thinks score saved but it didn't
+- Game freezes waiting for network response
+
+**Prevention:**
+1. **Offline-first for gameplay**: Gauntlet runs entirely client-side; network only needed for leaderboard
+2. **Queue submissions**: If offline, store score locally; submit when back online
+3. **Clear feedback**: "You're offline. Score will submit when connected."
+4. **Timeout handling**: Don't hang on network requests; fail after 5 seconds with retry option
+
+**Phase to Address:** Phase 2 (Leaderboard Implementation) - Build submission with offline awareness
+
+---
+
+## Phase-Specific Warning Summary
+
+| Phase | Likely Pitfalls | Mitigation Focus |
+|-------|----------------|------------------|
+| Phase 1: Architecture | State coupling, localStorage loss, breaking existing mode | Clear boundaries, feature flags, regression tests |
+| Phase 2: Leaderboard | KV write limits, score verification, request exhaustion, nickname collision | Buffered writes, server validation, caching, discriminators |
+| Phase 3: Game Loop | Difficulty scaling frustration, dice edge cases | Transparent progression, thorough edge case testing |
+| Phase 4: Achievements | Unlock timing, progress reset | Queued notifications, separate storage |
+
+---
+
+## Confidence: MEDIUM
+
+**Reasoning:**
+- HIGH confidence on Cloudflare limits (verified from official documentation)
+- HIGH confidence on state coupling patterns (based on examining existing codebase)
+- MEDIUM confidence on difficulty scaling (based on game design patterns, not Perudo-specific data)
+- MEDIUM confidence on anti-cheat approaches (general best practices, not verified implementations)
+
+---
+
+## Sources
+
+### Cloudflare/Infrastructure
+- [Cloudflare Workers KV Limits](https://developers.cloudflare.com/kv/platform/limits/) - Official documentation
+- [Cloudflare Workers Limits](https://developers.cloudflare.com/workers/platform/limits/) - Free tier: 100K req/day
+- [How KV Works](https://developers.cloudflare.com/kv/concepts/how-kv-works/) - Eventual consistency caveats
+- [PartyKit Documentation](https://docs.partykit.io/how-partykit-works/) - Durable Object patterns
+- [Using Multiple Parties](https://docs.partykit.io/guides/using-multiple-parties-per-project/) - Mode separation strategy
+
+### Game Design
+- [GameDev.net: Infinite Metagame Pacing](https://www.gamedev.net/blogs/entry/2294544-how-to-set-up-pacing-difficulty-and-progression-within-an-infinite-metagame/) - Difficulty scaling patterns
+- [Ziggurat Endless Mode Discussions](https://steamcommunity.com/app/308420/discussions/0/613941122598105082/) - Player feedback on scaling
+- [Gauntlet Endless Mode Feedback](https://steamcommunity.com/app/258970/discussions/0/530649887199657962/) - Difficulty wall complaints
+- [Achievement Design 101](https://www.gamedeveloper.com/design/achievement-design-101) - Achievement timing/feedback
+
+### Leaderboard Architecture
+- [Real-Time Gaming Leaderboard Design](https://blog.algomaster.io/p/design-real-time-gaming-leaderboard) - System design patterns
+- [Designing a Leaderboard System](https://beamable.com/blog/designing-a-leaderboard-system) - Implementation considerations
+- [Leaderboard System Design](https://systemdesign.one/leaderboard-system-design/) - Scalability patterns
+
+### State Management
+- [Game State Management Patterns](https://gameprogrammingpatterns.com/state.html) - State pattern for game modes
+- [State Pattern for Games](https://betterprogramming.pub/design-patterns-for-games-state-pattern-97519e0b9165) - Mode separation
+- [Multiplayer State Machine with Durable Objects](https://www.astahmer.dev/posts/multiplayer-state-machine-with-durable-objects) - PartyKit patterns
+
+### Browser Storage
+- [MDN: Storage Quotas](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria) - localStorage limits
+- [localStorage Complete Guide](https://www.meticulous.ai/blog/localstorage-complete-guide) - Error handling patterns
+
+### Refactoring
+- [Refactoring.com](https://refactoring.com/) - Adding features to existing codebases
+- [Code Refactoring Best Practices](https://www.codesee.io/learning-center/code-refactoring) - Avoiding big bang rewrites
