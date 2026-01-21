@@ -5,5 +5,14 @@
   "parties": {
     "leaderboard": "party/leaderboard.ts"
   },
-  "compatibilityDate": "2024-01-01"
+  "compatibilityDate": "2024-01-01",
+  "bindings": {
+    "d1Databases": [
+      {
+        "binding": "gauntlet_leaderboard",
+        "databaseName": "gauntlet-leaderboard",
+        "databaseId": "118b7a4f-6f1f-483c-b9ae-cedbb1cba65a"
+      }
+    ]
+  }
 }
