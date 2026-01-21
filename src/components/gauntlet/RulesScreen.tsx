@@ -1,16 +1,18 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface RulesScreenProps {
   onEnter: () => void;
+  onBack: () => void;
   playerColor: PlayerColor;
 }
 
-export function RulesScreen({ onEnter, playerColor }: RulesScreenProps) {
+export function RulesScreen({ onEnter, onBack, playerColor }: RulesScreenProps) {
   const colorConfig = PLAYER_COLORS[playerColor];
   const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
@@ -49,6 +51,25 @@ export function RulesScreen({ onEnter, playerColor }: RulesScreenProps) {
         }}
         transition={useSimplifiedAnimations ? undefined : { duration: 10, repeat: Infinity, ease: 'linear' }}
       />
+
+      {/* Back button */}
+      <motion.button
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        whileHover={{ scale: 1.1, x: -5 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onBack}
+        className="absolute top-8 left-8 z-20 flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
+        style={{
+          background: 'rgba(0, 0, 0, 0.4)',
+          border: '2px solid rgba(255, 255, 255, 0.2)',
+          color: '#ffffff',
+        }}
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="text-sm font-medium uppercase tracking-wide">Back</span>
+      </motion.button>
 
       {/* Content container */}
       <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">

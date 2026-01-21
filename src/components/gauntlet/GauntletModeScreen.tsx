@@ -63,6 +63,7 @@ export function GauntletModeScreen({ playerColor, onExit }: GauntletModeScreenPr
           >
             <RulesScreen
               onEnter={handleEnterGauntlet}
+              onBack={onExit}
               playerColor={playerColor}
             />
           </motion.div>

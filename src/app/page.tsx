@@ -1596,7 +1596,7 @@ export default function FaroleoGame() {
       )}
 
       {/* Dice count display - fixed at top (only for non-Bidding game states) */}
-      {gameState !== 'ModeSelection' && gameState !== 'Lobby' && gameState !== 'Bidding' && (
+      {gameState !== 'ModeSelection' && gameState !== 'Lobby' && gameState !== 'Bidding' && gameState !== 'Gauntlet' && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
