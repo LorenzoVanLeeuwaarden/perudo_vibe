@@ -9,6 +9,7 @@ import { VictorySplash } from './VictorySplash';
 import { GameOverScreen } from './GameOverScreen';
 import { GauntletGameplay } from './GauntletGameplay';
 import { AchievementToast } from './AchievementToast';
+import { AchievementGallery } from './AchievementGallery';
 
 interface GauntletModeScreenProps {
   playerColor: PlayerColor;
@@ -30,6 +31,8 @@ export function GauntletModeScreen({ playerColor, onExit }: GauntletModeScreenPr
   const restartGauntlet = useGauntletStore((state) => state.restartGauntlet);
   const pendingAchievement = useGauntletStore((state) => state.pendingAchievement);
   const clearPendingAchievement = useGauntletStore((state) => state.clearPendingAchievement);
+  const showAchievements = useGauntletStore((state) => state.showAchievements);
+  const hideAchievements = useGauntletStore((state) => state.hideAchievements);
 
   // Screen transition handlers
   const handleEnterGauntlet = () => {
@@ -67,6 +70,7 @@ export function GauntletModeScreen({ playerColor, onExit }: GauntletModeScreenPr
             <RulesScreen
               onEnter={handleEnterGauntlet}
               onBack={onExit}
+              onShowAchievements={showAchievements}
               playerColor={playerColor}
             />
           </motion.div>
@@ -139,6 +143,18 @@ export function GauntletModeScreen({ playerColor, onExit }: GauntletModeScreenPr
               onRestart={handleRestart}
               onExit={handleExit}
             />
+          </motion.div>
+        )}
+
+        {screen === 'achievements' && (
+          <motion.div
+            key="achievements"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            transition={{ duration: 0.4 }}
+          >
+            <AchievementGallery onBack={hideAchievements} />
           </motion.div>
         )}
       </AnimatePresence>

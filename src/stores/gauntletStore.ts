@@ -32,7 +32,7 @@ const AI_NAMES = [
   'Conde Cubiletes',
 ];
 
-type ScreenState = 'rules' | 'fightCard' | 'gameplay' | 'victory' | 'gameOver' | 'leaderboard';
+type ScreenState = 'rules' | 'fightCard' | 'gameplay' | 'victory' | 'gameOver' | 'leaderboard' | 'achievements';
 type DifficultyTier = 'Easy' | 'Medium' | 'Hard';
 
 interface GauntletState {
@@ -71,6 +71,8 @@ interface GauntletState {
   checkPersonalBest: () => boolean;
   showLeaderboard: () => void;
   hideLeaderboard: () => void;
+  showAchievements: () => void;
+  hideAchievements: () => void;
   setScoreSubmitted: () => void;
   setPendingAchievement: (achievement: Achievement | null) => void;
   clearPendingAchievement: () => void;
@@ -258,6 +260,14 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
 
   hideLeaderboard: () => {
     set({ screen: 'gameOver' });
+  },
+
+  showAchievements: () => {
+    set({ screen: 'achievements' });
+  },
+
+  hideAchievements: () => {
+    set({ screen: 'rules' });
   },
 
   setScoreSubmitted: () => {

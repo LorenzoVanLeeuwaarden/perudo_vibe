@@ -90,10 +90,7 @@ export function AchievementGallery({ onBack }: AchievementGalleryProps) {
               <HelpCircle className="w-6 h-6 text-gray-500" />
             ) : (
               <Icon
-                className="w-6 h-6"
-                style={{
-                  color: unlocked ? '#ffffff' : '#6b7280',
-                }}
+                className={`w-6 h-6 ${unlocked ? 'text-white' : 'text-gray-500'}`}
               />
             )}
           </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trophy } from 'lucide-react';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -9,10 +9,11 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 interface RulesScreenProps {
   onEnter: () => void;
   onBack: () => void;
+  onShowAchievements: () => void;
   playerColor: PlayerColor;
 }
 
-export function RulesScreen({ onEnter, onBack, playerColor }: RulesScreenProps) {
+export function RulesScreen({ onEnter, onBack, onShowAchievements, playerColor }: RulesScreenProps) {
   const colorConfig = PLAYER_COLORS[playerColor];
   const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
@@ -21,7 +22,6 @@ export function RulesScreen({ onEnter, onBack, playerColor }: RulesScreenProps) 
   const rules = [
     'Your dice carry over between duels - no healing',
     'Each opponent starts fresh with 5 dice',
-    'Difficulty escalates: Turtle → Calculator → Shark',
   ];
 
   return (
@@ -51,6 +51,85 @@ export function RulesScreen({ onEnter, onBack, playerColor }: RulesScreenProps) 
         }}
         transition={useSimplifiedAnimations ? undefined : { duration: 10, repeat: Infinity, ease: 'linear' }}
       />
+
+      {/* Crossed Pixelated Swords */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Sword 1 - from bottom-left to upper-right */}
+        <svg
+          className="absolute"
+          style={{
+            width: '450px',
+            height: '450px',
+            left: 'calc(50% - 60px)',
+            top: '50%',
+            transform: 'translate(-50%, -50%) rotate(45deg)',
+            opacity: 0.2,
+            filter: 'drop-shadow(0 0 20px rgba(255, 68, 68, 0.6))',
+          }}
+          viewBox="0 0 64 64"
+          fill="none"
+        >
+          {/* Blade */}
+          <rect x="30" y="4" width="4" height="4" fill="#e0e0e0" />
+          <rect x="30" y="8" width="4" height="4" fill="#c0c0c0" />
+          <rect x="30" y="12" width="4" height="4" fill="#e0e0e0" />
+          <rect x="30" y="16" width="4" height="4" fill="#c0c0c0" />
+          <rect x="30" y="20" width="4" height="4" fill="#e0e0e0" />
+          <rect x="30" y="24" width="4" height="4" fill="#c0c0c0" />
+          <rect x="30" y="28" width="4" height="4" fill="#e0e0e0" />
+          <rect x="30" y="32" width="4" height="4" fill="#c0c0c0" />
+          {/* Crossguard */}
+          <rect x="22" y="36" width="4" height="4" fill="#ffd700" />
+          <rect x="26" y="36" width="4" height="4" fill="#ffec8b" />
+          <rect x="30" y="36" width="4" height="4" fill="#ffd700" />
+          <rect x="34" y="36" width="4" height="4" fill="#ffec8b" />
+          <rect x="38" y="36" width="4" height="4" fill="#ffd700" />
+          {/* Handle */}
+          <rect x="30" y="40" width="4" height="4" fill="#8b4513" />
+          <rect x="30" y="44" width="4" height="4" fill="#654321" />
+          <rect x="30" y="48" width="4" height="4" fill="#8b4513" />
+          {/* Pommel */}
+          <rect x="30" y="52" width="4" height="4" fill="#ffd700" />
+        </svg>
+
+        {/* Sword 2 - from bottom-right to upper-left */}
+        <svg
+          className="absolute"
+          style={{
+            width: '450px',
+            height: '450px',
+            left: 'calc(50% + 60px)',
+            top: '50%',
+            transform: 'translate(-50%, -50%) rotate(-45deg)',
+            opacity: 0.2,
+            filter: 'drop-shadow(0 0 20px rgba(255, 68, 68, 0.6))',
+          }}
+          viewBox="0 0 64 64"
+          fill="none"
+        >
+          {/* Blade */}
+          <rect x="30" y="4" width="4" height="4" fill="#e0e0e0" />
+          <rect x="30" y="8" width="4" height="4" fill="#c0c0c0" />
+          <rect x="30" y="12" width="4" height="4" fill="#e0e0e0" />
+          <rect x="30" y="16" width="4" height="4" fill="#c0c0c0" />
+          <rect x="30" y="20" width="4" height="4" fill="#e0e0e0" />
+          <rect x="30" y="24" width="4" height="4" fill="#c0c0c0" />
+          <rect x="30" y="28" width="4" height="4" fill="#e0e0e0" />
+          <rect x="30" y="32" width="4" height="4" fill="#c0c0c0" />
+          {/* Crossguard */}
+          <rect x="22" y="36" width="4" height="4" fill="#ffd700" />
+          <rect x="26" y="36" width="4" height="4" fill="#ffec8b" />
+          <rect x="30" y="36" width="4" height="4" fill="#ffd700" />
+          <rect x="34" y="36" width="4" height="4" fill="#ffec8b" />
+          <rect x="38" y="36" width="4" height="4" fill="#ffd700" />
+          {/* Handle */}
+          <rect x="30" y="40" width="4" height="4" fill="#8b4513" />
+          <rect x="30" y="44" width="4" height="4" fill="#654321" />
+          <rect x="30" y="48" width="4" height="4" fill="#8b4513" />
+          {/* Pommel */}
+          <rect x="30" y="52" width="4" height="4" fill="#ffd700" />
+        </svg>
+      </div>
 
       {/* Back button */}
       <motion.button
@@ -154,6 +233,25 @@ export function RulesScreen({ onEnter, onBack, playerColor }: RulesScreenProps) 
         >
           Only the strongest will survive...
         </motion.p>
+
+        {/* Achievements button */}
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.8, duration: 0.5 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onShowAchievements}
+          className="mt-8 flex items-center gap-2 px-6 py-3 rounded-xl transition-colors mx-auto"
+          style={{
+            background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%)',
+            border: '2px solid rgba(251, 191, 36, 0.4)',
+            boxShadow: '0 4px 0 0 rgba(217, 119, 6, 0.3)',
+          }}
+        >
+          <Trophy className="w-5 h-5 text-amber-400" />
+          <span className="text-amber-200 font-semibold">Achievements</span>
+        </motion.button>
       </div>
     </motion.div>
   );
