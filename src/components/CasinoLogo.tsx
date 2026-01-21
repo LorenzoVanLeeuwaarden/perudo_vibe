@@ -25,13 +25,12 @@ function lerp(a: number, b: number, t: number): number {
 
 function generateColorConfig(hue: number, sat: number, light: number) {
   const bg = `hsl(${hue}, ${sat}%, ${light}%)`;
-  const bgSolid = `hsl(${hue}, ${sat}%, ${light}%)`; // Fully opaque
   const border = `hsl(${hue}, ${sat}%, ${light + 15}%)`;
   const shadow = `hsl(${hue}, ${sat}%, ${light - 20}%)`;
   const glow = `hsla(${hue}, ${sat}%, ${light}%, 0.6)`;
   const dark = `hsl(${hue}, ${sat}%, ${light - 25}%)`;
   const darker = `hsl(${hue}, ${sat}%, ${light - 35}%)`;
-  return { bg, bgSolid, border, shadow, glow, dark, darker };
+  return { bg, border, shadow, glow, dark, darker };
 }
 
 // Dot positions for each die face
@@ -68,10 +67,9 @@ export function CasinoLogo({ color }: CasinoLogoProps = {}) {
       return;
     }
 
-    // Don't skip color cycling for reduced motion - just skip the die rotation
     let animationFrame: number;
     let startTime: number | null = null;
-    const cycleDuration = 10000; // 10 seconds for full cycle
+    const cycleDuration = 10000;
 
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
@@ -106,22 +104,22 @@ export function CasinoLogo({ color }: CasinoLogoProps = {}) {
     return () => cancelAnimationFrame(animationFrame);
   }, [fixedColorConfig]);
 
-  // Die face component - renders inline to access colorConfig
+  // Die face component - sharp edges, no rounded corners
   const renderFace = (dots: number, faceStyle: React.CSSProperties) => (
     <div
-      className="absolute rounded-xl flex items-center justify-center"
+      className="absolute flex items-center justify-center"
       style={{
-        width: '120px',
-        height: '120px',
+        width: '100px',
+        height: '100px',
         ...faceStyle,
         backfaceVisibility: 'hidden',
         WebkitBackfaceVisibility: 'hidden',
         background: colorConfig.bg,
-        border: `3px solid ${colorConfig.border}`,
-        boxShadow: `inset 0 0 30px ${colorConfig.darker}`,
+        border: `2px solid ${colorConfig.border}`,
+        boxShadow: `inset 0 0 20px ${colorConfig.darker}`,
       }}
     >
-      <svg viewBox="0 0 100 100" className="w-[85%] h-[85%]">
+      <svg viewBox="0 0 100 100" className="w-[80%] h-[80%]">
         {DOT_POSITIONS[dots]?.map(([cx, cy], i) => (
           <circle
             key={i}
@@ -135,144 +133,177 @@ export function CasinoLogo({ color }: CasinoLogoProps = {}) {
     </div>
   );
 
-  const dieSize = 120;
+  const dieSize = 100;
   const halfSize = dieSize / 2;
+  const circleSize = 200; // Circle around the die
 
   return (
-    <div className="relative flex flex-col items-center gap-6">
+    <div className="relative flex flex-col items-center">
       {/* Glow background */}
       <motion.div
-        className="absolute inset-0 blur-3xl opacity-50"
+        className="absolute inset-0 blur-3xl opacity-40"
         style={{ background: colorConfig.glow }}
       />
 
-      {/* "THE" text - small above */}
+      {/* Main emblem container */}
       <motion.div
         className="relative z-10"
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: 'spring', duration: 1, bounce: 0.3 }}
+      >
+        {/* SVG with curved text and circle */}
+        <svg
+          width={circleSize + 80}
+          height={circleSize + 80}
+          viewBox={`0 0 ${circleSize + 80} ${circleSize + 80}`}
+          className="overflow-visible"
+        >
+          {/* Definitions for text paths */}
+          <defs>
+            {/* Top arc for "LAST" */}
+            <path
+              id="topArc"
+              d={`M ${(circleSize + 80) / 2 - 80} ${(circleSize + 80) / 2}
+                  A 80 80 0 0 1 ${(circleSize + 80) / 2 + 80} ${(circleSize + 80) / 2}`}
+              fill="none"
+            />
+            {/* Bottom arc for "DIE" */}
+            <path
+              id="bottomArc"
+              d={`M ${(circleSize + 80) / 2 + 70} ${(circleSize + 80) / 2 + 10}
+                  A 80 80 0 0 1 ${(circleSize + 80) / 2 - 70} ${(circleSize + 80) / 2 + 10}`}
+              fill="none"
+            />
+          </defs>
+
+          {/* Outer circle */}
+          <circle
+            cx={(circleSize + 80) / 2}
+            cy={(circleSize + 80) / 2}
+            r={circleSize / 2 + 10}
+            fill="none"
+            stroke={colorConfig.border}
+            strokeWidth="3"
+            style={{
+              filter: `drop-shadow(0 0 10px ${colorConfig.glow})`,
+            }}
+          />
+
+          {/* Inner glow circle */}
+          <circle
+            cx={(circleSize + 80) / 2}
+            cy={(circleSize + 80) / 2}
+            r={circleSize / 2 + 5}
+            fill="none"
+            stroke={colorConfig.glow}
+            strokeWidth="1"
+            opacity="0.5"
+          />
+
+          {/* "LAST" curved text at top */}
+          <text
+            fill={colorConfig.bg}
+            style={{
+              fontSize: '28px',
+              fontWeight: 900,
+              letterSpacing: '0.15em',
+              filter: `drop-shadow(0 0 10px ${colorConfig.glow})`,
+            }}
+          >
+            <textPath
+              href="#topArc"
+              startOffset="50%"
+              textAnchor="middle"
+            >
+              LAST
+            </textPath>
+          </text>
+
+          {/* "DIE" curved text at bottom */}
+          <text
+            fill={colorConfig.bg}
+            style={{
+              fontSize: '28px',
+              fontWeight: 900,
+              letterSpacing: '0.2em',
+              filter: `drop-shadow(0 0 10px ${colorConfig.glow})`,
+            }}
+          >
+            <textPath
+              href="#bottomArc"
+              startOffset="50%"
+              textAnchor="middle"
+            >
+              DIE
+            </textPath>
+          </text>
+        </svg>
+
+        {/* 3D Die centered in the circle */}
+        <div
+          className="absolute"
+          style={{
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            perspective: '600px',
+            perspectiveOrigin: 'center center',
+          }}
+        >
+          <div
+            className={prefersReducedMotion ? '' : 'animate-spin-die'}
+            style={{
+              width: `${dieSize}px`,
+              height: `${dieSize}px`,
+              position: 'relative',
+              transformStyle: 'preserve-3d',
+              transform: prefersReducedMotion ? 'rotateX(-20deg) rotateY(45deg)' : undefined,
+            }}
+          >
+            {/* Front face - 1 */}
+            {renderFace(1, { transform: `translateZ(${halfSize}px)` })}
+            {/* Back face - 6 */}
+            {renderFace(6, { transform: `rotateY(180deg) translateZ(${halfSize}px)` })}
+            {/* Right face - 3 */}
+            {renderFace(3, { transform: `rotateY(90deg) translateZ(${halfSize}px)` })}
+            {/* Left face - 4 */}
+            {renderFace(4, { transform: `rotateY(-90deg) translateZ(${halfSize}px)` })}
+            {/* Top face - 2 */}
+            {renderFace(2, { transform: `rotateX(90deg) translateZ(${halfSize}px)` })}
+            {/* Bottom face - 5 */}
+            {renderFace(5, { transform: `rotateX(-90deg) translateZ(${halfSize}px)` })}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* "THE" text above */}
+      <motion.div
+        className="relative z-10 -mb-4 -mt-2"
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: 0.3 }}
       >
         <span
-          className="text-xl md:text-2xl font-bold tracking-[0.4em] uppercase"
+          className="text-lg font-bold tracking-[0.5em] uppercase"
           style={{
             color: colorConfig.border,
-            textShadow: `0 0 20px ${colorConfig.glow}`,
+            textShadow: `0 0 15px ${colorConfig.glow}`,
           }}
         >
           THE
         </span>
       </motion.div>
 
-      {/* Big 3D Die - Central Focus */}
-      <motion.div
-        className="relative z-10"
-        initial={{ scale: 0, rotateZ: -180 }}
-        animate={{ scale: 1, rotateZ: 0 }}
-        transition={{ type: 'spring', duration: 0.8, bounce: 0.3 }}
-        style={{
-          perspective: '800px',
-          perspectiveOrigin: 'center center',
-        }}
-      >
-        <div
-          className={prefersReducedMotion ? '' : 'animate-spin-die'}
-          style={{
-            width: `${dieSize}px`,
-            height: `${dieSize}px`,
-            position: 'relative',
-            transformStyle: 'preserve-3d',
-            transform: prefersReducedMotion ? 'rotateX(-15deg) rotateY(45deg)' : undefined,
-          }}
-        >
-          {/* Front face - 1 */}
-          {renderFace(1, { transform: `translateZ(${halfSize}px)` })}
-          {/* Back face - 6 */}
-          {renderFace(6, { transform: `rotateY(180deg) translateZ(${halfSize}px)` })}
-          {/* Right face - 3 */}
-          {renderFace(3, { transform: `rotateY(90deg) translateZ(${halfSize}px)` })}
-          {/* Left face - 4 */}
-          {renderFace(4, { transform: `rotateY(-90deg) translateZ(${halfSize}px)` })}
-          {/* Top face - 2 */}
-          {renderFace(2, { transform: `rotateX(90deg) translateZ(${halfSize}px)` })}
-          {/* Bottom face - 5 */}
-          {renderFace(5, { transform: `rotateX(-90deg) translateZ(${halfSize}px)` })}
-        </div>
-      </motion.div>
-
-      {/* "LAST" text */}
-      <motion.div
-        className="relative z-10 -mt-2"
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.3, type: 'spring' }}
-      >
-        <h1
-          className="text-5xl md:text-6xl font-black tracking-tight"
-          style={{
-            color: colorConfig.bg,
-            textShadow: `
-              0 0 10px ${colorConfig.glow},
-              0 0 30px ${colorConfig.glow},
-              0 4px 0 ${colorConfig.shadow}
-            `,
-            WebkitTextStroke: `1px ${colorConfig.border}`,
-          }}
-        >
-          LAST
-        </h1>
-      </motion.div>
-
-      {/* "DIE" text - emphasized */}
-      <motion.div
-        className="relative z-10 -mt-4"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <h2
-          className="text-7xl md:text-8xl font-black tracking-wider"
-          style={{
-            color: colorConfig.bg,
-            textShadow: `
-              0 0 20px ${colorConfig.glow},
-              0 0 40px ${colorConfig.glow},
-              0 0 60px ${colorConfig.glow},
-              0 5px 0 ${colorConfig.shadow},
-              0 8px 0 ${colorConfig.dark}
-            `,
-            WebkitTextStroke: `2px ${colorConfig.border}`,
-          }}
-        >
-          DIE
-        </h2>
-      </motion.div>
-
       {/* Subtitle */}
       <motion.p
-        className="text-sm text-white-soft/60 tracking-widest uppercase"
+        className="text-xs text-white-soft/50 tracking-widest uppercase mt-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.7 }}
+        transition={{ delay: 0.5 }}
       >
         Liar&apos;s Dice
       </motion.p>
-
-      {/* Decorative line */}
-      <motion.div
-        className="flex items-center gap-3"
-        initial={{ opacity: 0, scaleX: 0 }}
-        animate={{ opacity: 1, scaleX: 1 }}
-        transition={{ delay: 0.8 }}
-      >
-        <div className="h-px w-16 md:w-20" style={{ background: colorConfig.border }} />
-        <div
-          className="w-2 h-2 rotate-45"
-          style={{ background: colorConfig.bg, boxShadow: `0 0 10px ${colorConfig.glow}` }}
-        />
-        <div className="h-px w-16 md:w-20" style={{ background: colorConfig.border }} />
-      </motion.div>
-
     </div>
   );
 }
