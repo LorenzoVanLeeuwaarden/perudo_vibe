@@ -52,7 +52,7 @@ export function GauntletModeScreen({ playerColor, onExit }: GauntletModeScreenPr
   return (
     <div className="relative w-full h-full">
       {/* Screen flow with AnimatePresence transitions */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {screen === 'rules' && (
           <motion.div
             key="rules"
@@ -89,11 +89,12 @@ export function GauntletModeScreen({ playerColor, onExit }: GauntletModeScreenPr
 
         {screen === 'gameplay' && currentOpponentName && currentPersonalityId && (
           <motion.div
-            key="gameplay"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            transition={{ duration: 0.4 }}
+            key={`gameplay-${currentRound}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0"
           >
             <GauntletGameplay
               playerColor={playerColor}
