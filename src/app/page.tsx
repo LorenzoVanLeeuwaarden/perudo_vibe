@@ -248,6 +248,11 @@ export default function FaroleoGame() {
     router.push(`/room/${roomCode}`);
   }, [setPreferredMode, router]);
 
+  const handleSelectGauntlet = useCallback(() => {
+    // TODO: Wire up gauntlet flow in plan 03
+    console.log('Gauntlet mode selected - coming soon');
+  }, []);
+
   // Calculate total dice
   const totalDice = playerDiceCount + opponents.reduce((sum, o) => sum + o.diceCount, 0);
   const colorConfig = PLAYER_COLORS[playerColor];
@@ -1642,6 +1647,7 @@ export default function FaroleoGame() {
               <ModeSelection
                 onSelectAI={handleSelectAI}
                 onSelectMultiplayer={handleSelectMultiplayer}
+                onSelectGauntlet={handleSelectGauntlet}
                 playerColor={playerColor}
               />
             </motion.div>
