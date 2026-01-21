@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 21 - Leaderboard System (IN PROGRESS)
-Plan: 3 of 5 in phase
-Status: In progress
-Last activity: 2026-01-21 — Completed 21-03-PLAN.md
+Plan: 5 of 5 in phase
+Status: Phase complete - ready for Phase 22
+Last activity: 2026-01-21 — Completed 21-05-PLAN.md (Leaderboard UI Components)
 
-Progress: [████████████        ] 6/9 plans complete across v3.0 phases (20: 3/3, 21: 3/5, 22: 0/3)
+Progress: [████████████████    ] 8/9 plans complete across v3.0 phases (20: 3/3, 21: 5/5, 22: 0/3)
 
 ## Production URLs
 
@@ -104,6 +104,13 @@ Phase 21-03 Decisions:
 - Client validates nickname before submission (2-30 chars, alphanumeric + spaces)
 - Rank calculation uses COUNT(*) + 1 for efficiency
 
+Phase 21-05 Decisions:
+- Countdown timer visible on BOTH GameOverScreen and LeaderboardScreen for transparency
+- Submit Score button shows success state with checkmark after submission
+- Leaderboard rendered conditionally via store screen state, not routing
+- Personal best displayed on game over screen to contextualize submission
+- Secondary actions row for Submit/View buttons below primary restart button
+
 ### Pending Todos
 
 None.
@@ -123,13 +130,13 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 21-03-PLAN.md (Leaderboard API Implementation)
+Stopped at: Completed 21-05-PLAN.md (Leaderboard UI Components)
 Resume file: None
 
 ## Next Steps
 
-1. Phase 21: Leaderboard backend and UI
-2. Phase 22: Achievement system
+1. Phase 22: Achievement system (ready to begin)
+2. Complete v3.0 The Gauntlet feature set
 
 ---
-*Updated: 2026-01-21 after completing 21-03*
+*Updated: 2026-01-21 after completing 21-05*
