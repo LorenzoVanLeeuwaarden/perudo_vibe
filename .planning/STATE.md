@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 20 - Core Gauntlet Loop & Transitions
-Plan: 01 of 3 in phase
+Plan: 02 of 3 in phase
 Status: In progress
-Last activity: 2026-01-21 — Completed 20-01-PLAN.md
+Last activity: 2026-01-21 — Completed 20-02-PLAN.md
 
-Progress: [█                   ] 1/3 plans complete in phase 20 (1/3 phases v3.0)
+Progress: [██                  ] 2/3 plans complete in phase 20 (1/3 phases v3.0)
 
 ## Production URLs
 
@@ -84,6 +84,13 @@ Phase 20-01 Decisions:
 - RulesScreen uses ominous dark purple/red styling to differentiate from regular game modes
 - Gauntlet store manages screen state machine with explicit transitions
 
+Phase 20-02 Decisions:
+- Fight card uses personality-specific quotes for immersion
+- Victory splash emphasizes gauntlet continues not triumph
+- Game over screen prioritizes instant retry over menu navigation
+- Streak counter uses key={streak} for forced remount and animation
+- Difficulty indicators: Turtle=Easy, Calculator/Chaos/Bluffer=Medium, Shark/Trapper=Hard
+
 ### Pending Todos
 
 None.
@@ -99,16 +106,15 @@ None (cleared in v2.2)
 
 ## Session Continuity
 
-Last session: 2026-01-21 10:46 UTC
-Stopped at: Completed 20-01-PLAN.md
+Last session: 2026-01-21 10:47 UTC
+Stopped at: Completed 20-02-PLAN.md
 Resume file: None
 
 ## Next Steps
 
-1. Execute 20-02-PLAN.md (Fight Card & Victory/GameOver screens)
-2. Execute 20-03-PLAN.md (Gameplay wiring)
-3. Phase 21: Leaderboard backend and UI
-4. Phase 22: Achievement system
+1. Execute 20-03-PLAN.md (Gameplay wiring)
+2. Phase 21: Leaderboard backend and UI
+3. Phase 22: Achievement system
 
 ---
-*Updated: 2026-01-21 10:46 UTC after completing plan 20-01*
+*Updated: 2026-01-21 10:47 UTC after completing plan 20-02*
