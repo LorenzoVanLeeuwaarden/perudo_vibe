@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-21)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v3.0 The Gauntlet - Phase 20: Core Gauntlet Loop & Transitions
+**Current focus:** v3.0 The Gauntlet - Phase 21: Leaderboard Backend & UI
 
 ## Current Position
 
-Phase: 20 - Core Gauntlet Loop & Transitions
-Plan: 02 of 3 in phase
+Phase: 21 - Leaderboard System (IN PROGRESS)
+Plan: 2 of 3 in phase
 Status: In progress
-Last activity: 2026-01-21 — Completed 20-02-PLAN.md
+Last activity: 2026-01-21 — Completed 21-02-PLAN.md
 
-Progress: [██                  ] 2/3 plans complete in phase 20 (1/3 phases v3.0)
+Progress: [████████            ] 5/9 plans complete across v3.0 phases (20: 3/3, 21: 2/3, 22: 0/3)
 
 ## Production URLs
 
@@ -91,9 +91,19 @@ Phase 20-02 Decisions:
 - Streak counter uses key={streak} for forced remount and animation
 - Difficulty indicators: Turtle=Easy, Calculator/Chaos/Bluffer=Medium, Shark/Trapper=Hard
 
+Phase 21-02 Decisions:
+- Personal best stored in localStorage for no-auth requirement
+- Auto-update on game over (loseDie and setPlayerDiceCount)
+- SSR-safe with typeof window checks
+- updatePersonalBest returns boolean to indicate new record
+
 ### Pending Todos
 
 None.
+
+### Known Bugs
+
+- **AI calls DUDO on guaranteed bids:** AI sometimes calls DUDO on "1x joker" bids when they have 1+ jokers in their own hand. This is a clearly wrong move since the AI should know the bid is at minimum correct. Needs investigation in AI decision logic.
 
 ### Blockers/Concerns
 
@@ -106,15 +116,14 @@ None (cleared in v2.2)
 
 ## Session Continuity
 
-Last session: 2026-01-21 10:47 UTC
-Stopped at: Completed 20-02-PLAN.md
+Last session: 2026-01-21
+Stopped at: Completed 21-02-PLAN.md (Personal Best Tracking)
 Resume file: None
 
 ## Next Steps
 
-1. Execute 20-03-PLAN.md (Gameplay wiring)
-2. Phase 21: Leaderboard backend and UI
-3. Phase 22: Achievement system
+1. Phase 21: Leaderboard backend and UI
+2. Phase 22: Achievement system
 
 ---
-*Updated: 2026-01-21 10:47 UTC after completing plan 20-02*
+*Updated: 2026-01-21 after completing 21-02*
