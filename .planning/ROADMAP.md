@@ -199,7 +199,12 @@ Plans:
 4. Tutorial uses actual game components (BidUI, Dice, SortedDiceDisplay) for authentic feel
 5. No real game penalties apply — tutorial is explicitly a safe learning environment
 
-**Plans:** TBD (created during plan-phase)
+**Plans:** 3 plans
+
+Plans:
+- [ ] 23-01-PLAN.md — Tutorial store and main menu entry point
+- [ ] 23-02-PLAN.md — Tutorial script and gameplay component
+- [ ] 23-03-PLAN.md — Tutorial screen integration and first-time prompt
 
 ---
 
@@ -257,10 +262,10 @@ Phase 23 is next. Phases 23-25 form v3.1 Tutorial milestone.
 | 20 | v3.0 | 3/3 | Complete | 2026-01-21 |
 | 21 | v3.0 | 5/5 | Complete | 2026-01-21 |
 | 22 | v3.0 | 3/3 | Complete | 2026-01-21 |
-| 23 | v3.1 | 0/? | Pending | — |
+| 23 | v3.1 | 0/3 | Planned | — |
 | 24 | v3.1 | 0/? | Pending | — |
 | 25 | v3.1 | 0/? | Pending | — |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-21 after v3.1 roadmap created*
+*Last updated: 2026-01-22 after Phase 23 planning*
