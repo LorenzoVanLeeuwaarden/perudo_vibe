@@ -719,3 +719,17 @@ body {
   background: #ff3366;
   animation: pixelDust 0.6s ease-out forwards;
 }
+
+/* 3D Die rotation animation */
+@keyframes spin-die {
+  0% {
+    transform: rotateX(-15deg) rotateY(0deg);
+  }
+  100% {
+    transform: rotateX(-15deg) rotateY(360deg);
+  }
+}
+
+.animate-spin-die {
+  animation: spin-die 8s linear infinite;
+}
