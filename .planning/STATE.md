@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 22 - Achievement System (IN PROGRESS)
-Plan: 1 of 3 in phase
+Plan: 2 of 3 in phase
 Status: Phase in progress
-Last activity: 2026-01-21 — Completed 22-01-PLAN.md (Achievement System Foundation)
+Last activity: 2026-01-21 — Completed 22-02-PLAN.md (Achievement Unlock Logic)
 
-Progress: [█████████████████   ] 9/9 plans complete across v3.0 phases (20: 3/3, 21: 5/5, 22: 1/3)
+Progress: [██████████████████  ] 10/11 plans complete across v3.0 phases (20: 3/3, 21: 5/5, 22: 2/3)
 
 ## Production URLs
 
@@ -118,6 +118,14 @@ Phase 22-01 Decisions:
 - 7 hidden achievements: last-die-standing, comeback-kid, truth-seeker, bold-bluffer, perfect-read, ice-in-veins, poker-face
 - Milestone thresholds: 5, 10, 25, 50, 100 for progressive difficulty
 
+Phase 22-02 Decisions:
+- Achievement toast uses golden/amber accent for milestones, purple for hidden achievements
+- Toast auto-dismisses after 4.5 seconds with auto-cleanup on unmount
+- Achievement detection happens immediately after round resolution for hidden achievements
+- Milestone achievements checked in gauntletStore.winDuel() with pending state pattern
+- Run stats reset on startGauntlet() and restartGauntlet() for per-run tracking
+- Max dice deficit tracked throughout duel for comeback-kid achievement
+
 ### Pending Todos
 
 None.
@@ -137,14 +145,14 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 22-01-PLAN.md (Achievement System Foundation)
+Stopped at: Completed 22-02-PLAN.md (Achievement Unlock Logic)
 Resume file: None
 
 ## Next Steps
 
-1. Phase 22-02: Achievement unlock logic integration
-2. Phase 22-03: Achievement UI components
-3. Complete v3.0 The Gauntlet feature set
+1. Phase 22-03: Achievement UI components (final plan in phase)
+2. Complete v3.0 The Gauntlet feature set
+3. Testing and polish
 
 ---
-*Updated: 2026-01-21 after completing 22-01*
+*Updated: 2026-01-21 after completing 22-02*
