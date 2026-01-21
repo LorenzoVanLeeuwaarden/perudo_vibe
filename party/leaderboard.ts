@@ -47,16 +47,6 @@ export default class LeaderboardServer implements Party.Server {
   constructor(readonly room: Party.Room) {}
 
   async onRequest(request: Party.Request): Promise<Response> {
-    // D1 database binding from environment
-    const db = (this.room.env as Record<string, unknown>).gauntlet_leaderboard as D1Database;
-
-    if (!db) {
-      return this.jsonResponse({ error: 'Database not configured' }, 500);
-    }
-
-    const url = new URL(request.url);
-    const path = url.pathname;
-
     // Add CORS headers to all responses
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
@@ -64,10 +54,20 @@ export default class LeaderboardServer implements Party.Server {
       'Access-Control-Allow-Headers': 'Content-Type',
     };
 
-    // Handle preflight requests
+    // Handle preflight requests FIRST (before any other checks)
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
+
+    // D1 database binding from environment
+    const db = (this.room.env as Record<string, unknown>).gauntlet_leaderboard as D1Database;
+
+    if (!db) {
+      return this.jsonResponse({ error: 'Database not configured' }, 500, corsHeaders);
+    }
+
+    const url = new URL(request.url);
+    const path = url.pathname;
 
     try {
       // POST / - Submit score
