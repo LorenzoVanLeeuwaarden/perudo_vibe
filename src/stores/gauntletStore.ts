@@ -30,7 +30,7 @@ const AI_NAMES = [
   'Conde Cubiletes',
 ];
 
-type ScreenState = 'rules' | 'fightCard' | 'gameplay' | 'victory' | 'gameOver';
+type ScreenState = 'rules' | 'fightCard' | 'gameplay' | 'victory' | 'gameOver' | 'leaderboard';
 type DifficultyTier = 'Easy' | 'Medium' | 'Hard';
 
 interface GauntletState {
@@ -50,6 +50,9 @@ interface GauntletState {
   // Personal best tracking
   personalBest: PersonalBest | null;
 
+  // Leaderboard state
+  hasSubmittedScore: boolean;
+
   // Actions
   startGauntlet: () => void;
   winDuel: () => void;
@@ -61,6 +64,9 @@ interface GauntletState {
   exitToMenu: () => void;
   loadPersonalBest: () => void;
   checkPersonalBest: () => boolean;
+  showLeaderboard: () => void;
+  hideLeaderboard: () => void;
+  setScoreSubmitted: () => void;
 
   // Derived getters
   getDifficultyTier: () => DifficultyTier;
@@ -99,6 +105,7 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
   isActive: false,
   screen: 'rules',
   personalBest: null,
+  hasSubmittedScore: false,
 
   // Actions
   startGauntlet: () => {
@@ -111,6 +118,7 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
       currentPersonalityId: opponent.personalityId,
       isActive: true,
       screen: 'fightCard',
+      hasSubmittedScore: false,
     });
   },
 
@@ -179,6 +187,7 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
       currentPersonalityId: opponent.personalityId,
       isActive: true,
       screen: 'fightCard',
+      hasSubmittedScore: false,
     });
   },
 
@@ -206,6 +215,18 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
       set({ personalBest: getPersonalBest() });
     }
     return isNewBest;
+  },
+
+  showLeaderboard: () => {
+    set({ screen: 'leaderboard' });
+  },
+
+  hideLeaderboard: () => {
+    set({ screen: 'gameOver' });
+  },
+
+  setScoreSubmitted: () => {
+    set({ hasSubmittedScore: true });
   },
 
   // Derived getters
