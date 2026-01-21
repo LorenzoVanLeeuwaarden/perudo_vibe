@@ -40,6 +40,14 @@ export interface PlayerBehaviorProfile {
   confidentBids: number;
   /** Number of aggressive bids (count jump >= 2) */
   aggressiveBids: number;
+  /** Frequency of bids on each value (1-6) - for pattern detection */
+  valueBidFrequency: Record<number, number>;
+  /** Most frequently bid value (favorite number) */
+  favoriteValue: number;
+  /** Values bid on opening (first bid of round) */
+  openingValueFrequency: Record<number, number>;
+  /** Total opening bids made */
+  totalOpeningBids: number;
 }
 
 /**
@@ -61,6 +69,10 @@ export function createDefaultProfile(playerId: string): PlayerBehaviorProfile {
     totalIncrements: 0,
     confidentBids: 0,
     aggressiveBids: 0,
+    valueBidFrequency: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 },
+    favoriteValue: 0, // 0 means no pattern detected yet
+    openingValueFrequency: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 },
+    totalOpeningBids: 0,
   };
 }
 
@@ -240,7 +252,8 @@ export type BidStrategyType =
   | 'boringGame'   // Ultra-conservative with advantage
   | 'bluff'        // Bid on nothing
   | 'value'        // Bid on what we have
-  | 'switch';      // Switch to/from aces
+  | 'switch'       // Switch to/from aces
+  | 'liarsLeap';   // Poison-the-pool bluff when dominant
 
 /**
  * Generated bid candidate with metadata

@@ -35,6 +35,8 @@ export {
   getMostAggressiveOpponent,
   getMostLikelyBluffer,
   getBidHistory,
+  detectPatternDeviation,
+  detectOpeningPatternDeviation,
 } from './sessionMemory';
 
 // Personalities
@@ -67,6 +69,7 @@ export {
   evaluateSqueeze,
   evaluateAceFlushing,
   evaluateBoringGame,
+  evaluateLiarsLeap,
 } from './bidStrategies';
 
 // Main Agent (orchestrator)

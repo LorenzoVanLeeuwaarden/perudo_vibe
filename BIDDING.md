@@ -63,6 +63,9 @@ For each opponent, the AI tracks:
 | `aggressionLevel` | aggressive bids / total bids | Anticipate big jumps |
 | `avgIncrement` | average bid count increase | Pattern recognition |
 | `dudoAccuracy` | successful dudos / total dudos | Assess threat level |
+| `valueBidFrequency` | count of bids per value (1-6) | Detect favorite values |
+| `favoriteValue` | most frequently bid value | Pattern deviation detection |
+| `openingValueFrequency` | opening bid values | Opening pattern analysis |
 
 ### Memory Events
 
@@ -85,6 +88,27 @@ If 4+ bids on value X:
 ```
 
 Rationale: Multiple players bidding the same value likely have those dice.
+
+### Pattern Deviation Detection
+
+The AI detects when opponents deviate from their established patterns:
+
+**Bid Pattern Deviation:**
+```
+After 5+ bids, track their "favorite value" (most frequently bid)
+If opponent bids a value they rarely use:
+  deviation = 0.3-0.8 depending on how rare
+  dudoAdjustment += deviation × 0.12 × adaptability
+```
+
+**Opening Pattern Deviation:**
+```
+After 3+ opening bids, track their usual opening value
+If they open with something unusual:
+  deviation = 0.2-0.7 depending on dominance of pattern
+```
+
+**Rationale:** Players tend to bid on dice they have. Deviation from established patterns suggests bluffing.
 
 ---
 
@@ -149,6 +173,7 @@ utility = (failureProbability - threshold) × 10
 ```
 If opponent bluffIndex > 0.5: +0.15 bonus (they bluff often)
 If opponent aggressionLevel > 0.6: +0.05 bonus (overextenders)
+If pattern deviation detected: +deviation × 0.12 × adaptability
 ```
 
 **Positional Adjustment:**
@@ -235,6 +260,29 @@ If myDice - avgOpponentDice >= 3:
 
 **Rationale:** When ahead, don't take risks. Let opponents eliminate each other.
 
+### Liar's Leap (BID-04)
+
+**Trigger:** AI has 4+ dice AND all opponents have ≤2 dice each
+
+**Action:** Bid a value we have ZERO of at "safe" ratio (35-50% expected)
+
+```
+If myDice >= 4 && allOpponents have <= 2 dice:
+  Find values with 0 matching dice in hand
+  Calculate "safe" count = 35-50% of expected
+  Create bluff bid at safe count
+```
+
+**Base Score:** `3 + bluffFrequency × 4` (higher for Bluffer/Shark)
+
+**Used by:** Bluffer (`bluffFrequency >= 0.4`) or Shark (`aggression >= 0.6`)
+
+**Rationale:** When dominant with many dice, a "safe" bluff forces opponents to either:
+- Call dudo on a mathematically reasonable bid (risky for them)
+- Raise further with limited dice (dangerous)
+
+This is a "poison the pool" tactic - the AI's dice dominance makes even bluffs statistically defensible.
+
 ### Standard Strategies
 
 | Strategy | Description | Base Score |
@@ -245,6 +293,7 @@ If myDice - avgOpponentDice >= 3:
 | `value` | Bid on dice we have | 3 + matchCount × 1.5 |
 | `bluff` | Bid on value we don't have | 1 + bluffFrequency × 3 |
 | `switch` | Switch to/from aces | 2-3 |
+| `liarsLeap` | Dominant bluff on zero-match value | 3 + bluffFrequency × 4 |
 
 ---
 
@@ -345,11 +394,12 @@ Uses binomial distribution for accuracy. Intentionally conservative as a penalty
 The sophisticated AI system provides:
 
 1. **Distinct personalities** - 6 different playstyles based on name
-2. **Opponent modeling** - Tracks bluffs, aggression, accuracy
+2. **Opponent modeling** - Tracks bluffs, aggression, accuracy, favorite values
 3. **Utility-based decisions** - Calculates expected value for all actions
-4. **Advanced tactics** - Squeeze plays, ace flushing, boring game
+4. **Advanced tactics** - Squeeze plays, ace flushing, boring game, liar's leap
 5. **Memory across rounds** - Learns opponent patterns within session
 6. **Weighted probability** - Bid history affects expectations
-7. **Debug logging** - thoughtProcess strings for analysis
+7. **Pattern deviation detection** - Flags suspicious bids that deviate from norms
+8. **Debug logging** - thoughtProcess strings for analysis
 
 The goal: competitive, varied, personality-driven AI that feels like playing different opponents.

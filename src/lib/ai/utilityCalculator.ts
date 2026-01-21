@@ -5,13 +5,13 @@
 
 import { Bid } from '../types';
 import { AgentContext, UtilityScore, ActionType, BidCandidate } from './types';
-import { getOpponentProfile } from './sessionMemory';
+import { getOpponentProfile, detectPatternDeviation } from './sessionMemory';
 import {
   calculateBidFailureProbability,
   calculateExactMatchProbability,
   calculateBidSuccessProbability,
-  calculateExpectedTotalCount,
   calculateBidRatio,
+  calculateExpectedTotalCount,
 } from './probabilityEngine';
 import { applyPersonalityVariance } from './personalities';
 
@@ -66,6 +66,14 @@ export function calculateDudoUtility(context: AgentContext): UtilityScore {
     // Also consider their aggression level
     if (opponentProfile.aggressionLevel > 0.6) {
       opponentAdjustment += 0.05; // Aggressive players may overextend
+    }
+
+    // Pattern deviation detection: if opponent deviates from their usual pattern,
+    // they're more likely to be bluffing (suspicious behavior)
+    const patternDeviation = detectPatternDeviation(opponentProfile, currentBid.value);
+    if (patternDeviation > 0) {
+      // High adaptability personalities use this more
+      opponentAdjustment += patternDeviation * 0.12 * personality.params.adaptability;
     }
   }
 

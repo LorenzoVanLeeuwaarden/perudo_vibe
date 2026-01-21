@@ -179,6 +179,93 @@ export function evaluateBoringGame(context: AgentContext): {
   };
 }
 
+/**
+ * Evaluates Liar's Leap strategy (BID-04)
+ *
+ * Liar's Leap: When AI is dominant (4+ dice, everyone else 1-2), intentionally
+ * bid a value we have ZERO of at a "safe" ratio to poison the information pool.
+ *
+ * Goal: Trick opponents into thinking the pool is rich in that value, causing
+ * them to over-extend and get caught.
+ *
+ * Used by: Bluffer and Shark personalities
+ */
+export function evaluateLiarsLeap(context: AgentContext): BidCandidate | null {
+  const { currentBid, hand, totalDice, isPalifico, opponentDiceCounts, myDiceCount, personality } = context;
+
+  // Can't use in palifico
+  if (isPalifico) {
+    return null;
+  }
+
+  // Need to be dominant: 4+ dice
+  if (myDiceCount < 4) {
+    return null;
+  }
+
+  // Check that all opponents have 1-2 dice
+  const opponentDice = Object.values(opponentDiceCounts);
+  const allOpponentsWeak = opponentDice.every(count => count <= 2);
+  if (!allOpponentsWeak || opponentDice.length === 0) {
+    return null;
+  }
+
+  // Personality check - need high bluff frequency or aggression (Bluffer/Shark)
+  if (personality.params.bluffFrequency < 0.4 && personality.params.aggression < 0.6) {
+    return null;
+  }
+
+  // Find a value we have ZERO of (excluding aces for simplicity)
+  const zeroCounts: number[] = [];
+  for (let v = 2; v <= 6; v++) {
+    const count = hand.filter(d => d === v).length;
+    if (count === 0) {
+      zeroCounts.push(v);
+    }
+  }
+
+  if (zeroCounts.length === 0) {
+    return null; // We have at least one of every value
+  }
+
+  // Pick a random zero-count value
+  const poisonValue = zeroCounts[Math.floor(Math.random() * zeroCounts.length)];
+
+  // Calculate "safe" bid ratio (35-45% of expected)
+  const expectedCount = calculateExpectedValue(poisonValue, totalDice, isPalifico);
+  const safeCount = Math.max(
+    currentBid ? currentBid.count + 1 : 2,
+    Math.floor(expectedCount * (0.35 + Math.random() * 0.10))
+  );
+
+  // Cap at 50% of expected to stay safe
+  const cappedCount = Math.min(safeCount, Math.floor(expectedCount * 0.50));
+
+  const liarsLeapBid: Bid = {
+    count: cappedCount,
+    value: poisonValue,
+  };
+
+  // Validate
+  const validation = isValidBid(liarsLeapBid, currentBid, totalDice, isPalifico);
+  if (!validation.valid) {
+    return null;
+  }
+
+  // Check probability - even though we're bluffing, others might have it
+  const successProb = calculateBidSuccessProbability(liarsLeapBid, hand, totalDice, isPalifico, null);
+  if (successProb < 0.35) {
+    return null; // Too risky even for a bluff
+  }
+
+  return {
+    bid: liarsLeapBid,
+    strategy: 'liarsLeap',
+    baseScore: 3 + personality.params.bluffFrequency * 3,
+    reasoning: `Liar's Leap: poisoning pool with ${cappedCount}x${poisonValue}s (have 0)`,
+  };
+}
+
 // =============================================================================
 // Standard Strategy Generators
 // =============================================================================
@@ -536,6 +623,9 @@ export function generateBidCandidates(context: AgentContext): BidCandidate[] {
 
   const aceFlush = evaluateAceFlushing(context);
   if (aceFlush) candidates.push(aceFlush);
+
+  const liarsLeap = evaluateLiarsLeap(context);
+  if (liarsLeap) candidates.push(liarsLeap);
 
   // Boring game adjustment - if active, heavily prefer minimum bid
   const boringGame = evaluateBoringGame(context);

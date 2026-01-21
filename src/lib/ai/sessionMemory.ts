@@ -83,6 +83,9 @@ function handleBidPlaced(memory: SessionMemory, event: MemoryEvent): SessionMemo
   const newValueFrequency = { ...memory.valueFrequency };
   newValueFrequency[event.bid.value] = (newValueFrequency[event.bid.value] || 0) + 1;
 
+  // Check if this is an opening bid (first bid of the round)
+  const isOpeningBid = memory.currentRoundBids.length === 0;
+
   // Update opponent profile if it's not the AI
   const newOpponents = new Map(memory.opponents);
   const profile = newOpponents.get(event.playerId);
@@ -90,6 +93,22 @@ function handleBidPlaced(memory: SessionMemory, event: MemoryEvent): SessionMemo
   if (profile) {
     const updatedProfile = { ...profile };
     updatedProfile.totalBids++;
+
+    // Track value frequency for pattern detection
+    updatedProfile.valueBidFrequency = { ...updatedProfile.valueBidFrequency };
+    updatedProfile.valueBidFrequency[event.bid.value] =
+      (updatedProfile.valueBidFrequency[event.bid.value] || 0) + 1;
+
+    // Update favorite value (most frequently bid)
+    updatedProfile.favoriteValue = calculateFavoriteValue(updatedProfile.valueBidFrequency);
+
+    // Track opening bid patterns
+    if (isOpeningBid) {
+      updatedProfile.totalOpeningBids++;
+      updatedProfile.openingValueFrequency = { ...updatedProfile.openingValueFrequency };
+      updatedProfile.openingValueFrequency[event.bid.value] =
+        (updatedProfile.openingValueFrequency[event.bid.value] || 0) + 1;
+    }
 
     // Track bid increment
     if (event.previousBid) {
@@ -113,6 +132,23 @@ function handleBidPlaced(memory: SessionMemory, event: MemoryEvent): SessionMemo
     valueFrequency: newValueFrequency,
     opponents: newOpponents,
   };
+}
+
+/**
+ * Calculates the most frequently bid value from frequency map
+ */
+function calculateFavoriteValue(frequency: Record<number, number>): number {
+  let maxCount = 0;
+  let favorite = 0;
+
+  for (let v = 1; v <= 6; v++) {
+    if ((frequency[v] || 0) > maxCount) {
+      maxCount = frequency[v];
+      favorite = v;
+    }
+  }
+
+  return favorite;
 }
 
 /**
@@ -354,4 +390,96 @@ export function getBidHistory(
     return memory.currentRoundBids.filter((r) => r.playerId === playerId);
   }
   return memory.currentRoundBids;
+}
+
+/**
+ * Detects if a player's current bid deviates from their usual pattern
+ * Returns a confidence score from 0 (no deviation) to 1 (strong deviation)
+ */
+export function detectPatternDeviation(
+  profile: PlayerBehaviorProfile,
+  currentBidValue: number
+): number {
+  // Need enough data to establish a pattern
+  if (profile.totalBids < 5) {
+    return 0;
+  }
+
+  const favorite = profile.favoriteValue;
+  if (favorite === 0) {
+    return 0;
+  }
+
+  // If they're bidding their favorite value, no deviation
+  if (currentBidValue === favorite) {
+    return 0;
+  }
+
+  // Calculate how dominant their favorite value is
+  const totalValueBids = Object.values(profile.valueBidFrequency).reduce((a, b) => a + b, 0);
+  const favoriteFrequency = profile.valueBidFrequency[favorite] || 0;
+  const favoriteDominance = favoriteFrequency / totalValueBids;
+
+  // Calculate how rare the current value is for this player
+  const currentValueFrequency = profile.valueBidFrequency[currentBidValue] || 0;
+  const currentValueRarity = 1 - (currentValueFrequency / totalValueBids);
+
+  // Strong deviation: player has a clear favorite (>40% of bids) and is bidding something rare
+  if (favoriteDominance > 0.4 && currentValueRarity > 0.8) {
+    return 0.8; // High confidence this is suspicious
+  }
+
+  // Moderate deviation: clear favorite but bidding something uncommon
+  if (favoriteDominance > 0.3 && currentValueRarity > 0.6) {
+    return 0.5;
+  }
+
+  // Slight deviation
+  if (favoriteDominance > 0.25 && currentValueRarity > 0.5) {
+    return 0.3;
+  }
+
+  return 0;
+}
+
+/**
+ * Checks if a player deviated from their opening bid pattern
+ */
+export function detectOpeningPatternDeviation(
+  profile: PlayerBehaviorProfile,
+  openingBidValue: number
+): number {
+  // Need enough opening bid data
+  if (profile.totalOpeningBids < 3) {
+    return 0;
+  }
+
+  // Find their most common opening value
+  let favoriteOpeningValue = 0;
+  let maxCount = 0;
+  for (let v = 1; v <= 6; v++) {
+    const count = profile.openingValueFrequency[v] || 0;
+    if (count > maxCount) {
+      maxCount = count;
+      favoriteOpeningValue = v;
+    }
+  }
+
+  if (favoriteOpeningValue === 0 || openingBidValue === favoriteOpeningValue) {
+    return 0;
+  }
+
+  // Calculate dominance of their opening preference
+  const dominance = maxCount / profile.totalOpeningBids;
+
+  // Strong deviation from opening pattern
+  if (dominance > 0.5) {
+    return 0.7;
+  }
+
+  if (dominance > 0.35) {
+    return 0.4;
+  }
+
+  return 0.2;
 }
