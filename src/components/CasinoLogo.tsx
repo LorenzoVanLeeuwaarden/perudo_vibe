@@ -2,45 +2,88 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
-import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import type { PlayerColor } from '@/lib/types';
 
-// Color stops for smooth cycling (ordered by hue for smooth transitions)
-// Red -> Orange -> Yellow -> Green -> Blue -> Purple -> Red
+// Color stops for smooth cycling
 const COLOR_CYCLE = [
-  { hue: 0, sat: 70, light: 55, name: 'red' },      // Red
-  { hue: 25, sat: 90, light: 55, name: 'orange' },  // Orange
-  { hue: 45, sat: 90, light: 55, name: 'yellow' },  // Yellow
-  { hue: 140, sat: 60, light: 45, name: 'green' },  // Green
-  { hue: 210, sat: 70, light: 55, name: 'blue' },   // Blue
-  { hue: 270, sat: 60, light: 55, name: 'purple' }, // Purple
+  { hue: 0, sat: 70, light: 55, name: 'red' },
+  { hue: 25, sat: 90, light: 55, name: 'orange' },
+  { hue: 45, sat: 90, light: 55, name: 'yellow' },
+  { hue: 140, sat: 60, light: 45, name: 'green' },
+  { hue: 210, sat: 70, light: 55, name: 'blue' },
+  { hue: 270, sat: 60, light: 55, name: 'purple' },
 ];
 
 interface CasinoLogoProps {
   color?: PlayerColor;
 }
 
-// Interpolate between two values
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
-// Generate color config from HSL values
 function generateColorConfig(hue: number, sat: number, light: number) {
   const bg = `hsl(${hue}, ${sat}%, ${light}%)`;
   const border = `hsl(${hue}, ${sat}%, ${light + 15}%)`;
   const shadow = `hsl(${hue}, ${sat}%, ${light - 20}%)`;
   const glow = `hsla(${hue}, ${sat}%, ${light}%, 0.6)`;
-  return { bg, border, shadow, glow };
+  const dark = `hsl(${hue}, ${sat}%, ${light - 30}%)`;
+  return { bg, border, shadow, glow, dark };
+}
+
+// 3D Die face component
+function DieFace({
+  dots,
+  transform,
+  colorConfig
+}: {
+  dots: number;
+  transform: string;
+  colorConfig: ReturnType<typeof generateColorConfig>;
+}) {
+  const dotPositions: Record<number, [number, number][]> = {
+    1: [[50, 50]],
+    2: [[25, 25], [75, 75]],
+    3: [[25, 25], [50, 50], [75, 75]],
+    4: [[25, 25], [75, 25], [25, 75], [75, 75]],
+    5: [[25, 25], [75, 25], [50, 50], [25, 75], [75, 75]],
+    6: [[25, 25], [75, 25], [25, 50], [75, 50], [25, 75], [75, 75]],
+  };
+
+  return (
+    <div
+      className="absolute w-full h-full rounded-2xl border-2 flex items-center justify-center"
+      style={{
+        transform,
+        backfaceVisibility: 'hidden',
+        background: `linear-gradient(135deg, ${colorConfig.bg} 0%, ${colorConfig.dark} 100%)`,
+        borderColor: colorConfig.border,
+        boxShadow: `inset 0 0 20px rgba(0,0,0,0.3), 0 0 30px ${colorConfig.glow}`,
+      }}
+    >
+      <svg viewBox="0 0 100 100" className="w-4/5 h-4/5">
+        {dotPositions[dots]?.map(([cx, cy], i) => (
+          <circle
+            key={i}
+            cx={cx}
+            cy={cy}
+            r="12"
+            fill="#0d0416"
+            style={{
+              filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.5))',
+            }}
+          />
+        ))}
+      </svg>
+    </div>
+  );
 }
 
 export function CasinoLogo({ color }: CasinoLogoProps = {}) {
-  const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
-  const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
+  const [rotation, setRotation] = useState({ x: -20, y: 45 });
 
-  // Get fixed color config if a color prop is provided (memoized to prevent infinite loops)
   const fixedColorConfig = useMemo(() => {
     if (!color) return null;
     const colorData = COLOR_CYCLE.find(c => c.name === color);
@@ -51,12 +94,11 @@ export function CasinoLogo({ color }: CasinoLogoProps = {}) {
     );
   }, [color]);
 
-  // Animated color state
   const [colorConfig, setColorConfig] = useState(() =>
     fixedColorConfig ?? generateColorConfig(45, 90, 55)
-  ); // Start with yellow/gold or fixed color
+  );
 
-  // Smooth color cycling animation (only when no fixed color)
+  // Color cycling animation
   useEffect(() => {
     if (fixedColorConfig) {
       setColorConfig(fixedColorConfig);
@@ -64,21 +106,19 @@ export function CasinoLogo({ color }: CasinoLogoProps = {}) {
     }
 
     if (prefersReducedMotion) {
-      // For reduced motion, just use a static gold color
       setColorConfig(generateColorConfig(45, 90, 55));
       return;
     }
 
     let animationFrame: number;
     let startTime: number | null = null;
-    const cycleDuration = 12000; // 12 seconds for full cycle
+    const cycleDuration = 12000;
 
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
       const progress = (elapsed % cycleDuration) / cycleDuration;
 
-      // Calculate which two colors we're between
       const totalStops = COLOR_CYCLE.length;
       const scaledProgress = progress * totalStops;
       const currentIndex = Math.floor(scaledProgress);
@@ -88,15 +128,11 @@ export function CasinoLogo({ color }: CasinoLogoProps = {}) {
       const current = COLOR_CYCLE[currentIndex];
       const next = COLOR_CYCLE[nextIndex];
 
-      // Handle hue wrapping (e.g., purple to red)
       let hueFrom = current.hue;
       let hueTo = next.hue;
       if (Math.abs(hueTo - hueFrom) > 180) {
-        if (hueTo > hueFrom) {
-          hueFrom += 360;
-        } else {
-          hueTo += 360;
-        }
+        if (hueTo > hueFrom) hueFrom += 360;
+        else hueTo += 360;
       }
 
       const hue = lerp(hueFrom, hueTo, localProgress) % 360;
@@ -111,11 +147,34 @@ export function CasinoLogo({ color }: CasinoLogoProps = {}) {
     return () => cancelAnimationFrame(animationFrame);
   }, [prefersReducedMotion, fixedColorConfig]);
 
+  // Continuous die rotation
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+
+    let animationFrame: number;
+    let startTime: number | null = null;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+
+      // Slow, smooth rotation
+      const y = (elapsed * 0.02) % 360;
+      const x = -20 + Math.sin(elapsed * 0.001) * 10;
+
+      setRotation({ x, y });
+      animationFrame = requestAnimationFrame(animate);
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [prefersReducedMotion]);
+
   return (
-    <div className="relative">
+    <div className="relative flex flex-col items-center gap-4">
       {/* Glow background */}
       <motion.div
-        className="absolute inset-0 blur-3xl"
+        className="absolute inset-0 blur-3xl opacity-40"
         animate={{
           opacity: [0.3, 0.5, 0.3],
           scale: [1, 1.1, 1],
@@ -124,190 +183,134 @@ export function CasinoLogo({ color }: CasinoLogoProps = {}) {
         style={{ background: colorConfig.glow }}
       />
 
-      {/* Main logo container */}
+      {/* "THE" text - small above */}
       <motion.div
-        className="relative flex flex-col items-center"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        className="relative z-10"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
       >
-        {/* Decorative top element */}
-        <motion.div
-          className="flex items-center gap-2 mb-1"
-          animate={{ y: [0, -2, 0] }}
+        <span
+          className="text-2xl md:text-3xl font-black tracking-[0.5em] uppercase"
+          style={{
+            color: colorConfig.border,
+            textShadow: `0 0 20px ${colorConfig.glow}`,
+          }}
+        >
+          THE
+        </span>
+      </motion.div>
+
+      {/* Big 3D Die - Central Focus */}
+      <motion.div
+        className="relative z-10"
+        initial={{ scale: 0, rotateZ: -180 }}
+        animate={{ scale: 1, rotateZ: 0 }}
+        transition={{ type: 'spring', duration: 1, bounce: 0.3 }}
+        style={{ perspective: '1000px' }}
+      >
+        <div
+          className="relative w-32 h-32 md:w-40 md:h-40"
+          style={{
+            transformStyle: 'preserve-3d',
+            transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+          }}
+        >
+          {/* Front - 1 */}
+          <DieFace dots={1} transform="translateZ(64px)" colorConfig={colorConfig} />
+          {/* Back - 6 */}
+          <DieFace dots={6} transform="translateZ(-64px) rotateY(180deg)" colorConfig={colorConfig} />
+          {/* Right - 3 */}
+          <DieFace dots={3} transform="translateX(64px) rotateY(90deg)" colorConfig={colorConfig} />
+          {/* Left - 4 */}
+          <DieFace dots={4} transform="translateX(-64px) rotateY(-90deg)" colorConfig={colorConfig} />
+          {/* Top - 2 */}
+          <DieFace dots={2} transform="translateY(-64px) rotateX(90deg)" colorConfig={colorConfig} />
+          {/* Bottom - 5 */}
+          <DieFace dots={5} transform="translateY(64px) rotateX(-90deg)" colorConfig={colorConfig} />
+        </div>
+      </motion.div>
+
+      {/* "LAST" text - Large, main word */}
+      <motion.div
+        className="relative z-10"
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3, type: 'spring' }}
+      >
+        <h1
+          className="text-5xl md:text-7xl font-black tracking-tight"
+          style={{
+            color: colorConfig.bg,
+            textShadow: `
+              0 0 10px ${colorConfig.glow},
+              0 0 30px ${colorConfig.glow},
+              0 4px 0 ${colorConfig.shadow},
+              0 6px 0 ${colorConfig.dark}
+            `,
+            WebkitTextStroke: `1px ${colorConfig.border}`,
+          }}
+        >
+          LAST
+        </h1>
+      </motion.div>
+
+      {/* "DIE" text - emphasized with special styling */}
+      <motion.div
+        className="relative z-10 -mt-2"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <motion.h2
+          className="text-6xl md:text-8xl font-black tracking-wider"
+          style={{
+            color: colorConfig.bg,
+            textShadow: `
+              0 0 20px ${colorConfig.glow},
+              0 0 40px ${colorConfig.glow},
+              0 0 60px ${colorConfig.glow},
+              0 5px 0 ${colorConfig.shadow},
+              0 8px 0 ${colorConfig.dark}
+            `,
+            WebkitTextStroke: `2px ${colorConfig.border}`,
+          }}
+          animate={{
+            textShadow: [
+              `0 0 20px ${colorConfig.glow}, 0 0 40px ${colorConfig.glow}, 0 0 60px ${colorConfig.glow}, 0 5px 0 ${colorConfig.shadow}, 0 8px 0 ${colorConfig.dark}`,
+              `0 0 30px ${colorConfig.glow}, 0 0 60px ${colorConfig.glow}, 0 0 80px ${colorConfig.glow}, 0 5px 0 ${colorConfig.shadow}, 0 8px 0 ${colorConfig.dark}`,
+              `0 0 20px ${colorConfig.glow}, 0 0 40px ${colorConfig.glow}, 0 0 60px ${colorConfig.glow}, 0 5px 0 ${colorConfig.shadow}, 0 8px 0 ${colorConfig.dark}`,
+            ],
+          }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <motion.span
-            className="text-2xl"
-            animate={{ rotate: [0, 10, 0, -10, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            🎲
-          </motion.span>
-          <div className="flex gap-1">
-            {[...Array(5)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ background: colorConfig.bg }}
-                animate={{
-                  scale: [1, 1.5, 1],
-                  opacity: [0.5, 1, 0.5],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                }}
-              />
-            ))}
-          </div>
-          <motion.span
-            className="text-2xl"
-            animate={{ rotate: [0, -10, 0, 10, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-          >
-            🎲
-          </motion.span>
-        </motion.div>
+          DIE
+        </motion.h2>
+      </motion.div>
 
-        {/* Main title with skull */}
-        <div className="relative">
-          {/* Animated skull behind text */}
-          <motion.div
-            className="absolute -left-12 top-1/2 -translate-y-1/2"
-            animate={{
-              rotate: [-5, 5, -5],
-              y: [0, -3, 0],
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
-              <motion.g
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <path
-                  d="M16 4C10 4 6 9 6 14C6 17 7 19 8 21L8 24C8 25 9 26 10 26H22C23 26 24 25 24 24L24 21C25 19 26 17 26 14C26 9 22 4 16 4Z"
-                  fill={colorConfig.bg}
-                />
-                <ellipse cx="12" cy="14" rx="2.5" ry="3" fill="#0d0416" />
-                <ellipse cx="20" cy="14" rx="2.5" ry="3" fill="#0d0416" />
-                <path d="M16 17L14.5 20H17.5L16 17Z" fill="#0d0416" />
-                <rect x="11" y="22" width="2" height="3" fill="#0d0416" rx="0.5" />
-                <rect x="14" y="22" width="2" height="3" fill="#0d0416" rx="0.5" />
-                <rect x="17" y="22" width="2" height="3" fill="#0d0416" rx="0.5" />
-              </motion.g>
-              <motion.ellipse
-                cx="12" cy="14" rx="1" ry="1.2"
-                fill="#ff4444"
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              <motion.ellipse
-                cx="20" cy="14" rx="1" ry="1.2"
-                fill="#ff4444"
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
-              />
-            </svg>
-          </motion.div>
+      {/* Subtitle */}
+      <motion.p
+        className="text-sm md:text-base text-white-soft/60 tracking-widest uppercase mt-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7 }}
+      >
+        Liar&apos;s Dice
+      </motion.p>
 
-          {/* Title text */}
-          <motion.h1
-            className="text-6xl font-black tracking-tight relative"
-            style={{
-              color: colorConfig.bg,
-              WebkitTextStroke: `2px ${colorConfig.border}`,
-            }}
-          >
-            {/* Animated letters - guard textShadow animation for Firefox/reduced motion */}
-            {'THE LAST DIE'.split('').map((letter, i) => (
-              <motion.span
-                key={i}
-                className="inline-block"
-                style={{
-                  textShadow: `0 0 10px ${colorConfig.glow}, 0 0 20px ${colorConfig.glow}, 0 4px 0 ${colorConfig.shadow}`,
-                }}
-                animate={useSimplifiedAnimations
-                  ? { y: [0, -2, 0] }  // Gentler bounce only, no textShadow animation
-                  : {
-                      y: [0, -4, 0],
-                      textShadow: [
-                        `0 0 10px ${colorConfig.glow}, 0 0 20px ${colorConfig.glow}, 0 4px 0 ${colorConfig.shadow}`,
-                        `0 0 20px ${colorConfig.glow}, 0 0 40px ${colorConfig.glow}, 0 4px 0 ${colorConfig.shadow}`,
-                        `0 0 10px ${colorConfig.glow}, 0 0 20px ${colorConfig.glow}, 0 4px 0 ${colorConfig.shadow}`,
-                      ],
-                    }
-                }
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.1,
-                  ease: 'easeInOut',
-                }}
-              >
-                {letter}
-              </motion.span>
-            ))}
-          </motion.h1>
-
-          {/* Animated skull on right */}
-          <motion.div
-            className="absolute -right-12 top-1/2 -translate-y-1/2"
-            animate={{
-              rotate: [5, -5, 5],
-              y: [0, -3, 0],
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-          >
-            <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
-              <motion.g
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
-              >
-                <path
-                  d="M16 4C10 4 6 9 6 14C6 17 7 19 8 21L8 24C8 25 9 26 10 26H22C23 26 24 25 24 24L24 21C25 19 26 17 26 14C26 9 22 4 16 4Z"
-                  fill={colorConfig.bg}
-                />
-                <ellipse cx="12" cy="14" rx="2.5" ry="3" fill="#0d0416" />
-                <ellipse cx="20" cy="14" rx="2.5" ry="3" fill="#0d0416" />
-                <path d="M16 17L14.5 20H17.5L16 17Z" fill="#0d0416" />
-                <rect x="11" y="22" width="2" height="3" fill="#0d0416" rx="0.5" />
-                <rect x="14" y="22" width="2" height="3" fill="#0d0416" rx="0.5" />
-                <rect x="17" y="22" width="2" height="3" fill="#0d0416" rx="0.5" />
-              </motion.g>
-              <motion.ellipse
-                cx="12" cy="14" rx="1" ry="1.2"
-                fill="#ff4444"
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
-              />
-              <motion.ellipse
-                cx="20" cy="14" rx="1" ry="1.2"
-                fill="#ff4444"
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity, delay: 0.8 }}
-              />
-            </svg>
-          </motion.div>
-        </div>
-
-        {/* Bottom decorative bar */}
-        <motion.div
-          className="flex items-center gap-2 mt-2"
-          animate={{ opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <div className="h-0.5 w-12 rounded-full" style={{ background: colorConfig.border }} />
-          <motion.div
-            className="w-2 h-2 rounded-full"
-            style={{ background: colorConfig.bg }}
-            animate={{ scale: [1, 1.3, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-          <div className="h-0.5 w-12 rounded-full" style={{ background: colorConfig.border }} />
-        </motion.div>
+      {/* Decorative line */}
+      <motion.div
+        className="flex items-center gap-3 mt-1"
+        initial={{ opacity: 0, scaleX: 0 }}
+        animate={{ opacity: 1, scaleX: 1 }}
+        transition={{ delay: 0.8 }}
+      >
+        <div className="h-px w-16 md:w-24" style={{ background: colorConfig.border }} />
+        <div
+          className="w-2 h-2 rotate-45"
+          style={{ background: colorConfig.bg, boxShadow: `0 0 10px ${colorConfig.glow}` }}
+        />
+        <div className="h-px w-16 md:w-24" style={{ background: colorConfig.border }} />
       </motion.div>
     </div>
   );
