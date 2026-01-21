@@ -1,5 +1,33 @@
 # Project Milestones: Perudo Vibe
 
+## v3.0 The Gauntlet (Shipped: 2026-01-21)
+
+**Delivered:** Endless 1v1 survival mode with escalating AI difficulty, global leaderboard with daily reset, and achievement system for milestone streaks.
+
+**Phases completed:** 20-22 (11 plans total)
+
+**Key accomplishments:**
+
+- Gauntlet mode with persistent dice carry-over and escalating AI (Turtle → Calculator → Shark)
+- Cinematic transitions with Tekken-style fight cards and victory splash screens
+- Cloudflare D1 leaderboard with daily reset, top 100 scores, and "near you" section
+- Personal best tracking with localStorage (no account required)
+- Achievement system with 5 milestones + 7 hidden achievements and toast notifications
+- Achievement gallery accessible from Gauntlet intro screen
+
+**Stats:**
+
+- 58 files created/modified
+- ~9,000 lines of TypeScript added
+- 3 phases, 11 plans
+- 1 day from start to ship
+
+**Git range:** `65b8b62` → `a442c41`
+
+**What's next:** Sound effects (replace placeholders), cosmetic unlocks, or multiplayer gauntlet.
+
+---
+
 ## v2.2 UI Unification & Tech Debt (Shipped: 2026-01-20)
 
 **Delivered:** Unified single-player and multiplayer UI components, shared animation hooks, ESLint tooling migration, and single-player stats tracking with zero lint errors.
@@ -112,4 +140,4 @@
 ---
 
 *Milestones created: 2026-01-18*
-*Last updated: 2026-01-20 after v2.2 milestone*
+*Last updated: 2026-01-21 after v3.0 milestone*

@@ -158,9 +158,8 @@ Resume file: None
 
 ## Next Steps
 
-1. Run `/gsd:audit-milestone` to verify cross-phase integration
-2. Run `/gsd:complete-milestone` to archive v3.0
-3. Plan v3.1 or next milestone
+1. Run `/gsd:new-milestone` to start next milestone
+2. Or take a break - v3.0 is shipped!
 
 ---
-*Updated: 2026-01-21 after v3.0 completion*
+*Updated: 2026-01-21 after v3.0 milestone archived*

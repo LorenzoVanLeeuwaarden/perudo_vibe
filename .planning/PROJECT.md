@@ -8,15 +8,15 @@ A browser-based Perudo (liar's dice) game with real-time multiplayer support. Pl
 
 Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction — just share a link and play.
 
-## Current Milestone: v3.0 The Gauntlet
+## Current Milestone: Planning Next
 
-**Goal:** Add a fast-paced endurance mode where players face sequential 1v1 duels against AI, carrying dice between matches until eliminated.
+**Status:** v3.0 shipped. Ready for next milestone planning.
 
-**Target features:**
-- Gauntlet mode: rapid 1v1 duels with persistent dice
-- Escalating AI difficulty as streak grows
-- Global leaderboard with nickname submission
-- Achievements for milestone streaks
+**Potential directions:**
+- Sound effects (replace placeholder audio)
+- Cosmetic unlocks (dice skins, themes)
+- Multiplayer gauntlet mode
+- Weekly leaderboard alongside daily
 
 ## Requirements
 
@@ -52,19 +52,24 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - ✓ Shared useIsFirefox hook (replace local implementations) — v2.2
 - ✓ Shared useReducedMotion hook for accessibility — v2.2
 - ✓ Fix npm run lint / next lint directory error — v2.2
+- ✓ Gauntlet mode selection from main menu — v3.0
+- ✓ 1v1 duel game loop with persistent player dice — v3.0
+- ✓ AI opponent always starts with 5 dice — v3.0
+- ✓ Escalating AI difficulty (Turtle → Calculator → Shark) — v3.0
+- ✓ Streak counter displayed during run — v3.0
+- ✓ Game over when player loses all dice — v3.0
+- ✓ Global leaderboard with Cloudflare D1 — v3.0
+- ✓ Leaderboard submission with nickname prompt — v3.0
+- ✓ Leaderboard display (top 100 scores, "near you" section) — v3.0
+- ✓ Daily leaderboard reset at midnight UTC — v3.0
+- ✓ Personal best tracking with localStorage — v3.0
+- ✓ Achievement system for streak milestones (5, 10, 25, 50, 100) — v3.0
+- ✓ Hidden achievements for special conditions — v3.0
+- ✓ Achievement gallery accessible from Gauntlet — v3.0
 
 ### Active
 
-- Gauntlet mode selection from main menu
-- 1v1 duel game loop with persistent player dice
-- AI opponent always starts with 5 dice
-- Escalating AI difficulty (Turtle → Calculator → Shark)
-- Streak counter displayed during run
-- Game over when player loses all dice
-- Global leaderboard backend (Cloudflare KV or D1)
-- Leaderboard submission with nickname prompt
-- Leaderboard display (top scores)
-- Achievement system for streak milestones
+(None — planning next milestone)
 
 ### Out of Scope
 
@@ -76,26 +81,29 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - Healing mechanics — once a die is lost, it's gone (pure endurance)
 - Cosmetic unlocks — defer to future milestone
 
-## Current State (v2.2 shipped 2026-01-20)
+## Current State (v3.0 shipped 2026-01-21)
 
 **Production URLs:**
 - Frontend: https://faroleo.pages.dev
 - Backend: perudo-vibe.lorenzovanleeuwaarden.partykit.dev
 
 **Codebase:**
-- ~11,400 lines of TypeScript across 60+ files
-- Tech stack: Next.js 16, React 19, PartyKit, Zustand, Framer Motion, Tailwind CSS 4
+- ~19,100 lines of TypeScript across 100+ files
+- Tech stack: Next.js 16, React 19, PartyKit, Zustand, Framer Motion, Tailwind CSS 4, Cloudflare D1
 - Server-authoritative multiplayer with WebSocket real-time sync
 - GPU-optimized animations with Firefox simplified mode
 - Unified UI components across single-player and multiplayer
 - Zero lint errors (ESLint flat config)
 - Sophisticated AI with 6 personalities, session memory, pattern recognition
+- Gauntlet mode with escalating AI difficulty and leaderboard
+- Achievement system with localStorage persistence
 
 **Known Issues:**
 - Sound files are placeholders (need download from royalty-free sources)
+- AI sometimes calls DUDO on guaranteed bids (pre-existing bug)
 
 **Tech Debt:**
-- None (cleared in v2.2)
+- None
 
 ## Constraints
 
@@ -122,9 +130,14 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 | Cloudflare for deployment | Single platform for frontend + backend, generous free tier, PartyKit now native to Cloudflare | ✓ Good |
 | Firefox simplified mode | Solid backgrounds instead of backdrop-blur for Firefox performance | ✓ Good |
 | useSimplifiedAnimations pattern | Combined Firefox + reduced motion into single guard for cleaner code | ✓ Good |
-| No healing in Gauntlet | Pure endurance test, creates tension, mobile-friendly short sessions | — Pending |
-| Opponents always 5 dice | Fair start each duel, player's disadvantage grows naturally | — Pending |
-| Escalating AI difficulty | Rewards skill, early runs accessible, late runs challenging | — Pending |
+| No healing in Gauntlet | Pure endurance test, creates tension, mobile-friendly short sessions | ✓ Good |
+| Opponents always 5 dice | Fair start each duel, player's disadvantage grows naturally | ✓ Good |
+| Escalating AI difficulty | Rewards skill, early runs accessible, late runs challenging | ✓ Good |
+| Cloudflare D1 for leaderboard | Free tier (5M reads/day), SQL queries, daily reset via scheduled worker | ✓ Good |
+| Daily leaderboard reset | Fresh competition daily, encourages return visits | ✓ Good |
+| Achievements in localStorage | No account needed, instant persistence, matches personal best pattern | ✓ Good |
+| Toast-only achievements | Cleaner UI per user preference, no progress clutter during gameplay | ✓ Good |
+| Gallery in Gauntlet section | Contextually appropriate, achievements only apply to Gauntlet | ✓ Good |
 
 ---
-*Last updated: 2026-01-21 after v3.0 milestone start*
+*Last updated: 2026-01-21 after v3.0 milestone completion*
