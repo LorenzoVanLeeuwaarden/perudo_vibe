@@ -8,6 +8,7 @@ import { FightCard } from './FightCard';
 import { VictorySplash } from './VictorySplash';
 import { GameOverScreen } from './GameOverScreen';
 import { GauntletGameplay } from './GauntletGameplay';
+import { AchievementToast } from './AchievementToast';
 
 interface GauntletModeScreenProps {
   playerColor: PlayerColor;
@@ -27,6 +28,8 @@ export function GauntletModeScreen({ playerColor, onExit }: GauntletModeScreenPr
   const startDuel = useGauntletStore((state) => state.startDuel);
   const showFightCard = useGauntletStore((state) => state.showFightCard);
   const restartGauntlet = useGauntletStore((state) => state.restartGauntlet);
+  const pendingAchievement = useGauntletStore((state) => state.pendingAchievement);
+  const clearPendingAchievement = useGauntletStore((state) => state.clearPendingAchievement);
 
   // Screen transition handlers
   const handleEnterGauntlet = () => {
@@ -139,6 +142,13 @@ export function GauntletModeScreen({ playerColor, onExit }: GauntletModeScreenPr
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Achievement Toast - appears above all other UI */}
+      <AchievementToast
+        achievement={pendingAchievement}
+        isVisible={pendingAchievement !== null}
+        onComplete={clearPendingAchievement}
+      />
     </div>
   );
 }
