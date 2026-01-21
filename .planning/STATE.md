@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-21)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v3.0 The Gauntlet - Defining requirements
+**Current focus:** v3.0 The Gauntlet - Phase 20: Core Gauntlet Loop & Transitions
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-01-21 — Milestone v3.0 started
+Phase: 20 - Core Gauntlet Loop & Transitions
+Plan: — (awaiting plan creation)
+Status: Roadmap complete, ready for planning
+Last activity: 2026-01-21 — v3.0 roadmap created
 
-Progress: [                   ] 0/? phases (v3.0 roadmap pending)
+Progress: [                    ] 0/3 phases (v3.0)
 
 ## Production URLs
 
@@ -47,6 +47,11 @@ Progress: [                   ] 0/? phases (v3.0 roadmap pending)
 - UI unification: Complete
 - Zero lint errors
 
+**v3.0 Summary:**
+- Phases: 3 (Phases 20-22)
+- Requirements: 24 total
+- Coverage: 24/24 mapped (100%)
+
 ## Accumulated Context
 
 ### Decisions
@@ -65,6 +70,14 @@ Recent (outside GSD):
 - Pattern deviation detection flags suspicious bids
 - Liar's Leap strategy for dominant bluffing
 
+v3.0 Decisions:
+- No healing in Gauntlet (pure endurance test)
+- AI opponents always start with 5 dice (fair challenge)
+- Escalating AI difficulty: Turtle -> Calculator -> Shark
+- Cloudflare D1 for leaderboard (5M reads/day free tier)
+- Daily leaderboard resets at midnight UTC
+- Achievements stored in localStorage (no account needed)
+
 ### Pending Todos
 
 None.
@@ -72,7 +85,7 @@ None.
 ### Blockers/Concerns
 
 - Sound files (victory.mp3, pop.mp3, dice-rattle.mp3) are placeholders
-- Leaderboard requires backend storage (Cloudflare KV or D1)
+- D1 database binding needs configuration in wrangler.toml
 
 ### Tech Debt
 
@@ -81,17 +94,15 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Starting v3.0 milestone
+Stopped at: Roadmap created for v3.0
 Resume file: None
 
 ## Next Steps
 
-Defining requirements for v3.0 The Gauntlet:
-- Gauntlet mode game loop
-- Persistent dice across duels
-- Escalating AI difficulty
-- Global leaderboard
-- Achievements
+1. Run `/gsd:plan-phase 20` to create execution plan for Core Gauntlet Loop
+2. Phase 20 delivers: Gauntlet mode entry, 1v1 duels, persistent dice, AI escalation, transitions
+3. Phase 21 delivers: Leaderboard backend and UI
+4. Phase 22 delivers: Achievement system
 
 ---
-*Updated: 2026-01-21 after v3.0 milestone start*
+*Updated: 2026-01-21 after v3.0 roadmap creation*
