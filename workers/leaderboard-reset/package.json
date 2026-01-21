@@ -1,0 +1,11 @@
+{
+  "name": "gauntlet-leaderboard-reset",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240208.0",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.22.1"
+  }
+}
