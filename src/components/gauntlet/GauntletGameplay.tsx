@@ -10,9 +10,10 @@ import { ShaderBackground } from '@/components/ShaderBackground';
 import { DudoOverlay } from '@/components/DudoOverlay';
 import { SortedDiceDisplay } from '@/components/SortedDiceDisplay';
 import { RevealContent } from '@/components/RevealContent';
-import { VictoryScreen } from '@/components/VictoryScreen';
-import { DefeatScreen } from '@/components/DefeatScreen';
+import { StreakCounter } from '@/components/gauntlet/StreakCounter';
+import { AchievementProgress } from '@/components/gauntlet/AchievementProgress';
 import { useGauntletStore } from '@/stores/gauntletStore';
+import { useAchievementStore } from '@/stores/achievementStore';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import {
@@ -28,7 +29,7 @@ import {
 } from '@/lib/ai';
 import type { SessionMemory, Personality, MemoryEvent } from '@/lib/ai';
 
-type GameState = 'Rolling' | 'Bidding' | 'Reveal' | 'Victory' | 'Defeat';
+type GameState = 'Rolling' | 'Bidding' | 'Reveal';
 
 interface GauntletGameplayProps {
   playerColor: PlayerColor;
@@ -57,8 +58,8 @@ const AI_THINKING_PROMPTS = [
   'Analyzing',
 ];
 
-// Use different color for opponent (not player color)
-const OPPONENT_COLORS: PlayerColor[] = ['red', 'green', 'yellow', 'purple', 'orange', 'blue'];
+// Available colors for opponents (will pick randomly, excluding player's color)
+const ALL_COLORS: PlayerColor[] = ['red', 'green', 'yellow', 'purple', 'orange', 'blue'];
 
 export function GauntletGameplay({
   playerColor,
@@ -70,9 +71,16 @@ export function GauntletGameplay({
   const prefersReducedMotion = useReducedMotion();
   const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
 
-  // Gauntlet store actions
+  // Gauntlet store state and actions
+  const streak = useGauntletStore((state) => state.streak);
   const winDuel = useGauntletStore((state) => state.winDuel);
   const setPlayerDiceCount = useGauntletStore((state) => state.setPlayerDiceCount);
+
+  // Achievement store actions
+  const incrementStat = useAchievementStore((state) => state.incrementStat);
+  const unlockAchievement = useAchievementStore((state) => state.unlockAchievement);
+  const isUnlocked = useAchievementStore((state) => state.isUnlocked);
+  const getRunStat = useAchievementStore((state) => state.getRunStat);
 
   // Game state
   const [gameState, setGameState] = useState<GameState>('Rolling');
@@ -83,12 +91,13 @@ export function GauntletGameplay({
   const [isMyTurn, setIsMyTurn] = useState(true);
   const [isRolling, setIsRolling] = useState(false);
   const [roundResult, setRoundResult] = useState<'win' | 'lose' | null>(null);
-  const [isPalifico, setIsPalifico] = useState(false);
+  const [roundStarter, setRoundStarter] = useState<'player' | string>('player'); // Who starts the next round (loser of previous)
   const [sessionMemory, setSessionMemory] = useState<SessionMemory | null>(null);
   const [aiPersonality, setAiPersonality] = useState<Personality | null>(null);
   const [aiThinking, setAiThinking] = useState(false);
   const [aiThinkingPrompt, setAiThinkingPrompt] = useState('');
   const [selectedBidValue, setSelectedBidValue] = useState<number | null>(null); // Track bid value being selected
+  const [maxDiceDeficit, setMaxDiceDeficit] = useState(0); // Track max dice deficit during duel for comeback-kid achievement
 
   // Reveal state - SAME AS SINGLE-PLAYER
   const [dudoCaller, setDudoCaller] = useState<'player' | string | null>(null);
@@ -115,9 +124,11 @@ export function GauntletGameplay({
   // Refs for avoiding stale closures
   const currentBidRef = useRef<Bid | null>(null);
   const lastBidderRef = useRef<'player' | string | null>(null);
-  const isPalificoRef = useRef(false);
   const opponentRef = useRef<Opponent | null>(null);
   const sessionMemoryRef = useRef<SessionMemory | null>(null);
+  const initializedRef = useRef(false); // Track if game has been initialized
+  const roundStarterRef = useRef<'player' | string>('player');
+  const playerDiceCountRef = useRef(playerInitialDiceCount);
 
   // Sync refs
   useEffect(() => {
@@ -129,16 +140,20 @@ export function GauntletGameplay({
   }, [lastBidder]);
 
   useEffect(() => {
-    isPalificoRef.current = isPalifico;
-  }, [isPalifico]);
-
-  useEffect(() => {
     opponentRef.current = opponent;
   }, [opponent]);
 
   useEffect(() => {
     sessionMemoryRef.current = sessionMemory;
   }, [sessionMemory]);
+
+  useEffect(() => {
+    roundStarterRef.current = roundStarter;
+  }, [roundStarter]);
+
+  useEffect(() => {
+    playerDiceCountRef.current = playerDiceCount;
+  }, [playerDiceCount]);
 
   // Clear selected bid value when turn changes away from player
   useEffect(() => {
@@ -147,11 +162,30 @@ export function GauntletGameplay({
     }
   }, [isMyTurn]);
 
-  const colorConfig = PLAYER_COLORS[playerColor];
-  const opponentColor = OPPONENT_COLORS.find(c => c !== playerColor) || 'red';
-
-  // Initialize game
+  // Track max dice deficit for comeback-kid achievement
   useEffect(() => {
+    if (opponent && gameState === 'Bidding') {
+      const deficit = opponent.diceCount - playerDiceCount;
+      if (deficit > maxDiceDeficit) {
+        setMaxDiceDeficit(deficit);
+      }
+    }
+  }, [opponent, playerDiceCount, maxDiceDeficit, gameState]);
+
+  const colorConfig = PLAYER_COLORS[playerColor];
+
+  // Pick a random color for opponent (excluding player's color)
+  const [opponentColor] = useState<PlayerColor>(() => {
+    const availableColors = ALL_COLORS.filter(c => c !== playerColor);
+    return availableColors[Math.floor(Math.random() * availableColors.length)];
+  });
+
+  // Initialize game - only once per duel
+  useEffect(() => {
+    // Prevent re-initialization when playerDiceCount changes during gameplay
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
     // Create opponent
     const newOpponent: Opponent = {
       id: '0',
@@ -170,11 +204,6 @@ export function GauntletGameplay({
     const personality = getPersonalityForName(opponentName);
     setAiPersonality(personality);
 
-    // Check palifico
-    const anyPalifico = playerInitialDiceCount === 1 || newOpponent.diceCount === 1;
-    setIsPalifico(anyPalifico);
-    isPalificoRef.current = anyPalifico;
-
     // Start rolling
     setGameState('Rolling');
   }, [opponentName, opponentColor, playerInitialDiceCount]);
@@ -182,22 +211,21 @@ export function GauntletGameplay({
   const totalDice = playerDiceCount + (opponent?.diceCount || 0);
 
   // Get matching dice with their global indices for incremental reveal
+  // In Gauntlet, jokers (1s) are always wild
   const getMatchingDiceWithIndices = useCallback(() => {
     if (!currentBid || !opponent) return [];
 
     const matches: { value: number; color: PlayerColor; isJoker: boolean; globalIdx: number }[] = [];
     let globalIdx = 0;
 
-    // Check player's dice
+    // Check player's dice - jokers (1s) are wild and match any non-joker bid
     playerHand.forEach(value => {
-      const isMatch = isPalifico
-        ? value === currentBid.value
-        : (value === currentBid.value || (value === 1 && currentBid.value !== 1));
+      const isMatch = value === currentBid.value || (value === 1 && currentBid.value !== 1);
       if (isMatch) {
         matches.push({
           value,
           color: playerColor,
-          isJoker: !isPalifico && value === 1 && currentBid.value !== 1,
+          isJoker: value === 1 && currentBid.value !== 1,
           globalIdx
         });
       }
@@ -206,14 +234,12 @@ export function GauntletGameplay({
 
     // Check opponent's dice
     opponent.hand.forEach(value => {
-      const isMatch = isPalifico
-        ? value === currentBid.value
-        : (value === currentBid.value || (value === 1 && currentBid.value !== 1));
+      const isMatch = value === currentBid.value || (value === 1 && currentBid.value !== 1);
       if (isMatch) {
         matches.push({
           value,
           color: opponent.color,
-          isJoker: !isPalifico && value === 1 && currentBid.value !== 1,
+          isJoker: value === 1 && currentBid.value !== 1,
           globalIdx
         });
       }
@@ -221,7 +247,7 @@ export function GauntletGameplay({
     });
 
     return matches;
-  }, [currentBid, playerHand, opponent, isPalifico, playerColor]);
+  }, [currentBid, playerHand, opponent, playerColor]);
 
   // Get currently counted dice (those that have been highlighted so far)
   const getCountedDice = useCallback(() => {
@@ -260,12 +286,11 @@ export function GauntletGameplay({
     return matchIdx <= currentHighlightedMatch;
   }, [currentBid, gameState, getMatchingDiceWithIndices, countingComplete, highlightedDiceIndex]);
 
-  // Check if a die matches the bid
+  // Check if a die matches the bid (jokers always wild in Gauntlet)
   const isDieMatching = useCallback((value: number) => {
     if (!currentBid) return false;
-    if (isPalifico) return value === currentBid.value;
     return value === currentBid.value || (value === 1 && currentBid.value !== 1);
-  }, [currentBid, isPalifico]);
+  }, [currentBid]);
 
   const handleRoll = useCallback(() => {
     setIsRolling(true);
@@ -278,20 +303,83 @@ export function GauntletGameplay({
     }
   }, [playerDiceCount, opponent]);
 
+  // AI makes opening bid when they start the round
+  const makeAIOpeningBid = useCallback(() => {
+    const opp = opponentRef.current;
+    const memory = sessionMemoryRef.current;
+    if (!opp || !aiPersonality || !memory) {
+      return;
+    }
+
+    setAiThinking(true);
+    const randomPrompt = AI_THINKING_PROMPTS[Math.floor(Math.random() * AI_THINKING_PROMPTS.length)];
+    setAiThinkingPrompt(randomPrompt);
+
+    setTimeout(() => {
+      const context = createAgentContext(
+        '0',
+        opp.name,
+        opp.hand,
+        null, // No current bid - this is the opening bid
+        totalDice,
+        false, // No palifico in Gauntlet
+        'player',
+        memory,
+        opp.diceCount,
+        { player: playerDiceCount },
+        2, // 2 active players
+        'player'
+      );
+
+      const decision = makeDecision(context);
+
+      setAiThinking(false);
+
+      // AI must bid when making opening bid (can't dudo/calza)
+      if (decision.action === 'bid' && decision.bid) {
+        setCurrentBid(decision.bid);
+        currentBidRef.current = decision.bid;
+        setLastBidder(opp.id);
+        lastBidderRef.current = opp.id;
+        setIsMyTurn(true);
+
+        // Update memory
+        const event: MemoryEvent = {
+          type: 'bid_placed',
+          playerId: '0',
+          bid: decision.bid,
+        };
+        updateMemory(memory, event);
+      }
+    }, 800 + Math.random() * 1200);
+  }, [aiPersonality, totalDice, playerDiceCount]);
+
   const handleRollComplete = useCallback(() => {
     setIsRolling(false);
     setGameState('Bidding');
-    setIsMyTurn(true);
     setCurrentBid(null);
     setLastBidder(null);
     lastBidderRef.current = null;
-  }, []);
+
+    // Check who starts this round (loser of previous round)
+    const starter = roundStarterRef.current;
+    if (starter === 'player') {
+      // Player makes opening bid
+      setIsMyTurn(true);
+    } else {
+      // AI makes opening bid
+      setIsMyTurn(false);
+      // Delay AI bid slightly to let UI update
+      setTimeout(() => {
+        makeAIOpeningBid();
+      }, 500);
+    }
+  }, [makeAIOpeningBid]);
 
   const handleReveal = useCallback(
     (caller: 'player' | string, isCalza: boolean) => {
       const bid = currentBidRef.current;
       const lastBidderValue = lastBidderRef.current;
-      const palifico = isPalificoRef.current;
       const opp = opponentRef.current;
 
       if (!bid || !opp) return;
@@ -321,7 +409,8 @@ export function GauntletGameplay({
       }
 
       const allDice = [...playerHand, ...opp.hand];
-      const matchingCount = countMatching(allDice, bid.value, palifico);
+      // In Gauntlet, jokers are always wild (no palifico)
+      const matchingCount = countMatching(allDice, bid.value, false);
       setActualCount(matchingCount);
 
       let playerWins: boolean;
@@ -390,6 +479,18 @@ export function GauntletGameplay({
       setLoser(roundLoser);
       setRoundResult(playerWins ? 'win' : 'lose');
 
+      // Set who starts the next round:
+      // - For Dudo: the loser starts
+      // - For successful Calza: the caller starts
+      // - For failed Calza: the caller (who lost) starts
+      if (isCalza) {
+        // Calza caller always starts next round (whether success or fail)
+        setRoundStarter(caller);
+      } else if (roundLoser) {
+        // Dudo: loser starts
+        setRoundStarter(roundLoser);
+      }
+
       // Update memory
       if (sessionMemoryRef.current) {
         const challengeType = isCalza ? 'calza' : 'dudo';
@@ -416,8 +517,48 @@ export function GauntletGameplay({
 
         updateMemory(sessionMemoryRef.current, event);
       }
+
+      // Track achievement statistics after round resolution
+      if (isCalza) {
+        // Track successful Calza calls
+        if (matchingCount === bid.count && isPlayerCaller) {
+          incrementStat('calzaSuccesses');
+        }
+      } else {
+        // DUDO was called
+        const dudoWasCorrect = matchingCount < bid.count;
+
+        if (isPlayerCaller && dudoWasCorrect) {
+          // Player called DUDO correctly
+          incrementStat('correctDudoCalls');
+
+          // Check if it was an exact match (count equals bid exactly)
+          if (matchingCount === bid.count) {
+            incrementStat('exactDudoCalls');
+          }
+        } else if (!isPlayerCaller && !dudoWasCorrect && lastBidderValue === 'player') {
+          // Opponent called DUDO on player's TRUE bid (player's bluff was believed but was actually true)
+          incrementStat('bluffWins');
+        }
+      }
+
+      // Check hidden achievement thresholds after tracking stats
+      // truth-seeker: Called DUDO correctly 5 times
+      if (getRunStat('correctDudoCalls') >= 5 && !isUnlocked('truth-seeker')) {
+        unlockAchievement('truth-seeker');
+      }
+
+      // bold-bluffer: Won 3 rounds when opponent called DUDO on your true bids
+      if (getRunStat('bluffWins') >= 3 && !isUnlocked('bold-bluffer')) {
+        unlockAchievement('bold-bluffer');
+      }
+
+      // perfect-read: Called DUDO on exact count 3 times
+      if (getRunStat('exactDudoCalls') >= 3 && !isUnlocked('perfect-read')) {
+        unlockAchievement('perfect-read');
+      }
     },
-    [playerHand, playerDiceCount]
+    [playerHand, playerDiceCount, incrementStat, getRunStat, unlockAchievement, isUnlocked]
   );
 
   // Run reveal animation when we enter Reveal state and overlay completes
@@ -434,7 +575,6 @@ export function GauntletGameplay({
     setRevealProgress(0);
     setHighlightedDiceIndex(-1);
 
-    const palifico = isPalificoRef.current;
     const bid = currentBid;
 
     // Build list of players
@@ -452,9 +592,8 @@ export function GauntletGameplay({
       return opponent.hand;
     };
 
-    // Check if a die matches the bid
+    // Check if a die matches the bid (jokers always wild in Gauntlet)
     const isDieMatch = (value: number): boolean => {
-      if (palifico) return value === bid.value;
       return value === bid.value || (value === 1 && bid.value !== 1);
     };
 
@@ -561,7 +700,7 @@ export function GauntletGameplay({
           opp.hand,
           currentBidValue,
           totalDice,
-          isPalificoRef.current,
+          false, // No palifico in Gauntlet
           'player',
           memory,
           opp.diceCount,
@@ -636,36 +775,67 @@ export function GauntletGameplay({
   const canCalza = lastBidder !== 'player' && currentBid !== null;
 
   const handleCelebrationComplete = useCallback(() => {
-    // Sync dice count back to gauntlet store
-    setPlayerDiceCount(playerDiceCount);
+    // Get current player dice count from ref
+    const currentPlayerDiceCount = playerDiceCountRef.current;
 
-    // Check for victory/defeat
-    if (playerDiceCount === 0) {
-      // Player lost all dice - game over handled by store
+    // Helper to clear reveal overlay state
+    const clearRevealState = () => {
+      setGameState('Rolling');
+      setRoundResult(null);
+      setDudoCaller(null);
+      setCalzaCaller(null);
+      setLoser(null);
+      setActualCount(0);
+      setCurrentBid(null);
+      setLastBidder(null);
+      lastBidderRef.current = null;
+      setShowDudoOverlay(false);
+      setDudoOverlayComplete(false);
+    };
+
+    // Check for game over using reveal-time values (more reliable than refs)
+    // loser and reveal dice counts are set at the moment of the reveal
+    if (loser === 'player' && revealPlayerDiceCount === 1) {
+      // Player lost their last die - game over
+      // Clear reveal state first so overlay doesn't block GameOverScreen
+      clearRevealState();
+      setPlayerDiceCount(0);
       return;
     }
 
-    if (opponent && opponent.diceCount === 0) {
-      // Player won the duel
+    if (loser !== null && loser !== 'player' && revealOpponentDiceCount === 1) {
+      // Opponent lost their last die - player wins the duel
+
+      // Check risky victory achievements before transitioning
+      // last-die-standing: Won a duel with only 1 die remaining
+      if (currentPlayerDiceCount === 1 && !isUnlocked('last-die-standing')) {
+        unlockAchievement('last-die-standing');
+      }
+
+      // comeback-kid: Won after being down by 3+ dice
+      if (maxDiceDeficit >= 3 && !isUnlocked('comeback-kid')) {
+        unlockAchievement('comeback-kid');
+      }
+
+      // Clear reveal state first so overlay doesn't block VictorySplash
+      clearRevealState();
+      setPlayerDiceCount(currentPlayerDiceCount);
       winDuel();
       return;
     }
 
-    // Continue to next round
-    const anyPalifico = playerDiceCount === 1 || (opponent ? opponent.diceCount === 1 : false);
-    setIsPalifico(anyPalifico);
-    isPalificoRef.current = anyPalifico;
+    // Handle calza success case - no loser, but game might end
+    if (calzaSuccess && spawningDieOwner) {
+      // Someone gained a die - just continue
+      setPlayerDiceCount(currentPlayerDiceCount);
+    } else {
+      // Sync dice count to store for continued play
+      setPlayerDiceCount(currentPlayerDiceCount);
+    }
 
-    setGameState('Rolling');
-    setRoundResult(null);
-    setDudoCaller(null);
-    setCalzaCaller(null);
-    setLoser(null);
-    setActualCount(0);
-    setCurrentBid(null);
-    setLastBidder(null);
-    lastBidderRef.current = null;
-  }, [playerDiceCount, opponent, winDuel, setPlayerDiceCount]);
+    // Continue to next round - reset reveal state
+    clearRevealState();
+  }, [loser, revealPlayerDiceCount, revealOpponentDiceCount, calzaSuccess, spawningDieOwner, winDuel, setPlayerDiceCount]);
 
   const handleSkipReveal = useCallback(() => {
     // Cancel any running reveal animation
@@ -677,14 +847,12 @@ export function GauntletGameplay({
   }, [playerHand.length, opponent]);
 
   const startNewRound = useCallback(() => {
-    if (playerDiceCount === 0) {
-      setGameState('Defeat');
-    } else if (opponent && opponent.diceCount === 0) {
-      setGameState('Victory');
-    } else {
-      handleCelebrationComplete();
-    }
-  }, [playerDiceCount, opponent, handleCelebrationComplete]);
+    // handleCelebrationComplete handles all transitions:
+    // - playerDiceCount === 0 → game over (via store)
+    // - opponent.diceCount === 0 → victory splash (via store)
+    // - otherwise → continue to next round
+    handleCelebrationComplete();
+  }, [handleCelebrationComplete]);
 
   // Auto-roll when entering Rolling state
   useEffect(() => {
@@ -697,25 +865,49 @@ export function GauntletGameplay({
     <div className="relative w-full h-full overflow-hidden">
       <ShaderBackground />
 
+      {/* Streak and Achievement Progress Overlay - Top Right */}
+      <div className="fixed top-4 right-4 z-30 flex flex-col items-end gap-2">
+        <StreakCounter streak={streak} />
+        <AchievementProgress currentStreak={streak} />
+      </div>
+
       <div className="relative z-10 h-screen w-screen flex flex-col justify-between overflow-hidden p-3 sm:p-6">
-        {/* Opponent section - TOP - hidden red dice backs */}
+        {/* Opponent section - TOP - hidden dice with same visual effects as player dice */}
         {opponent && gameState === 'Bidding' && (
           <div className="flex-none flex justify-center pt-2">
-            <div className="flex gap-2">
+            {/* Radial glow from top for opponent */}
+            <div
+              className="absolute inset-x-0 top-0 h-32 pointer-events-none"
+              style={{
+                background: `radial-gradient(ellipse 70% 100% at 50% 0%, ${PLAYER_COLORS[opponentColor].glow} 0%, transparent 70%)`,
+                opacity: 0.25,
+              }}
+            />
+            <motion.div
+              className="relative flex gap-1.5 sm:gap-3"
+              style={useSimplifiedAnimations ? {
+                filter: `drop-shadow(0 0 12px ${PLAYER_COLORS[opponentColor].glow})`,
+              } : undefined}
+              animate={useSimplifiedAnimations ? {} : {
+                filter: [
+                  `drop-shadow(0 0 8px ${PLAYER_COLORS[opponentColor].glow})`,
+                  `drop-shadow(0 0 18px ${PLAYER_COLORS[opponentColor].glow})`,
+                  `drop-shadow(0 0 8px ${PLAYER_COLORS[opponentColor].glow})`,
+                ],
+              }}
+              transition={useSimplifiedAnimations ? undefined : { duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            >
               {Array.from({ length: opponent.diceCount }).map((_, i) => (
-                <motion.div
+                <Dice
                   key={i}
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg"
-                  style={{
-                    background: '#dc2626',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.5)',
-                  }}
+                  value={6} // Arbitrary value since hidden
+                  index={i}
+                  size="md"
+                  color={opponentColor}
+                  hidden={true}
                 />
               ))}
-            </div>
+            </motion.div>
           </div>
         )}
 
@@ -801,7 +993,6 @@ export function GauntletGameplay({
                         value={currentBid.value}
                         index={i}
                         size="sm"
-                        isPalifico={isPalifico}
                         color={lastBidder === 'player' ? playerColor : opponent?.color || playerColor}
                       />
                     </motion.div>
@@ -853,7 +1044,7 @@ export function GauntletGameplay({
                 isMyTurn={isMyTurn}
                 totalDice={totalDice}
                 playerColor={playerColor}
-                isPalifico={isPalifico}
+                isPalifico={false}
                 canCalza={canCalza}
                 hideBidDisplay={true}
                 onValueChange={setSelectedBidValue}
@@ -910,7 +1101,6 @@ export function GauntletGameplay({
               <SortedDiceDisplay
                 dice={playerHand}
                 color={playerColor}
-                isPalifico={isPalifico}
                 size="lg"
                 animateSort={true}
                 highlightValue={isMyTurn ? selectedBidValue : (currentBid ? currentBid.value : null)}
@@ -962,7 +1152,7 @@ export function GauntletGameplay({
               bid={currentBid}
               lastBidderName={lastBidder === 'player' ? 'You' : opponent.name}
               lastBidderColor={lastBidder === 'player' ? playerColor : opponent.color}
-              isPalifico={isPalifico}
+              isPalifico={false}
               actualCount={actualCount}
               isCalza={calzaCaller !== null}
               countingComplete={countingComplete}
@@ -1002,24 +1192,6 @@ export function GauntletGameplay({
         )}
       </AnimatePresence>
 
-      {/* Victory/Defeat screens */}
-      <AnimatePresence>
-        {gameState === 'Victory' && (
-          <VictoryScreen
-            playerColor={playerColor}
-            onPlayAgain={handleCelebrationComplete}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {gameState === 'Defeat' && (
-          <DefeatScreen
-            playerColor={playerColor}
-            onPlayAgain={handleCelebrationComplete}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
