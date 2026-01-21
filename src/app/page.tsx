@@ -37,6 +37,7 @@ import type { SessionMemory, Personality, MemoryEvent } from '@/lib/ai';
 import { GameResultsScreen } from '@/components/GameResultsScreen';
 import type { PlayerStats, GameStats } from '@/shared/types';
 import { GauntletModeScreen } from '@/components/gauntlet';
+import { TutorialScreen } from '@/components/tutorial';
 import { useGauntletStore } from '@/stores/gauntletStore';
 import { useTutorialStore } from '@/stores/tutorialStore';
 
@@ -190,6 +191,9 @@ export default function LastDieGame() {
   } | null>(null);
   const [showStats, setShowStats] = useState(false);
 
+  // First-time tutorial prompt state
+  const [showTutorialPrompt, setShowTutorialPrompt] = useState(false);
+
   // Sophisticated AI state
   const [sessionMemory, setSessionMemory] = useState<SessionMemory | null>(null);
   const [, setAiPersonalities] = useState<Map<number, Personality>>(new Map());
@@ -268,6 +272,31 @@ export default function LastDieGame() {
   const handleExitTutorial = useCallback(() => {
     useTutorialStore.getState().exitTutorial();
     setGameState('ModeSelection');
+  }, []);
+
+  // First-time visitor tutorial prompt
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const dismissed = localStorage.getItem('tutorial_prompt_dismissed');
+      const completed = localStorage.getItem('tutorial_completed');
+      if (!dismissed && !completed) {
+        // Show prompt after a short delay (let user see the menu first)
+        const timer = setTimeout(() => {
+          setShowTutorialPrompt(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
+
+  const handleDismissPrompt = useCallback(() => {
+    localStorage.setItem('tutorial_prompt_dismissed', 'true');
+    setShowTutorialPrompt(false);
+  }, []);
+
+  const handleAcceptPrompt = useCallback(() => {
+    setShowTutorialPrompt(false);
+    setGameState('Tutorial');
   }, []);
 
   // Calculate total dice
@@ -1766,17 +1795,11 @@ export default function LastDieGame() {
 
           {/* TUTORIAL MODE */}
           {gameState === 'Tutorial' && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center">
-              {/* Placeholder - TutorialScreen imported from Plan 03 */}
-              <div className="flex flex-col items-center justify-center h-full gap-4">
-                <p className="text-white-soft text-lg">Tutorial mode - coming in Plan 03</p>
-                <button
-                  onClick={handleExitTutorial}
-                  className="px-4 py-2 text-sm text-white-soft/70 hover:text-white-soft underline underline-offset-4 transition-colors"
-                >
-                  Back to Menu
-                </button>
-              </div>
+            <div className="fixed inset-0 z-50">
+              <TutorialScreen
+                playerColor={playerColor}
+                onExit={handleExitTutorial}
+              />
             </div>
           )}
 
@@ -2216,6 +2239,51 @@ export default function LastDieGame() {
                 {[3, 5, 1, 2, 6].map((val, i) => (
                   <Dice key={i} value={val} index={i} size="sm" color={playerColor} />
                 ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* First-time tutorial prompt modal */}
+      <AnimatePresence>
+        {showTutorialPrompt && gameState === 'ModeSelection' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="retro-panel p-6 max-w-sm text-center"
+              style={{
+                borderColor: PLAYER_COLORS[playerColor].border,
+                boxShadow: `0 0 20px ${PLAYER_COLORS[playerColor].glow}`,
+              }}
+            >
+              <h2 className="text-xl font-bold text-white-soft mb-3">
+                New to Perudo?
+              </h2>
+              <p className="text-white-soft/70 text-sm mb-6">
+                Learn the rules with a quick tutorial. It only takes a few minutes!
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={handleDismissPrompt}
+                  className="px-4 py-2 text-sm text-white-soft/60 hover:text-white-soft transition-colors"
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={handleAcceptPrompt}
+                  className="retro-button retro-button-orange text-sm"
+                >
+                  Show me how
+                </button>
               </div>
             </motion.div>
           </motion.div>
