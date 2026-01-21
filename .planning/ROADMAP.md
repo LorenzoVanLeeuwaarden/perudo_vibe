@@ -127,9 +127,9 @@
 **Plans:** 3 plans
 
 Plans:
-- [ ] 20-01-PLAN.md — Gauntlet store and mode entry (RulesScreen)
-- [ ] 20-02-PLAN.md — Transition UI components (FightCard, VictorySplash, GameOverScreen, StreakCounter)
-- [ ] 20-03-PLAN.md — GauntletModeScreen integration and full flow wiring
+- [x] 20-01-PLAN.md — Gauntlet store and mode entry (RulesScreen)
+- [x] 20-02-PLAN.md — Transition UI components (FightCard, VictorySplash, GameOverScreen, StreakCounter)
+- [x] 20-03-PLAN.md — GauntletModeScreen integration and full flow wiring
 
 ---
 
@@ -147,7 +147,14 @@ Plans:
 4. Player's personal best is tracked and displayed even without submission
 5. Daily leaderboard shows countdown timer to midnight UTC reset, and resets scores at that time
 
-**Plans**: TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 21-01-PLAN.md — D1 database infrastructure and leaderboard Worker skeleton
+- [ ] 21-02-PLAN.md — Client-side personal best tracking with localStorage
+- [ ] 21-03-PLAN.md — Leaderboard API endpoints (submit, fetch, rank, near)
+- [ ] 21-04-PLAN.md — Scheduled Worker for daily leaderboard reset
+- [ ] 21-05-PLAN.md — Leaderboard UI (LeaderboardScreen, SubmitScoreModal, countdown timer)
 
 ---
 
@@ -172,7 +179,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases 1-19 complete. Phase 20 in progress.
+Phases 1-20 complete. Phase 21 next.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -180,10 +187,10 @@ Phases 1-19 complete. Phase 20 in progress.
 | 10-12 | v2.0 | 4/4 | Complete | 2026-01-19 |
 | 13-15 | v2.1 | 3/3 | Complete | 2026-01-20 |
 | 16-19 | v2.2 | 7/7 | Complete | 2026-01-20 |
-| 20 | v3.0 | 0/3 | Pending | — |
-| 21 | v3.0 | 0/? | Pending | — |
+| 20 | v3.0 | 3/3 | Complete | 2026-01-21 |
+| 21 | v3.0 | 0/5 | Planned | — |
 | 22 | v3.0 | 0/? | Pending | — |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-21 after Phase 20 planning*
+*Last updated: 2026-01-21 after Phase 21 planning*
