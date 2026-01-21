@@ -5,3 +5,5 @@ export { GameOverScreen } from './GameOverScreen';
 export { StreakCounter } from './StreakCounter';
 export { GauntletModeScreen } from './GauntletModeScreen';
 export { GauntletGameplay } from './GauntletGameplay';
+export { AchievementProgress } from './AchievementProgress';
+export { AchievementToast } from './AchievementToast';
