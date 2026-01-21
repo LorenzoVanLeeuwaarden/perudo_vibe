@@ -2,10 +2,15 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { Skull } from 'lucide-react';
+import { Skull, Trophy, CheckCircle2, Clock } from 'lucide-react';
 import { PlayerColor } from '@/lib/types';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useCountdownToMidnight } from '@/hooks/useCountdownToMidnight';
+import { getPersonalBest } from '@/lib/personal-best';
+import { useGauntletStore } from '@/stores/gauntletStore';
+import { SubmitScoreModal } from './SubmitScoreModal';
+import { LeaderboardScreen } from './LeaderboardScreen';
 
 interface GameOverScreenProps {
   finalStreak: number;
@@ -20,9 +25,17 @@ export function GameOverScreen({
   onExit,
 }: GameOverScreenProps) {
   const [shakeIntensity, setShakeIntensity] = useState(20);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [hasSubmittedThisSession, setHasSubmittedThisSession] = useState(false);
+
   const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
   const useSimplifiedAnimations = isFirefox || prefersReducedMotion;
+  const countdown = useCountdownToMidnight();
+  const personalBest = getPersonalBest();
+
+  const store = useGauntletStore();
+  const { screen, showLeaderboard, hideLeaderboard, setScoreSubmitted } = store;
 
   // Initial shake that calms down
   useEffect(() => {
@@ -33,6 +46,29 @@ export function GameOverScreen({
       clearTimeout(timeout2);
     };
   }, []);
+
+  const handleSubmitSuccess = () => {
+    setHasSubmittedThisSession(true);
+    setScoreSubmitted();
+  };
+
+  const handleOpenSubmitModal = () => {
+    setShowSubmitModal(true);
+  };
+
+  const handleCloseSubmitModal = () => {
+    setShowSubmitModal(false);
+  };
+
+  // If showing leaderboard, render that instead
+  if (screen === 'leaderboard') {
+    return (
+      <LeaderboardScreen
+        playerScore={finalStreak}
+        onBack={hideLeaderboard}
+      />
+    );
+  }
 
   return (
     <motion.div
@@ -138,13 +174,34 @@ export function GameOverScreen({
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.0 }}
-            className="mb-10"
+            className="mb-6 space-y-4"
           >
+            {/* Score */}
             <div className="inline-block px-8 py-4 rounded-xl bg-black/40 border-2 border-red-900/50">
               <div className="flex items-center gap-3">
                 <Skull className="w-6 h-6 text-red-500" />
                 <span className="text-4xl font-black text-red-500">{finalStreak}</span>
                 <span className="text-xl text-red-300/80">opponents defeated</span>
+              </div>
+            </div>
+
+            {/* Personal Best */}
+            {personalBest && (
+              <div className="inline-block px-6 py-2 rounded-lg bg-black/30 border border-yellow-900/40">
+                <div className="flex items-center gap-2 text-sm">
+                  <Trophy className="w-4 h-4 text-yellow-500" />
+                  <span className="text-yellow-400/80">Personal Best:</span>
+                  <span className="font-bold text-yellow-300">{personalBest.score} wins</span>
+                </div>
+              </div>
+            )}
+
+            {/* Countdown timer */}
+            <div className="inline-block px-6 py-2 rounded-lg bg-black/30 border border-red-900/40">
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="w-4 h-4 text-red-400" />
+                <span className="text-red-400/80">Leaderboard resets in:</span>
+                <span className="font-mono font-bold text-red-300">{countdown}</span>
               </div>
             </div>
           </motion.div>
@@ -181,6 +238,53 @@ export function GameOverScreen({
             <span className="relative z-10">Enter the Gauntlet Again</span>
           </motion.button>
 
+          {/* Secondary actions row */}
+          <div className="flex items-center gap-3">
+            {/* Submit Score button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleOpenSubmitModal}
+              disabled={hasSubmittedThisSession}
+              className="px-6 py-3 rounded-lg font-bold uppercase tracking-wide text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: hasSubmittedThisSession
+                  ? 'linear-gradient(135deg, #166534 0%, #15803d 100%)'
+                  : 'linear-gradient(135deg, #b91c1c 0%, #991b1b 100%)',
+                border: hasSubmittedThisSession ? '2px solid #22c55e' : '2px solid #dc2626',
+                color: '#fef2f2',
+              }}
+            >
+              {hasSubmittedThisSession ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  Score Submitted
+                </>
+              ) : (
+                <>
+                  <Trophy className="w-4 h-4" />
+                  Submit Score
+                </>
+              )}
+            </motion.button>
+
+            {/* View Leaderboard button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={showLeaderboard}
+              className="px-6 py-3 rounded-lg font-bold uppercase tracking-wide text-sm flex items-center gap-2"
+              style={{
+                background: 'linear-gradient(135deg, #7c2d12 0%, #92400e 100%)',
+                border: '2px solid #ea580c',
+                color: '#fed7aa',
+              }}
+            >
+              <Trophy className="w-4 h-4" />
+              View Leaderboard
+            </motion.button>
+          </div>
+
           {/* Return to Menu - smaller, less prominent */}
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -197,6 +301,14 @@ export function GameOverScreen({
           </motion.button>
         </motion.div>
       </motion.div>
+
+      {/* Submit Score Modal */}
+      <SubmitScoreModal
+        isOpen={showSubmitModal}
+        onClose={handleCloseSubmitModal}
+        score={finalStreak}
+        onSubmitSuccess={handleSubmitSuccess}
+      />
     </motion.div>
   );
 }
