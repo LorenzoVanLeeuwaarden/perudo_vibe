@@ -6,7 +6,7 @@
 - [x] **v2.0 Cloudflare Deployment** - Phases 10-12 (shipped 2026-01-19) — [archive](milestones/v2.0-ROADMAP.md)
 - [x] **v2.1 Animation Performance** - Phases 13-15 (shipped 2026-01-20) — [archive](milestones/v2.1-ROADMAP.md)
 - [x] **v2.2 UI Unification & Tech Debt** - Phases 16-19 (shipped 2026-01-20) — [archive](milestones/v2.2-ROADMAP.md)
-- [ ] **v3.0 The Gauntlet** - Phases 20-22 (in progress)
+- [x] **v3.0 The Gauntlet** - Phases 20-22 (shipped 2026-01-21)
 
 ## Phases
 
@@ -106,8 +106,8 @@
 
 </details>
 
-<details open>
-<summary>v3.0 The Gauntlet (Phases 20-22) - IN PROGRESS</summary>
+<details>
+<summary>v3.0 The Gauntlet (Phases 20-22) - SHIPPED 2026-01-21</summary>
 
 ### Phase 20: Core Gauntlet Loop & Transitions
 **Goal**: Player can play sequential 1v1 duels with persistent dice and cinematic transitions
@@ -175,16 +175,16 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 22-01-PLAN.md — Achievement system core (definitions, types, localStorage persistence)
-- [ ] 22-02-PLAN.md — Achievement detection and toast notifications
-- [ ] 22-03-PLAN.md — Progress display and achievement gallery
+- [x] 22-01-PLAN.md — Achievement system core (definitions, types, localStorage persistence)
+- [x] 22-02-PLAN.md — Achievement detection and toast notifications
+- [x] 22-03-PLAN.md — Achievement gallery (progress display removed per user request)
 
 </details>
 
 ## Progress
 
 **Execution Order:**
-Phases 1-21 complete. Phase 22 next.
+All phases complete. v3.0 milestone complete.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -194,8 +194,8 @@ Phases 1-21 complete. Phase 22 next.
 | 16-19 | v2.2 | 7/7 | Complete | 2026-01-20 |
 | 20 | v3.0 | 3/3 | Complete | 2026-01-21 |
 | 21 | v3.0 | 5/5 | Complete | 2026-01-21 |
-| 22 | v3.0 | 0/3 | Planned | — |
+| 22 | v3.0 | 3/3 | Complete | 2026-01-21 |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-21 after Phase 22 planning*
+*Last updated: 2026-01-21 after v3.0 completion*

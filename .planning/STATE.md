@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-21)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v3.0 The Gauntlet - Phase 21: Leaderboard Backend & UI
+**Current focus:** v3.0 The Gauntlet — COMPLETE
 
 ## Current Position
 
-Phase: 22 - Achievement System (IN PROGRESS)
-Plan: 2 of 3 in phase
-Status: Phase in progress
-Last activity: 2026-01-21 — Completed 22-02-PLAN.md (Achievement Unlock Logic)
+Phase: 22 - Achievement System (COMPLETE)
+Plan: 3 of 3 in phase
+Status: Milestone complete — v3.0 shipped
+Last activity: 2026-01-21 — Completed Phase 22 (Achievement System)
 
-Progress: [██████████████████  ] 10/11 plans complete across v3.0 phases (20: 3/3, 21: 5/5, 22: 2/3)
+Progress: [████████████████████] 11/11 plans complete across v3.0 phases (20: 3/3, 21: 5/5, 22: 3/3)
 
 ## Production URLs
 
@@ -48,9 +48,10 @@ Progress: [██████████████████  ] 10/11 plans
 - Zero lint errors
 
 **v3.0 Summary:**
-- Phases: 3 (Phases 20-22)
-- Requirements: 24 total
-- Coverage: 24/24 mapped (100%)
+- Phases: 3 (Phases 20-22) — ALL COMPLETE
+- Plans: 11/11 complete
+- Requirements: 23/24 complete (ACHI-04 descoped per user request)
+- Features shipped: Gauntlet mode, Leaderboard, Achievements
 
 ## Accumulated Context
 
@@ -126,6 +127,13 @@ Phase 22-02 Decisions:
 - Run stats reset on startGauntlet() and restartGauntlet() for per-run tracking
 - Max dice deficit tracked throughout duel for comeback-kid achievement
 
+Phase 22-03 Decisions:
+- Achievement gallery accessible from Gauntlet intro screen (not main menu)
+- Progress indicator removed per user request — toast-only approach
+- Gallery uses golden/amber theme consistent with achievement toasts
+- Hidden achievements show "???" mystery state until unlocked
+- Locked milestones show requirements ("Defeat X opponents")
+
 ### Pending Todos
 
 None.
@@ -145,14 +153,14 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-21
-Stopped at: Completed 22-02-PLAN.md (Achievement Unlock Logic)
+Stopped at: v3.0 Milestone complete
 Resume file: None
 
 ## Next Steps
 
-1. Phase 22-03: Achievement UI components (final plan in phase)
-2. Complete v3.0 The Gauntlet feature set
-3. Testing and polish
+1. Run `/gsd:audit-milestone` to verify cross-phase integration
+2. Run `/gsd:complete-milestone` to archive v3.0
+3. Plan v3.1 or next milestone
 
 ---
-*Updated: 2026-01-21 after completing 22-02*
+*Updated: 2026-01-21 after v3.0 completion*
