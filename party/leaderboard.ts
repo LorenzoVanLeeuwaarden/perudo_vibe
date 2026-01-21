@@ -36,6 +36,23 @@ interface LeaderboardEntry {
   submitted_at: string;
 }
 
+// Mock data for local development (when D1 is not available)
+const MOCK_LEADERBOARD: LeaderboardEntry[] = [
+  { id: 1, nickname: 'ProGamer', score: 47, submitted_at: new Date().toISOString() },
+  { id: 2, nickname: 'DiceKing', score: 42, submitted_at: new Date().toISOString() },
+  { id: 3, nickname: 'LuckyRoller', score: 38, submitted_at: new Date().toISOString() },
+  { id: 4, nickname: 'BluffMaster', score: 35, submitted_at: new Date().toISOString() },
+  { id: 5, nickname: 'PerudoPro', score: 31, submitted_at: new Date().toISOString() },
+  { id: 6, nickname: 'SharkSlayer', score: 28, submitted_at: new Date().toISOString() },
+  { id: 7, nickname: 'GauntletHero', score: 25, submitted_at: new Date().toISOString() },
+  { id: 8, nickname: 'DudoCaller', score: 22, submitted_at: new Date().toISOString() },
+  { id: 9, nickname: 'CalzaKing', score: 19, submitted_at: new Date().toISOString() },
+  { id: 10, nickname: 'Challenger', score: 15, submitted_at: new Date().toISOString() },
+];
+
+// In-memory storage for mock submissions during local dev session
+const mockSubmissions: LeaderboardEntry[] = [];
+
 // Validation constants
 const MAX_SCORE = 1000;
 const MIN_SCORE = 0;
@@ -60,42 +77,56 @@ export default class LeaderboardServer implements Party.Server {
     }
 
     // D1 database binding from environment
-    const db = (this.room.env as Record<string, unknown>).gauntlet_leaderboard as D1Database;
-
-    if (!db) {
-      return this.jsonResponse({ error: 'Database not configured' }, 500, corsHeaders);
-    }
+    const db = (this.room.env as Record<string, unknown>).gauntlet_leaderboard as D1Database | undefined;
+    const useMock = !db;
 
     const url = new URL(request.url);
     const path = url.pathname;
 
-    try {
-      // POST / - Submit score
-      if (request.method === 'POST' && (path.endsWith('/leaderboard') || path.endsWith('/leaderboard/'))) {
-        return await this.handleSubmitScore(request, db, corsHeaders);
-      }
+    // Extract the route segment after the room ID (e.g., /parties/leaderboard/global/rank -> rank)
+    // PartyKit URL structure: /parties/{party-name}/{room-id}/{route?}
+    const pathParts = path.split('/').filter(Boolean);
+    const route = pathParts.length > 3 ? pathParts.slice(3).join('/') : '';
 
+    try {
       // GET /rank - Get player rank
-      if (request.method === 'GET' && path.includes('/rank')) {
-        return await this.handleGetRank(url, db, corsHeaders);
+      if (request.method === 'GET' && route === 'rank') {
+        if (useMock) {
+          return this.handleMockGetRank(url, corsHeaders);
+        }
+        return await this.handleGetRank(url, db!, corsHeaders);
       }
 
       // GET /near - Get nearby scores
-      if (request.method === 'GET' && path.includes('/near')) {
-        return await this.handleGetNearby(url, db, corsHeaders);
+      if (request.method === 'GET' && route === 'near') {
+        if (useMock) {
+          return this.handleMockGetNearby(url, corsHeaders);
+        }
+        return await this.handleGetNearby(url, db!, corsHeaders);
       }
 
-      // GET / - Fetch top 100
-      if (request.method === 'GET' && (path.endsWith('/leaderboard') || path.endsWith('/leaderboard/'))) {
-        return await this.handleFetchLeaderboard(url, db, corsHeaders);
+      // GET /health - Health check
+      if (request.method === 'GET' && route === 'health') {
+        return this.jsonResponse({ status: 'ok', mock: useMock, timestamp: new Date().toISOString() }, 200, corsHeaders);
       }
 
-      // Health check
-      if (request.method === 'GET' && path.endsWith('/health')) {
-        return this.jsonResponse({ status: 'ok', timestamp: new Date().toISOString() }, 200, corsHeaders);
+      // POST / - Submit score (no route segment)
+      if (request.method === 'POST' && route === '') {
+        if (useMock) {
+          return await this.handleMockSubmitScore(request, corsHeaders);
+        }
+        return await this.handleSubmitScore(request, db!, corsHeaders);
       }
 
-      return this.jsonResponse({ error: 'Not found' }, 404, corsHeaders);
+      // GET / - Fetch top 100 (no route segment)
+      if (request.method === 'GET' && route === '') {
+        if (useMock) {
+          return this.handleMockFetchLeaderboard(corsHeaders);
+        }
+        return await this.handleFetchLeaderboard(url, db!, corsHeaders);
+      }
+
+      return this.jsonResponse({ error: 'Not found', path, route }, 404, corsHeaders);
     } catch (error) {
       console.error('Leaderboard error:', error);
       return this.jsonResponse(
@@ -309,6 +340,121 @@ export default class LeaderboardServer implements Party.Server {
       return this.jsonResponse({ error: 'Failed to get nearby scores' }, 500, corsHeaders);
     }
   }
+
+  // ==================== Mock handlers for local development ====================
+
+  private async handleMockSubmitScore(
+    request: Party.Request,
+    corsHeaders: Record<string, string>
+  ): Promise<Response> {
+    let body: { nickname?: string; score?: unknown };
+
+    try {
+      body = await request.json();
+    } catch {
+      return this.jsonResponse({ error: 'Invalid JSON' }, 400, corsHeaders);
+    }
+
+    const { nickname, score } = body;
+
+    // Validate nickname
+    if (!nickname || typeof nickname !== 'string') {
+      return this.jsonResponse({ error: 'Nickname is required' }, 400, corsHeaders);
+    }
+
+    if (nickname.length < MIN_NICKNAME_LENGTH || nickname.length > MAX_NICKNAME_LENGTH) {
+      return this.jsonResponse(
+        { error: `Nickname must be between ${MIN_NICKNAME_LENGTH} and ${MAX_NICKNAME_LENGTH} characters` },
+        400,
+        corsHeaders
+      );
+    }
+
+    if (!NICKNAME_REGEX.test(nickname)) {
+      return this.jsonResponse(
+        { error: 'Nickname must contain only alphanumeric characters and spaces' },
+        400,
+        corsHeaders
+      );
+    }
+
+    // Validate score
+    if (typeof score !== 'number' || !Number.isInteger(score)) {
+      return this.jsonResponse({ error: 'Score must be an integer' }, 400, corsHeaders);
+    }
+
+    if (score < MIN_SCORE || score > MAX_SCORE) {
+      return this.jsonResponse({ error: `Score must be between ${MIN_SCORE} and ${MAX_SCORE}` }, 400, corsHeaders);
+    }
+
+    // Add to mock submissions
+    const newEntry: LeaderboardEntry = {
+      id: Date.now(),
+      nickname,
+      score,
+      submitted_at: new Date().toISOString(),
+    };
+    mockSubmissions.push(newEntry);
+
+    console.log('[MOCK] Score submitted:', newEntry);
+    return this.jsonResponse({ success: true, mock: true }, 201, corsHeaders);
+  }
+
+  private handleMockFetchLeaderboard(corsHeaders: Record<string, string>): Response {
+    // Combine mock data with any submissions from this session
+    const allEntries = [...MOCK_LEADERBOARD, ...mockSubmissions]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 100);
+
+    console.log('[MOCK] Fetching leaderboard, entries:', allEntries.length);
+    return this.jsonResponse({ items: allEntries, nextCursor: null, mock: true }, 200, corsHeaders);
+  }
+
+  private handleMockGetRank(url: URL, corsHeaders: Record<string, string>): Response {
+    const scoreParam = url.searchParams.get('score');
+
+    if (!scoreParam) {
+      return this.jsonResponse({ error: 'Score parameter is required' }, 400, corsHeaders);
+    }
+
+    const score = parseInt(scoreParam, 10);
+    if (isNaN(score)) {
+      return this.jsonResponse({ error: 'Score must be a valid number' }, 400, corsHeaders);
+    }
+
+    // Count how many scores are higher
+    const allEntries = [...MOCK_LEADERBOARD, ...mockSubmissions];
+    const rank = allEntries.filter((e) => e.score > score).length + 1;
+
+    console.log('[MOCK] Get rank for score:', score, '-> rank:', rank);
+    return this.jsonResponse({ rank, mock: true }, 200, corsHeaders);
+  }
+
+  private handleMockGetNearby(url: URL, corsHeaders: Record<string, string>): Response {
+    const scoreParam = url.searchParams.get('score');
+
+    if (!scoreParam) {
+      return this.jsonResponse({ error: 'Score parameter is required' }, 400, corsHeaders);
+    }
+
+    const score = parseInt(scoreParam, 10);
+    if (isNaN(score)) {
+      return this.jsonResponse({ error: 'Score must be a valid number' }, 400, corsHeaders);
+    }
+
+    const allEntries = [...MOCK_LEADERBOARD, ...mockSubmissions].sort((a, b) => b.score - a.score);
+
+    // Get 3 scores above (closest to player, in descending order)
+    const above = allEntries.filter((e) => e.score > score).slice(-3);
+
+    // Get 3 scores below
+    const below = allEntries.filter((e) => e.score < score).slice(0, 3);
+
+    console.log('[MOCK] Get nearby for score:', score, '-> above:', above.length, 'below:', below.length);
+    return this.jsonResponse({ above, below, mock: true }, 200, corsHeaders);
+  }
+
+  // ==================== End mock handlers ====================
 
   private jsonResponse(data: unknown, status: number, headers: Record<string, string> = {}): Response {
     return new Response(JSON.stringify(data), {

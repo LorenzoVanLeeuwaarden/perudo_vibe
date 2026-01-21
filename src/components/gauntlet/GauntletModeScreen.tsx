@@ -122,7 +122,7 @@ export function GauntletModeScreen({ playerColor, onExit }: GauntletModeScreenPr
           </motion.div>
         )}
 
-        {screen === 'gameOver' && (
+        {(screen === 'gameOver' || screen === 'leaderboard') && (
           <motion.div
             key="gameOver"
             initial={{ opacity: 0, y: 50 }}
