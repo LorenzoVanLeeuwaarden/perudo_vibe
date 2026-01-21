@@ -3,3 +3,5 @@ export { FightCard } from './FightCard';
 export { VictorySplash } from './VictorySplash';
 export { GameOverScreen } from './GameOverScreen';
 export { StreakCounter } from './StreakCounter';
+export { GauntletModeScreen } from './GauntletModeScreen';
+export { GauntletGameplay } from './GauntletGameplay';
