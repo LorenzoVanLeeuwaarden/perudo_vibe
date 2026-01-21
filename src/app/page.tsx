@@ -38,6 +38,7 @@ import { GameResultsScreen } from '@/components/GameResultsScreen';
 import type { PlayerStats, GameStats } from '@/shared/types';
 import { GauntletModeScreen } from '@/components/gauntlet';
 import { useGauntletStore } from '@/stores/gauntletStore';
+import { useTutorialStore } from '@/stores/tutorialStore';
 
 // AI thinking prompts - varied and fun
 const AI_THINKING_PROMPTS = [
@@ -258,6 +259,15 @@ export default function LastDieGame() {
     setGameState('ModeSelection');
     // Reset gauntlet store
     useGauntletStore.getState().exitToMenu();
+  }, []);
+
+  const handleSelectTutorial = useCallback(() => {
+    setGameState('Tutorial');
+  }, []);
+
+  const handleExitTutorial = useCallback(() => {
+    useTutorialStore.getState().exitTutorial();
+    setGameState('ModeSelection');
   }, []);
 
   // Calculate total dice
@@ -1645,6 +1655,7 @@ export default function LastDieGame() {
                 onSelectAI={handleSelectAI}
                 onSelectMultiplayer={handleSelectMultiplayer}
                 onSelectGauntlet={handleSelectGauntlet}
+                onSelectTutorial={handleSelectTutorial}
                 playerColor={playerColor}
               />
             </motion.div>
@@ -1751,6 +1762,22 @@ export default function LastDieGame() {
               playerColor={playerColor}
               onExit={handleExitGauntlet}
             />
+          )}
+
+          {/* TUTORIAL MODE */}
+          {gameState === 'Tutorial' && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              {/* Placeholder - TutorialScreen imported from Plan 03 */}
+              <div className="flex flex-col items-center justify-center h-full gap-4">
+                <p className="text-white-soft text-lg">Tutorial mode - coming in Plan 03</p>
+                <button
+                  onClick={handleExitTutorial}
+                  className="px-4 py-2 text-sm text-white-soft/70 hover:text-white-soft underline underline-offset-4 transition-colors"
+                >
+                  Back to Menu
+                </button>
+              </div>
+            </div>
           )}
 
           {/* ROLLING */}
