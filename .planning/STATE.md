@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 23 - Tutorial Foundation
-Plan: 01 of 3 complete
+Plan: 02 of 3 complete
 Status: In progress
-Last activity: 2026-01-21 — Completed 23-01-PLAN.md (Tutorial Entry Point)
+Last activity: 2026-01-22 — Completed 23-02-PLAN.md (Tutorial Script and Gameplay)
 
-Progress: [███░░░░░░░░░░░░░░░░░] 1/3 plans (Phase 23)
+Progress: [██████░░░░░░░░░░░░░░] 2/3 plans (Phase 23)
 
 ## Production URLs
 
@@ -144,7 +144,14 @@ Phase 23-01 Decisions:
 - "How to Play" button styled as subtle text link (not card)
 - Tutorial completion persists to localStorage (tutorial_completed key)
 - 300ms transition delay for tutorial (shorter than game modes)
-- totalSteps set to 8 as placeholder (actual steps defined in Plan 02)
+- totalSteps set to 6 (matches TUTORIAL_SCRIPT.steps.length)
+
+Phase 23-02 Decisions:
+- No jokers in tutorial dice for clearer counting
+- 6 steps minimal viable teaching (roll, bid, alex-bids, sam-bids, dudo, reveal)
+- God-mode shows all dice face-up for transparency
+- Pass dice values to handleReveal to avoid circular hook dependencies
+- tutorialStore totalSteps updated to 6 (from placeholder 8)
 
 ### Pending Todos
 
@@ -164,15 +171,14 @@ None (cleared in v2.2)
 
 ## Session Continuity
 
-Last session: 2026-01-21
-Stopped at: Completed 23-01-PLAN.md (Tutorial Entry Point)
-Resume file: .planning/phases/23-tutorial-foundation/23-02-PLAN.md
+Last session: 2026-01-22
+Stopped at: Completed 23-02-PLAN.md (Tutorial Script and Gameplay)
+Resume file: .planning/phases/23-tutorial-foundation/23-03-PLAN.md
 
 ## Next Steps
 
-1. Execute 23-02-PLAN.md (Tutorial Types and Script Data)
-2. Execute 23-03-PLAN.md (Tutorial Screen Component)
-3. Continue with Phase 24-25
+1. Execute 23-03-PLAN.md (Tutorial Screen Component)
+2. Continue with Phase 24-25
 
 ---
-*Updated: 2026-01-21 after completing 23-01-PLAN.md*
+*Updated: 2026-01-22 after completing 23-02-PLAN.md*
