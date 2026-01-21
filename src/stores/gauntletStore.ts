@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getPersonalBest, updatePersonalBest, PersonalBest } from '@/lib/personal-best';
 
 // AI names pool for gauntlet opponents
 const AI_NAMES = [
@@ -46,6 +47,9 @@ interface GauntletState {
   isActive: boolean;
   screen: ScreenState;
 
+  // Personal best tracking
+  personalBest: PersonalBest | null;
+
   // Actions
   startGauntlet: () => void;
   winDuel: () => void;
@@ -55,6 +59,8 @@ interface GauntletState {
   startDuel: () => void;
   restartGauntlet: () => void;
   exitToMenu: () => void;
+  loadPersonalBest: () => void;
+  checkPersonalBest: () => boolean;
 
   // Derived getters
   getDifficultyTier: () => DifficultyTier;
@@ -92,6 +98,7 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
   currentPersonalityId: null,
   isActive: false,
   screen: 'rules',
+  personalBest: null,
 
   // Actions
   startGauntlet: () => {
@@ -118,15 +125,34 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
   loseDie: () => {
     set((state) => {
       const newDiceCount = state.playerDiceCount - 1;
+      if (newDiceCount === 0) {
+        // Check personal best when game ends
+        const isNewBest = updatePersonalBest(state.streak);
+        return {
+          playerDiceCount: newDiceCount,
+          screen: 'gameOver',
+          personalBest: isNewBest ? getPersonalBest() : state.personalBest,
+        };
+      }
       return {
         playerDiceCount: newDiceCount,
-        screen: newDiceCount === 0 ? 'gameOver' : state.screen,
       };
     });
   },
 
   setPlayerDiceCount: (count: number) => {
-    set({ playerDiceCount: count });
+    // If player has no dice left, transition to game over
+    if (count === 0) {
+      const state = get();
+      const isNewBest = updatePersonalBest(state.streak);
+      set({
+        playerDiceCount: count,
+        screen: 'gameOver',
+        personalBest: isNewBest ? getPersonalBest() : state.personalBest,
+      });
+    } else {
+      set({ playerDiceCount: count });
+    }
   },
 
   showFightCard: () => {
@@ -166,6 +192,20 @@ export const useGauntletStore = create<GauntletState>((set, get) => ({
       isActive: false,
       screen: 'rules',
     });
+  },
+
+  loadPersonalBest: () => {
+    const best = getPersonalBest();
+    set({ personalBest: best });
+  },
+
+  checkPersonalBest: () => {
+    const state = get();
+    const isNewBest = updatePersonalBest(state.streak);
+    if (isNewBest) {
+      set({ personalBest: getPersonalBest() });
+    }
+    return isNewBest;
   },
 
   // Derived getters
