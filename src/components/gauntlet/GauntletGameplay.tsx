@@ -321,34 +321,14 @@ export function GauntletGameplay({
     [playerHand, playerDiceCount]
   );
 
-  const handleBid = useCallback(
-    (bid: Bid) => {
-      setCurrentBid(bid);
-      setLastBidder('player');
-      lastBidderRef.current = 'player';
-      setIsMyTurn(false);
-
-      // Update memory
-      if (sessionMemoryRef.current) {
-        const event: MemoryEvent = {
-          type: 'bid_placed',
-          playerId: 'player',
-          bid,
-        };
-        updateMemory(sessionMemoryRef.current, event);
-      }
-
-      // AI turn
-      setTimeout(() => runAITurn(bid), 1000);
-    },
-    []
-  );
-
   const runAITurn = useCallback(
     (currentBidValue: Bid) => {
       const opp = opponentRef.current;
       const memory = sessionMemoryRef.current;
-      if (!opp || !aiPersonality || !memory) return;
+      if (!opp || !aiPersonality || !memory) {
+        console.log('[runAITurn] Missing:', { opp, aiPersonality, memory });
+        return;
+      }
 
       setAiThinking(true);
       const randomPrompt = AI_THINKING_PROMPTS[Math.floor(Math.random() * AI_THINKING_PROMPTS.length)];
@@ -370,12 +350,13 @@ export function GauntletGameplay({
           'player'
         );
 
-        const decision = makeDecision(aiPersonality, context);
+        const decision = makeDecision(context);
 
         setAiThinking(false);
 
         if (decision.action === 'bid' && decision.bid) {
           setCurrentBid(decision.bid);
+          currentBidRef.current = decision.bid;
           setLastBidder(opp.id);
           lastBidderRef.current = opp.id;
           setIsMyTurn(true);
@@ -397,6 +378,32 @@ export function GauntletGameplay({
     [aiPersonality, totalDice, playerDiceCount, handleReveal]
   );
 
+  const handleBid = useCallback(
+    (bid: Bid) => {
+      setCurrentBid(bid);
+      currentBidRef.current = bid;
+      setLastBidder('player');
+      lastBidderRef.current = 'player';
+      setIsMyTurn(false);
+
+      // Update memory
+      if (sessionMemoryRef.current) {
+        const event: MemoryEvent = {
+          type: 'bid_placed',
+          playerId: 'player',
+          bid,
+        };
+        updateMemory(sessionMemoryRef.current, event);
+      }
+
+      // AI turn - schedule it
+      setTimeout(() => {
+        runAITurn(bid);
+      }, 1000);
+    },
+    [runAITurn]
+  );
+
   const handleDudo = useCallback(() => {
     handleReveal('player', false);
   }, [handleReveal]);
@@ -404,11 +411,6 @@ export function GauntletGameplay({
   const handleCalza = useCallback(() => {
     handleReveal('player', true);
   }, [handleReveal]);
-
-  const handleSkipReveal = useCallback(() => {
-    setShowDudoOverlay(false);
-    setDudoOverlayComplete(true);
-  }, []);
 
   const handleCelebrationComplete = useCallback(() => {
     // Sync dice count back to gauntlet store
@@ -427,7 +429,7 @@ export function GauntletGameplay({
     }
 
     // Continue to next round
-    const anyPalifico = playerDiceCount === 1 || (opponent && opponent.diceCount === 1);
+    const anyPalifico = playerDiceCount === 1 || (opponent ? opponent.diceCount === 1 : false);
     setIsPalifico(anyPalifico);
     isPalificoRef.current = anyPalifico;
 
@@ -442,6 +444,23 @@ export function GauntletGameplay({
     lastBidderRef.current = null;
   }, [playerDiceCount, opponent, winDuel, setPlayerDiceCount]);
 
+  const handleSkipReveal = useCallback(() => {
+    setShowDudoOverlay(false);
+    setDudoOverlayComplete(true);
+
+    // After overlay completes, check for victory/defeat
+    setTimeout(() => {
+      if (playerDiceCount === 0) {
+        setGameState('Defeat');
+      } else if (opponent && opponent.diceCount === 0) {
+        setGameState('Victory');
+      } else {
+        // Continue to next round
+        handleCelebrationComplete();
+      }
+    }, 1500);
+  }, [playerDiceCount, opponent, handleCelebrationComplete]);
+
   // Auto-roll when entering Rolling state
   useEffect(() => {
     if (gameState === 'Rolling' && !isRolling) {
@@ -454,7 +473,7 @@ export function GauntletGameplay({
       <ShaderBackground />
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen py-4 px-2">
-        {/* Opponent section */}
+        {/* Opponent section - TOP */}
         {opponent && (
           <div className="mb-4">
             <PlayerDiceBadge
@@ -473,68 +492,141 @@ export function GauntletGameplay({
           </div>
         )}
 
-        {/* Opponent dice (face down during bidding, revealed during reveal) */}
+        {/* Opponent dice - Hidden backs during bidding */}
         {opponent && gameState === 'Bidding' && (
           <div className="mb-8">
             <div className="flex gap-2">
               {Array.from({ length: opponent.diceCount }).map((_, i) => (
                 <motion.div
                   key={i}
-                  initial={{ rotateY: 0 }}
-                  className="relative"
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center text-3xl font-bold"
                   style={{
-                    width: '48px',
-                    height: '48px',
-                    transformStyle: 'preserve-3d',
+                    background: 'linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%)',
+                    border: '2px solid rgba(100, 100, 150, 0.3)',
+                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.5)',
                   }}
                 >
-                  <Dice
-                    value={1}
-                    color={opponent.color}
-                  />
+                  <span className="text-gray-500">?</span>
                 </motion.div>
               ))}
             </div>
           </div>
         )}
 
+        {/* Opponent dice - Revealed during reveal phase */}
         {opponent && gameState === 'Reveal' && dudoOverlayComplete && (
           <div className="mb-8">
             <SortedDiceDisplay
               dice={opponent.hand}
               color={opponent.color}
-              highlightedIndex={highlightedDiceIndex}
-              dyingIndex={dyingDieOwner === opponent.id ? dyingDieIndex : -1}
-              spawningValue={spawningDieOwner === opponent.id ? spawningDieValue : null}
+              isPalifico={isPalifico}
+              highlightValue={currentBid?.value || null}
             />
           </div>
         )}
 
-        {/* Current bid display */}
+        {/* Current bid display - MIDDLE */}
         {currentBid && gameState === 'Bidding' && (
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="mb-6 px-6 py-3 rounded-xl"
-            style={{
-              background: 'rgba(0, 0, 0, 0.6)',
-              border: `2px solid ${colorConfig.border}`,
-            }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative mb-8"
+            style={{ perspective: '800px' }}
           >
-            <div className="flex items-center gap-3">
-              <span className="text-white-soft/70 text-sm">Current bid:</span>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-white">{currentBid.count}</span>
-                <Dice
-                  value={currentBid.value}
-                  color={playerColor}
-                />
+            {/* Player token showing who made the bid */}
+            {lastBidder && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="absolute -top-3 -left-3 z-20"
+              >
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-[9px] font-mono font-bold uppercase tracking-wider"
+                  style={{
+                    background: lastBidder === 'player'
+                      ? `linear-gradient(135deg, ${colorConfig.bg} 0%, ${colorConfig.shadow} 100%)`
+                      : opponent ? `linear-gradient(135deg, ${PLAYER_COLORS[opponent.color].bg} 0%, ${PLAYER_COLORS[opponent.color].shadow} 100%)` : '',
+                    color: '#fff',
+                    boxShadow: `0 3px 10px rgba(0,0,0,0.5), 0 0 15px ${lastBidder === 'player' ? colorConfig.glow : opponent ? PLAYER_COLORS[opponent.color].glow : ''}`,
+                    border: `2px solid ${lastBidder === 'player' ? colorConfig.border : opponent ? PLAYER_COLORS[opponent.color].border : ''}`,
+                  }}
+                >
+                  {lastBidder === 'player' ? 'YOU' : opponent?.name.slice(0, 3).toUpperCase()}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Recessed table surface */}
+            <motion.div
+              className="rounded-xl p-5 relative"
+              style={{
+                background: 'linear-gradient(180deg, rgba(3, 15, 15, 0.95) 0%, rgba(10, 31, 31, 0.9) 100%)',
+                boxShadow: `
+                  inset 0 4px 20px rgba(0, 0, 0, 0.8),
+                  inset 0 2px 4px rgba(0, 0, 0, 0.5),
+                  inset 0 -2px 10px ${lastBidder === 'player' ? colorConfig.glow : opponent ? PLAYER_COLORS[opponent.color].glow : 'rgba(45, 212, 191, 0.05)'},
+                  0 4px 20px rgba(0, 0, 0, 0.4),
+                  0 0 20px ${lastBidder === 'player' ? colorConfig.glow : opponent ? PLAYER_COLORS[opponent.color].glow : 'transparent'}
+                `,
+                border: `2px solid ${lastBidder === 'player' ? colorConfig.border : opponent ? PLAYER_COLORS[opponent.color].border : 'rgba(45, 212, 191, 0.15)'}`,
+                transformOrigin: 'center bottom',
+              }}
+              animate={{
+                y: [0, -3, 0, 3, 0],
+              }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            >
+              {/* Inner carved edge */}
+              <div
+                className="absolute inset-2 rounded-lg pointer-events-none"
+                style={{
+                  border: '1px solid rgba(0, 0, 0, 0.3)',
+                  boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.4)',
+                }}
+              />
+
+              {/* Bid dice display */}
+              <div className="flex flex-wrap items-center justify-center gap-2 py-1">
+                {Array.from({ length: currentBid.count }).map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ scale: 0, rotate: -90 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: i * 0.03, type: 'spring', stiffness: 400 }}
+                  >
+                    <Dice
+                      value={currentBid.value}
+                      index={i}
+                      size="sm"
+                      isPalifico={isPalifico}
+                      color={lastBidder === 'player' ? playerColor : opponent?.color || playerColor}
+                    />
+                  </motion.div>
+                ))}
               </div>
-            </div>
+              {/* Count badge */}
+              <p
+                className="text-center text-2xl font-black mt-1"
+                style={{
+                  color: '#f59e0b',
+                  textShadow: '0 0 10px #f59e0b',
+                }}
+              >
+                {currentBid.count}×
+              </p>
+            </motion.div>
           </motion.div>
         )}
 
-        {/* Player dice cup (rolling) or sorted hand (bidding/reveal) */}
+        {/* Player dice - BOTTOM - Using SortedDiceDisplay with glow */}
         <div className="mb-6">
           {gameState === 'Rolling' && (
             <DiceCup
@@ -550,9 +642,8 @@ export function GauntletGameplay({
             <SortedDiceDisplay
               dice={playerHand}
               color={playerColor}
-              highlightedIndex={highlightedDiceIndex}
-              dyingIndex={dyingDieOwner === 'player' ? dyingDieIndex : -1}
-              spawningValue={spawningDieOwner === 'player' ? spawningDieValue : null}
+              isPalifico={isPalifico}
+              highlightValue={currentBid?.value || null}
             />
           )}
         </div>
@@ -589,51 +680,23 @@ export function GauntletGameplay({
 
       {/* Dudo overlay */}
       <AnimatePresence>
-        {showDudoOverlay && currentBid && (
+        {showDudoOverlay && (
           <DudoOverlay
-            currentBid={currentBid}
-            actualCount={actualCount}
-            dudoCaller={dudoCaller}
-            calzaCaller={calzaCaller}
-            lastBidder={lastBidder}
-            allHands={{
-              player: playerHand,
-              ...(opponent ? { [opponent.id]: opponent.hand } : {}),
-            }}
-            players={{
-              player: { name: 'You', color: playerColor },
-              ...(opponent ? { [opponent.id]: { name: opponent.name, color: opponent.color } } : {}),
-            }}
-            onComplete={handleSkipReveal}
-            onHighlightDice={setHighlightedDiceIndex}
-            onCountingComplete={() => setCountingComplete(true)}
-            onDyingDie={(owner: string, index: number) => {
-              setDyingDieOwner(owner);
-              setDyingDieIndex(index);
-            }}
-            calzaSuccess={calzaSuccess}
-            isPalifico={isPalifico}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Reveal content */}
-      <AnimatePresence>
-        {gameState === 'Reveal' && dudoOverlayComplete && (
-          <RevealContent
-            result={roundResult || 'win'}
-            loser={loser || 'player'}
-            countingComplete={countingComplete}
-            playerDiceCount={playerDiceCount}
-            opponentDiceCounts={opponent ? { [opponent.id]: opponent.diceCount } : {}}
-            onAnimationComplete={() => {
-              if (playerDiceCount === 0) {
-                setGameState('Defeat');
-              } else if (opponent && opponent.diceCount === 0) {
-                setGameState('Victory');
-              } else {
-                handleCelebrationComplete();
-              }
+            isVisible={showDudoOverlay}
+            type={calzaCaller !== null ? 'calza' : 'dudo'}
+            callerName={
+              calzaCaller !== null
+                ? (calzaCaller === 'player' ? 'You' : opponent?.name || 'AI')
+                : (dudoCaller === 'player' ? 'You' : opponent?.name || 'AI')
+            }
+            callerColor={
+              calzaCaller !== null
+                ? (calzaCaller === 'player' ? playerColor : opponent?.color || 'orange')
+                : (dudoCaller === 'player' ? playerColor : opponent?.color || 'orange')
+            }
+            onComplete={() => {
+              setShowDudoOverlay(false);
+              setDudoOverlayComplete(true);
             }}
           />
         )}
