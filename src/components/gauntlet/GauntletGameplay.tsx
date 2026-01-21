@@ -88,6 +88,7 @@ export function GauntletGameplay({
   const [aiPersonality, setAiPersonality] = useState<Personality | null>(null);
   const [aiThinking, setAiThinking] = useState(false);
   const [aiThinkingPrompt, setAiThinkingPrompt] = useState('');
+  const [selectedBidValue, setSelectedBidValue] = useState<number | null>(null); // Track bid value being selected
 
   // Reveal state - SAME AS SINGLE-PLAYER
   const [dudoCaller, setDudoCaller] = useState<'player' | string | null>(null);
@@ -138,6 +139,13 @@ export function GauntletGameplay({
   useEffect(() => {
     sessionMemoryRef.current = sessionMemory;
   }, [sessionMemory]);
+
+  // Clear selected bid value when turn changes away from player
+  useEffect(() => {
+    if (!isMyTurn) {
+      setSelectedBidValue(null);
+    }
+  }, [isMyTurn]);
 
   const colorConfig = PLAYER_COLORS[playerColor];
   const opponentColor = OPPONENT_COLORS.find(c => c !== playerColor) || 'red';
@@ -848,6 +856,7 @@ export function GauntletGameplay({
                 isPalifico={isPalifico}
                 canCalza={canCalza}
                 hideBidDisplay={true}
+                onValueChange={setSelectedBidValue}
               />
             </div>
           )}
@@ -904,7 +913,7 @@ export function GauntletGameplay({
                 isPalifico={isPalifico}
                 size="lg"
                 animateSort={true}
-                highlightValue={currentBid?.value || null}
+                highlightValue={isMyTurn ? selectedBidValue : (currentBid ? currentBid.value : null)}
                 draggable={true}
               />
             </motion.div>
