@@ -412,6 +412,9 @@ export function GauntletGameplay({
     handleReveal('player', true);
   }, [handleReveal]);
 
+  // Can only Calza if opponent made the last bid
+  const canCalza = lastBidder !== 'player' && currentBid !== null;
+
   const handleCelebrationComplete = useCallback(() => {
     // Sync dice count back to gauntlet store
     setPlayerDiceCount(playerDiceCount);
@@ -473,26 +476,9 @@ export function GauntletGameplay({
       <ShaderBackground />
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen py-4 px-2">
-        {/* Opponent section - TOP */}
-        {opponent && (
-          <div className="mb-4">
-            <PlayerDiceBadge
-              playerName={opponent.name}
-              diceCount={
-                gameState === 'Reveal' && !dudoOverlayComplete
-                  ? revealOpponentDiceCount
-                  : opponent.diceCount
-              }
-              color={opponent.color}
-              isActive={!isMyTurn}
-              isEliminated={opponent.diceCount === 0}
-              showThinking={aiThinking}
-              thinkingPrompt={aiThinkingPrompt}
-            />
-          </div>
-        )}
+        {/* Opponent section - TOP - no badge needed in 1v1 */}
 
-        {/* Opponent dice - Hidden backs during bidding */}
+        {/* Opponent dice - Solid red backs during bidding */}
         {opponent && gameState === 'Bidding' && (
           <div className="mb-8">
             <div className="flex gap-2">
@@ -502,15 +488,12 @@ export function GauntletGameplay({
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center text-3xl font-bold"
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg"
                   style={{
-                    background: 'linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%)',
-                    border: '2px solid rgba(100, 100, 150, 0.3)',
+                    background: '#dc2626',
                     boxShadow: '0 4px 10px rgba(0, 0, 0, 0.5)',
                   }}
-                >
-                  <span className="text-gray-500">?</span>
-                </motion.div>
+                />
               ))}
             </div>
           </div>
@@ -626,8 +609,28 @@ export function GauntletGameplay({
           </motion.div>
         )}
 
-        {/* Player dice - BOTTOM - Using SortedDiceDisplay with glow */}
-        <div className="mb-6">
+        {/* Spacer to push content up */}
+        <div className="flex-1" />
+
+        {/* Bidding UI */}
+        {gameState === 'Bidding' && isMyTurn && (
+          <div className="mb-6">
+            <BidUI
+              currentBid={currentBid}
+              onBid={handleBid}
+              onDudo={handleDudo}
+              onCalza={handleCalza}
+              isMyTurn={isMyTurn}
+              totalDice={totalDice}
+              playerColor={playerColor}
+              isPalifico={isPalifico}
+              canCalza={canCalza}
+            />
+          </div>
+        )}
+
+        {/* Player dice - ABSOLUTE BOTTOM - Using SortedDiceDisplay with glow */}
+        <div className="pb-4">
           {gameState === 'Rolling' && (
             <DiceCup
               dice={playerHand}
@@ -647,35 +650,6 @@ export function GauntletGameplay({
             />
           )}
         </div>
-
-        {/* Player badge */}
-        <div className="mb-6">
-          <PlayerDiceBadge
-            playerName="You"
-            diceCount={
-              gameState === 'Reveal' && !dudoOverlayComplete
-                ? revealPlayerDiceCount
-                : playerDiceCount
-            }
-            color={playerColor}
-            isActive={isMyTurn}
-            isEliminated={playerDiceCount === 0}
-          />
-        </div>
-
-        {/* Bidding UI */}
-        {gameState === 'Bidding' && isMyTurn && (
-          <BidUI
-            currentBid={currentBid}
-            onBid={handleBid}
-            onDudo={handleDudo}
-            onCalza={handleCalza}
-            isMyTurn={isMyTurn}
-            totalDice={totalDice}
-            playerColor={playerColor}
-            isPalifico={isPalifico}
-          />
-        )}
       </div>
 
       {/* Dudo overlay */}
