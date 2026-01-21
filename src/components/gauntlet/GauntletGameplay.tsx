@@ -8,7 +8,6 @@ import { BidUI } from '@/components/BidUI';
 import { Dice } from '@/components/Dice';
 import { ShaderBackground } from '@/components/ShaderBackground';
 import { DudoOverlay } from '@/components/DudoOverlay';
-import { PlayerDiceBadge } from '@/components/PlayerDiceBadge';
 import { SortedDiceDisplay } from '@/components/SortedDiceDisplay';
 import { RevealContent } from '@/components/RevealContent';
 import { VictoryScreen } from '@/components/VictoryScreen';
@@ -519,30 +518,6 @@ export function GauntletGameplay({
             className="relative mb-8"
             style={{ perspective: '800px' }}
           >
-            {/* Player token showing who made the bid */}
-            {lastBidder && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                className="absolute -top-3 -left-3 z-20"
-              >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-[9px] font-mono font-bold uppercase tracking-wider"
-                  style={{
-                    background: lastBidder === 'player'
-                      ? `linear-gradient(135deg, ${colorConfig.bg} 0%, ${colorConfig.shadow} 100%)`
-                      : opponent ? `linear-gradient(135deg, ${PLAYER_COLORS[opponent.color].bg} 0%, ${PLAYER_COLORS[opponent.color].shadow} 100%)` : '',
-                    color: '#fff',
-                    boxShadow: `0 3px 10px rgba(0,0,0,0.5), 0 0 15px ${lastBidder === 'player' ? colorConfig.glow : opponent ? PLAYER_COLORS[opponent.color].glow : ''}`,
-                    border: `2px solid ${lastBidder === 'player' ? colorConfig.border : opponent ? PLAYER_COLORS[opponent.color].border : ''}`,
-                  }}
-                >
-                  {lastBidder === 'player' ? 'YOU' : opponent?.name.slice(0, 3).toUpperCase()}
-                </div>
-              </motion.div>
-            )}
-
             {/* Recessed table surface */}
             <motion.div
               className="rounded-xl p-5 relative"
@@ -551,11 +526,10 @@ export function GauntletGameplay({
                 boxShadow: `
                   inset 0 4px 20px rgba(0, 0, 0, 0.8),
                   inset 0 2px 4px rgba(0, 0, 0, 0.5),
-                  inset 0 -2px 10px ${lastBidder === 'player' ? colorConfig.glow : opponent ? PLAYER_COLORS[opponent.color].glow : 'rgba(45, 212, 191, 0.05)'},
-                  0 4px 20px rgba(0, 0, 0, 0.4),
-                  0 0 20px ${lastBidder === 'player' ? colorConfig.glow : opponent ? PLAYER_COLORS[opponent.color].glow : 'transparent'}
+                  inset 0 -2px 10px rgba(45, 212, 191, 0.05),
+                  0 4px 20px rgba(0, 0, 0, 0.4)
                 `,
-                border: `2px solid ${lastBidder === 'player' ? colorConfig.border : opponent ? PLAYER_COLORS[opponent.color].border : 'rgba(45, 212, 191, 0.15)'}`,
+                border: '2px solid rgba(45, 212, 191, 0.15)',
                 transformOrigin: 'center bottom',
               }}
               animate={{

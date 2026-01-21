@@ -7,7 +7,6 @@ import { RulesScreen } from './RulesScreen';
 import { FightCard } from './FightCard';
 import { VictorySplash } from './VictorySplash';
 import { GameOverScreen } from './GameOverScreen';
-import { StreakCounter } from './StreakCounter';
 import { GauntletGameplay } from './GauntletGameplay';
 
 interface GauntletModeScreenProps {
@@ -52,13 +51,6 @@ export function GauntletModeScreen({ playerColor, onExit }: GauntletModeScreenPr
 
   return (
     <div className="relative w-full h-full">
-      {/* Persistent StreakCounter overlay - only show during gameplay */}
-      {screen === 'gameplay' && (
-        <div className="absolute top-4 right-4 z-50">
-          <StreakCounter streak={streak} />
-        </div>
-      )}
-
       {/* Screen flow with AnimatePresence transitions */}
       <AnimatePresence mode="wait">
         {screen === 'rules' && (
