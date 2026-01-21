@@ -150,11 +150,11 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
-- [ ] 21-01-PLAN.md — D1 database infrastructure and leaderboard Worker skeleton
-- [ ] 21-02-PLAN.md — Client-side personal best tracking with localStorage
-- [ ] 21-03-PLAN.md — Leaderboard API endpoints (submit, fetch, rank, near)
-- [ ] 21-04-PLAN.md — Scheduled Worker for daily leaderboard reset
-- [ ] 21-05-PLAN.md — Leaderboard UI (LeaderboardScreen, SubmitScoreModal, countdown timer)
+- [x] 21-01-PLAN.md — D1 database infrastructure and leaderboard Worker skeleton
+- [x] 21-02-PLAN.md — Client-side personal best tracking with localStorage
+- [x] 21-03-PLAN.md — Leaderboard API endpoints (submit, fetch, rank, near)
+- [x] 21-04-PLAN.md — Scheduled Worker for daily leaderboard reset
+- [x] 21-05-PLAN.md — Leaderboard UI (LeaderboardScreen, SubmitScoreModal, countdown timer)
 
 ---
 
@@ -172,14 +172,19 @@ Plans:
 4. During a run, player sees progress toward next milestone (e.g., "3/5 to Streak Starter")
 5. Hidden achievements unlock for special conditions (e.g., winning a duel with only 1 die remaining)
 
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 22-01-PLAN.md — Achievement system core (definitions, types, localStorage persistence)
+- [ ] 22-02-PLAN.md — Achievement detection and toast notifications
+- [ ] 22-03-PLAN.md — Progress display and achievement gallery
 
 </details>
 
 ## Progress
 
 **Execution Order:**
-Phases 1-20 complete. Phase 21 next.
+Phases 1-21 complete. Phase 22 next.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -188,9 +193,9 @@ Phases 1-20 complete. Phase 21 next.
 | 13-15 | v2.1 | 3/3 | Complete | 2026-01-20 |
 | 16-19 | v2.2 | 7/7 | Complete | 2026-01-20 |
 | 20 | v3.0 | 3/3 | Complete | 2026-01-21 |
-| 21 | v3.0 | 0/5 | Planned | — |
-| 22 | v3.0 | 0/? | Pending | — |
+| 21 | v3.0 | 5/5 | Complete | 2026-01-21 |
+| 22 | v3.0 | 0/3 | Planned | — |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-21 after Phase 21 planning*
+*Last updated: 2026-01-21 after Phase 22 planning*
