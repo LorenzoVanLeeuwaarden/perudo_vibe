@@ -12,6 +12,7 @@ interface DiceProps {
   color?: PlayerColor;
   highlighted?: boolean;
   dimmed?: boolean;
+  hidden?: boolean; // Show dice back without dots (for opponent's hidden dice)
 }
 
 // Cool skull-style joker symbol
@@ -121,9 +122,10 @@ export function Dice({
   color = 'orange',
   highlighted = false,
   dimmed = false,
+  hidden = false,
 }: DiceProps) {
-  const isJoker = value === 1;
-  const dots = !isJoker ? (dotPositions[value] || []) : [];
+  const isJoker = value === 1 && !hidden; // Treat hidden dice as regular (no joker symbol)
+  const dots = !isJoker && !hidden ? (dotPositions[value] || []) : [];
   const sizeClass = sizeClasses[size];
   const colorConfig = PLAYER_COLORS[color];
   const useWhiteDots = DARK_COLORS.includes(color);

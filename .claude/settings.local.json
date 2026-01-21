@@ -29,7 +29,16 @@
       "Bash(npm run build:production:*)",
       "Bash(npx wrangler pages deploy:*)",
       "Bash(git push:*)",
-      "Bash(npx vercel:*)"
+      "Bash(npx vercel:*)",
+      "Bash(npm view:*)",
+      "WebFetch(domain:motion.dev)",
+      "WebFetch(domain:developer.chrome.com)",
+      "Bash(grep:*)",
+      "Bash(npm run lint:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npx get-shit-done-cc:*)",
+      "WebFetch(domain:developers.cloudflare.com)",
+      "Bash(npx eslint:*)"
     ]
   }
 }

@@ -11,7 +11,6 @@ import { DudoOverlay } from '@/components/DudoOverlay';
 import { SortedDiceDisplay } from '@/components/SortedDiceDisplay';
 import { RevealContent } from '@/components/RevealContent';
 import { StreakCounter } from '@/components/gauntlet/StreakCounter';
-import { AchievementProgress } from '@/components/gauntlet/AchievementProgress';
 import { useGauntletStore } from '@/stores/gauntletStore';
 import { useAchievementStore } from '@/stores/achievementStore';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
@@ -865,10 +864,9 @@ export function GauntletGameplay({
     <div className="relative w-full h-full overflow-hidden">
       <ShaderBackground />
 
-      {/* Streak and Achievement Progress Overlay - Top Right */}
-      <div className="fixed top-4 right-4 z-30 flex flex-col items-end gap-2">
+      {/* Streak Overlay - Top Right */}
+      <div className="fixed top-4 right-4 z-30">
         <StreakCounter streak={streak} />
-        <AchievementProgress currentStreak={streak} />
       </div>
 
       <div className="relative z-10 h-screen w-screen flex flex-col justify-between overflow-hidden p-3 sm:p-6">
