@@ -236,6 +236,55 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
     []
   );
 
+  // Calculate highlight value for player's dice based on script step
+  const playerHighlightValue = useMemo(() => {
+    if (!scriptStep?.highlightDice) return null;
+    if (!scriptStep.highlightDice.targets.includes('player')) return null;
+
+    if (scriptStep.highlightDice.type === 'matching-value') {
+      return scriptStep.highlightDice.value || null;
+    }
+    if (scriptStep.highlightDice.type === 'jokers') {
+      return 1; // Highlight jokers (value 1)
+    }
+    return null;
+  }, [scriptStep]);
+
+  // Calculate highlight value for opponent dice
+  const getOpponentHighlightValue = useCallback(
+    (opponentIndex: number): number | null => {
+      if (!scriptStep?.highlightDice) return null;
+      if (!scriptStep.highlightDice.targets.includes(opponentIndex as 0 | 1)) return null;
+
+      if (scriptStep.highlightDice.type === 'matching-value') {
+        return scriptStep.highlightDice.value || null;
+      }
+      if (scriptStep.highlightDice.type === 'jokers') {
+        return 1;
+      }
+      return null;
+    },
+    [scriptStep]
+  );
+
+  // Pulsing animation for buttons
+  const pulseAnimation = useMemo(
+    () => ({
+      filter: [
+        `drop-shadow(0 0 10px ${PLAYER_COLORS[playerColor].glow})`,
+        `drop-shadow(0 0 25px ${PLAYER_COLORS[playerColor].glow})`,
+        `drop-shadow(0 0 10px ${PLAYER_COLORS[playerColor].glow})`,
+      ],
+    }),
+    [playerColor]
+  );
+
+  const pulseTransition = {
+    duration: 1.5,
+    repeat: Infinity,
+    ease: 'easeInOut' as const,
+  };
+
   // Handle scripted dice roll (just animations - dice are predetermined)
   const handleRoll = useCallback(() => {
     setIsRolling(true);
@@ -428,16 +477,13 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
                       : { duration: 2.5, repeat: Infinity, ease: 'easeInOut' }
                   }
                 >
-                  {opponent.hand.map((value, i) => (
-                    <Dice
-                      key={i}
-                      value={value}
-                      index={i}
-                      size="sm"
-                      color={opponent.color}
-                      hidden={false} // VISIBLE in tutorial god mode
-                    />
-                  ))}
+                  <SortedDiceDisplay
+                    dice={opponent.hand}
+                    color={opponent.color}
+                    size="sm"
+                    animateSort={false}
+                    highlightValue={getOpponentHighlightValue(opponent.id)}
+                  />
                 </motion.div>
               </div>
             ))}
@@ -553,7 +599,13 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
                 useSimplifiedAnimations ? undefined : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
               }
             >
-              <SortedDiceDisplay dice={playerHand} color={playerColor} size="lg" animateSort={true} />
+              <SortedDiceDisplay
+                dice={playerHand}
+                color={playerColor}
+                size="lg"
+                animateSort={true}
+                highlightValue={playerHighlightValue}
+              />
             </motion.div>
           </motion.div>
         )}
