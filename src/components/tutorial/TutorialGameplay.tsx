@@ -16,7 +16,7 @@ import { countMatching } from '@/lib/gameLogic';
 import { TUTORIAL_SCRIPT, TUTORIAL_OPPONENTS } from '@/lib/tutorial/script';
 import { TutorialStep } from '@/lib/tutorial/types';
 import { useTutorialStore } from '@/stores/tutorialStore';
-import { Send, AlertTriangle } from 'lucide-react';
+import { Send, AlertTriangle, Target } from 'lucide-react';
 
 type TutorialGameState = 'Rolling' | 'Bidding' | 'Reveal' | 'Complete';
 
@@ -33,6 +33,7 @@ interface TutorialBidPanelProps {
   playerColor: PlayerColor;
   onBid: (bid: Bid) => void;
   onDudo: () => void;
+  onCalza: () => void;
   useSimplifiedAnimations: boolean;
   pulseAnimation: { filter: string[] };
   pulseTransition: { duration: number; repeat: number; ease: string };
@@ -44,14 +45,17 @@ function TutorialBidPanel({
   playerColor,
   onBid,
   onDudo,
+  onCalza,
   useSimplifiedAnimations,
   pulseAnimation,
   pulseTransition,
 }: TutorialBidPanelProps) {
   const isBidAction = scriptStep.requiredAction.type === 'bid';
   const isDudoAction = scriptStep.requiredAction.type === 'dudo';
+  const isCalzaAction = scriptStep.requiredAction.type === 'calza';
   const shouldPulseBid = scriptStep.highlightButton === 'bid';
   const shouldPulseDudo = scriptStep.highlightButton === 'dudo';
+  const shouldPulseCalza = scriptStep.highlightButton === 'calza';
 
   // Get the required bid from the script (for 'bid' action type)
   const requiredBid =
@@ -80,6 +84,13 @@ function TutorialBidPanel({
       return "Not yet! Watch what happens first.";
     }
     return "Let's make a bid first.";
+  };
+
+  const getCalzaDisabledTooltip = () => {
+    if (isDudoAction || isBidAction) {
+      return "Calza is for exact matches only";
+    }
+    return "Watch what happens first";
   };
 
   return (
@@ -185,6 +196,49 @@ function TutorialBidPanel({
               >
                 <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 DUDO!
+              </button>
+            </DisabledButtonWrapper>
+          )
+        )}
+
+        {/* CALZA button - only shown when there's a current bid */}
+        {currentBid && (
+          isCalzaAction ? (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onCalza}
+              className="w-full py-2 sm:py-2.5 px-3 rounded-lg font-bold uppercase text-xs sm:text-[11px] flex items-center justify-center gap-1"
+              style={{
+                background: 'linear-gradient(180deg, #22c55e 0%, #16a34a 100%)',
+                border: '2px solid #4ade80',
+                borderBottom: '3px solid #15803d',
+                color: '#fff',
+                letterSpacing: '0.15em',
+                boxShadow: '0 3px 0 0 #166534, 0 5px 10px 0 rgba(0, 0, 0, 0.5)',
+              }}
+              animate={shouldPulseCalza && !useSimplifiedAnimations ? pulseAnimation : undefined}
+              transition={shouldPulseCalza && !useSimplifiedAnimations ? pulseTransition : undefined}
+            >
+              <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              CALZA!
+            </motion.button>
+          ) : (
+            <DisabledButtonWrapper tooltipText={getCalzaDisabledTooltip()} playerColor={playerColor}>
+              <button
+                aria-disabled="true"
+                className="w-full py-2 sm:py-2.5 px-3 rounded-lg font-bold uppercase text-xs sm:text-[11px] flex items-center justify-center gap-1 opacity-50 cursor-not-allowed"
+                style={{
+                  background: 'linear-gradient(180deg, #22c55e 0%, #16a34a 100%)',
+                  border: '2px solid #4ade80',
+                  borderBottom: '3px solid #15803d',
+                  color: '#fff',
+                  letterSpacing: '0.15em',
+                }}
+                onClick={(e) => e.preventDefault()}
+              >
+                <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                CALZA!
               </button>
             </DisabledButtonWrapper>
           )
@@ -390,6 +444,7 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
           };
         case 'bid-button':
         case 'dudo-button':
+        case 'calza-button':
           // Tooltip ABOVE the bid panel (center area)
           // Arrow points DOWN at the buttons
           return {
@@ -489,7 +544,7 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
     // The tooltip dismissal will advance to step 1
   }, []);
 
-  // Handle reveal (Dudo resolution) - defined first as it's used by other handlers
+  // Handle reveal (Dudo/Calza resolution) - defined first as it's used by other handlers
   const handleReveal = useCallback(
     (caller: 'player' | number, bidToReveal: Bid, playerDice: number[], opponentList: TutorialOpponent[]) => {
       setGameState('Reveal');
@@ -498,9 +553,10 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
       setDudoOverlayComplete(false);
       setCountingComplete(false);
 
-      // Count actual matching dice (no jokers for clearer teaching in Phase 23)
+      // Count actual matching dice - palifico=false means wild 1s count
+      // This allows teaching wild ones properly in Round 2 and Calza in Round 3
       const allDice = [...playerDice, ...opponentList.flatMap((o) => o.hand)];
-      const matching = countMatching(allDice, bidToReveal.value, true); // palifico=true means no wilds
+      const matching = countMatching(allDice, bidToReveal.value, false);
       setActualCount(matching);
     },
     []
@@ -553,6 +609,15 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
   const handleDudo = useCallback(() => {
     if (!scriptStep) return;
     if (scriptStep.requiredAction.type !== 'dudo') return;
+    if (!currentBid) return;
+
+    handleReveal('player', currentBid, playerHand, opponents);
+  }, [scriptStep, currentBid, playerHand, opponents, handleReveal]);
+
+  // Handle player Calza
+  const handleCalza = useCallback(() => {
+    if (!scriptStep) return;
+    if (scriptStep.requiredAction.type !== 'calza') return;
     if (!currentBid) return;
 
     handleReveal('player', currentBid, playerHand, opponents);
@@ -645,16 +710,16 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
     return () => clearTimeout(timeout);
   }, [gameState, currentBid, playerHand, opponents, dudoOverlayComplete, countingComplete]);
 
-  // Check if a die matches the bid (no jokers wild for Phase 23)
+  // Check if a die matches the bid (wild 1s count as any value)
   const isDieMatching = useCallback(
     (value: number) => {
       if (!currentBid) return false;
-      return value === currentBid.value;
+      return value === currentBid.value || value === 1; // 1s are wild
     },
     [currentBid]
   );
 
-  // Get all matching dice with indices
+  // Get all matching dice with indices (wild 1s count as any value)
   const getAllMatchingDice = useCallback(() => {
     if (!currentBid) return [];
 
@@ -663,11 +728,11 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
 
     // Check player's dice
     playerHand.forEach((value) => {
-      if (value === currentBid.value) {
+      if (value === currentBid.value || value === 1) {
         matches.push({
           value,
           color: playerColor,
-          isJoker: false,
+          isJoker: value === 1,
           globalIdx,
         });
       }
@@ -677,11 +742,11 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
     // Check opponents' dice
     opponents.forEach((opp) => {
       opp.hand.forEach((value) => {
-        if (value === currentBid.value) {
+        if (value === currentBid.value || value === 1) {
           matches.push({
             value,
             color: opp.color,
-            isJoker: false,
+            isJoker: value === 1,
             globalIdx,
           });
         }
@@ -822,6 +887,7 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
                 playerColor={playerColor}
                 onBid={handleBid}
                 onDudo={handleDudo}
+                onCalza={handleCalza}
                 useSimplifiedAnimations={useSimplifiedAnimations}
                 pulseAnimation={pulseAnimation}
                 pulseTransition={pulseTransition}
