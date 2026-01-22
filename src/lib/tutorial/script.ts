@@ -312,5 +312,138 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       // Reveal will show: Player(2 fives + 2 ones = 4) + Alex(1 one = 1) + Sam(1 five = 1) = 6 total
       // 6 >= 5, so Alex loses a die for wrong Dudo call
     },
+
+    // ============================================
+    // ROUND 3: Teaching Calza (exact match challenge)
+    // ============================================
+    // DICE VALUES (arranged for exactly 5x fours):
+    // - Player: [4, 4, 2, 6, 3] = two 4s
+    // - Alex:   [4, 1, 5, 5, 2] = one 4, one wild 1 (= 2 fours)
+    // - Sam:    [3, 3, 6, 6, 1] = one wild 1 (= 1 four)
+    //
+    // Total 4s (including wilds): Player(2) + Alex(2) + Sam(1) = 5 fours EXACTLY
+    // Perfect setup for Calza!
+
+    // Step 13: Round 3 setup
+    {
+      id: 'round3-roll',
+      playerDice: [4, 4, 2, 6, 3],
+      opponentDice: [
+        [4, 1, 5, 5, 2], // Alex: one 4, one wild 1
+        [3, 3, 6, 6, 1], // Sam: one wild 1
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: null,
+      roundStarter: 0, // Alex starts this round
+      tooltip: {
+        content: 'Round 3! Watch what happens...',
+        position: 'bottom',
+        targetElement: 'opponent-dice',
+        dismissMode: 'auto',
+        autoAdvanceDelay: 1500,
+      },
+    },
+
+    // Step 14: Alex bids
+    {
+      id: 'alex-bids-calza',
+      playerDice: [4, 4, 2, 6, 3],
+      opponentDice: [
+        [4, 1, 5, 5, 2],
+        [3, 3, 6, 6, 1],
+      ],
+      requiredAction: { type: 'wait' },
+      scriptedAIMoves: [{ type: 'bid', bid: { count: 3, value: 4 } }],
+      currentBid: null,
+      roundStarter: 0,
+      tooltip: {
+        content: 'Alex is thinking...',
+        position: 'bottom',
+        targetElement: 'opponent-dice',
+        dismissMode: 'auto',
+        autoAdvanceDelay: 2000,
+      },
+      highlightDice: { type: 'matching-value', value: 4, targets: [0] },
+    },
+
+    // Step 15: Sam bids (reaches exactly 5x fours)
+    {
+      id: 'sam-bids-calza',
+      playerDice: [4, 4, 2, 6, 3],
+      opponentDice: [
+        [4, 1, 5, 5, 2],
+        [3, 3, 6, 6, 1],
+      ],
+      requiredAction: { type: 'wait' },
+      scriptedAIMoves: [{ type: 'bid', bid: { count: 5, value: 4 } }],
+      currentBid: { count: 3, value: 4 },
+      lastBidder: 0,
+      tooltip: {
+        content: 'Sam is thinking...',
+        position: 'bottom',
+        targetElement: 'opponent-dice',
+        dismissMode: 'auto',
+        autoAdvanceDelay: 2000,
+      },
+      highlightDice: { type: 'matching-value', value: 4, targets: [1] },
+    },
+
+    // Step 16: Introduce Calza concept
+    {
+      id: 'calza-intro',
+      playerDice: [4, 4, 2, 6, 3],
+      opponentDice: [
+        [4, 1, 5, 5, 2],
+        [3, 3, 6, 6, 1],
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: { count: 5, value: 4 },
+      lastBidder: 1,
+      tooltip: {
+        content:
+          "One more trick: CALZA! Call it when you think the bid is EXACTLY right. Get it right and you gain a die. Get it wrong and you lose one.",
+        position: 'bottom',
+        targetElement: 'bid-display',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 17: Player calls Calza
+    {
+      id: 'calza-call',
+      playerDice: [4, 4, 2, 6, 3],
+      opponentDice: [
+        [4, 1, 5, 5, 2],
+        [3, 3, 6, 6, 1],
+      ],
+      requiredAction: { type: 'calza' },
+      currentBid: { count: 5, value: 4 },
+      lastBidder: 1,
+      tooltip: {
+        content:
+          "Count the 4s (including wilds): You=2, Alex=2, Sam=1. Exactly 5! Call CALZA!",
+        position: 'top',
+        targetElement: 'calza-button',
+        dismissMode: 'click',
+      },
+      highlightDice: { type: 'matching-value', value: 4, targets: ['player', 0, 1] },
+      highlightButton: 'calza',
+    },
+
+    // Step 18: Calza reveal (success)
+    {
+      id: 'calza-reveal',
+      playerDice: [4, 4, 2, 6, 3],
+      opponentDice: [
+        [4, 1, 5, 5, 2],
+        [3, 3, 6, 6, 1],
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: { count: 5, value: 4 },
+      lastBidder: 1,
+      highlightDice: { type: 'matching-value', value: 4, targets: ['player', 0, 1] },
+      // Reveal will show: Player(2) + Alex(1 four + 1 one = 2) + Sam(1 one = 1) = 5 total
+      // Exactly 5 fours! Calza succeeds, player gains a die
+    },
   ],
 };
