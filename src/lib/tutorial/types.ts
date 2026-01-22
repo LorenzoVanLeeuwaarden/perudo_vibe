@@ -1,6 +1,36 @@
 import { Bid } from '@/lib/types';
 
 /**
+ * Tooltip data for a tutorial step.
+ * Position indicates where tooltip appears relative to target.
+ */
+export interface TutorialTooltipData {
+  /** The tooltip message (1-2 sentences, friendly tone) */
+  content: string;
+  /** Where tooltip appears relative to target element */
+  position: 'top' | 'bottom' | 'left' | 'right';
+  /** Which element the tooltip points to */
+  targetElement: 'player-dice' | 'bid-button' | 'dudo-button' | 'bid-display' | 'opponent-dice';
+  /** How to dismiss: click anywhere or auto-advance after delay */
+  dismissMode: 'click' | 'auto';
+  /** Delay in ms for auto-advance mode */
+  autoAdvanceDelay?: number;
+}
+
+/**
+ * Dice highlighting configuration.
+ * Highlights by value (not index) to work correctly with sorted dice.
+ */
+export interface HighlightDiceConfig {
+  /** How to determine which dice to highlight */
+  type: 'matching-value' | 'jokers' | 'all';
+  /** The value to match (for 'matching-value' type) */
+  value?: number;
+  /** Which hands to highlight: 'player', 0 (Alex), 1 (Sam) */
+  targets: ('player' | 0 | 1)[];
+}
+
+/**
  * Action types for tutorial steps.
  * Each step specifies what action the user must take.
  */
@@ -47,6 +77,15 @@ export interface TutorialStep {
 
   /** Who made the last bid - 'player' or opponent index */
   lastBidder?: 'player' | 0 | 1;
+
+  /** Tooltip to show during this step */
+  tooltip?: TutorialTooltipData;
+
+  /** Which dice to highlight (by value, works with sorted display) */
+  highlightDice?: HighlightDiceConfig;
+
+  /** Which button to highlight with pulsing glow */
+  highlightButton?: 'bid' | 'dudo';
 }
 
 /**
