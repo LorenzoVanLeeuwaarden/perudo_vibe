@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 
 ## Current Position
 
-Phase: 23 - Tutorial Foundation (COMPLETE)
-Plan: 03 of 3 complete
-Status: Phase complete
-Last activity: 2026-01-22 — Completed 23-03-PLAN.md (Tutorial Screen Integration)
+Phase: 24 - Tutorial Guidance
+Plan: —
+Status: Ready to plan
+Last activity: 2026-01-22 — Phase 23 complete, verified
 
-Progress: [██████████░░░░░░░░░░] 3/3 plans (Phase 23 complete)
+Progress: [██████░░░░░░░░░░░░░░] 1/3 phases (v3.1 Tutorial milestone)
 
 ## Production URLs
 

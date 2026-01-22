@@ -9,7 +9,7 @@ Requirements for tutorial mode. Each maps to roadmap phases.
 
 ### Tutorial Flow
 
-- [ ] **FLOW-01**: User can access tutorial from main menu ("How to Play" button)
+- [x] **FLOW-01**: User can access tutorial from main menu ("How to Play" button)
 - [ ] **FLOW-02**: User can skip tutorial at any point via visible skip button
 - [ ] **FLOW-03**: User sees progress indicator showing current step and total steps
 - [ ] **FLOW-04**: User can exit tutorial mid-way and return to main menu
@@ -18,11 +18,11 @@ Requirements for tutorial mode. Each maps to roadmap phases.
 
 ### Tutorial Gameplay
 
-- [ ] **GAME-01**: Tutorial runs as scripted 3-player game (user + 2 AI)
-- [ ] **GAME-02**: Dice rolls are predetermined to create specific teaching moments
+- [x] **GAME-01**: Tutorial runs as scripted 3-player game (user + 2 AI)
+- [x] **GAME-02**: Dice rolls are predetermined to create specific teaching moments
 - [ ] **GAME-03**: User makes every move but choices are constrained to intended action
 - [ ] **GAME-04**: Constrained moves show explanation of why other options are disabled
-- [ ] **GAME-05**: Tutorial is a safe environment with no real game penalties
+- [x] **GAME-05**: Tutorial is a safe environment with no real game penalties
 
 ### Tutorial Content
 
@@ -36,7 +36,7 @@ Requirements for tutorial mode. Each maps to roadmap phases.
 - [ ] **VIS-01**: Inline tooltips appear with 1-2 sentence explanations
 - [ ] **VIS-02**: Visual cues (highlights, arrows) point to interactive elements
 - [ ] **VIS-03**: Relevant dice animate (pulse/glow) during explanations
-- [ ] **VIS-04**: Tutorial reuses actual game components (BidUI, Dice, etc.)
+- [x] **VIS-04**: Tutorial reuses actual game components (BidUI, Dice, etc.)
 
 ## Future Requirements
 
@@ -68,17 +68,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FLOW-01 | Phase 23 | Pending |
+| FLOW-01 | Phase 23 | Complete |
 | FLOW-02 | Phase 25 | Pending |
 | FLOW-03 | Phase 25 | Pending |
 | FLOW-04 | Phase 25 | Pending |
 | FLOW-05 | Phase 25 | Pending |
 | FLOW-06 | Phase 25 | Pending |
-| GAME-01 | Phase 23 | Pending |
-| GAME-02 | Phase 23 | Pending |
+| GAME-01 | Phase 23 | Complete |
+| GAME-02 | Phase 23 | Complete |
 | GAME-03 | Phase 24 | Pending |
 | GAME-04 | Phase 24 | Pending |
-| GAME-05 | Phase 23 | Pending |
+| GAME-05 | Phase 23 | Complete |
 | CONT-01 | Phase 25 | Pending |
 | CONT-02 | Phase 25 | Pending |
 | CONT-03 | Phase 25 | Pending |
@@ -86,7 +86,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VIS-01 | Phase 24 | Pending |
 | VIS-02 | Phase 24 | Pending |
 | VIS-03 | Phase 24 | Pending |
-| VIS-04 | Phase 23 | Pending |
+| VIS-04 | Phase 23 | Complete |
 
 **Coverage:**
 - v3.1 requirements: 19 total
@@ -95,4 +95,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-21*
-*Last updated: 2026-01-21 after roadmap created*
+*Last updated: 2026-01-22 after Phase 23 complete*
