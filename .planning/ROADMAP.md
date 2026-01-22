@@ -7,7 +7,7 @@
 - [x] **v2.1 Animation Performance** - Phases 13-15 (shipped 2026-01-20) — [archive](milestones/v2.1-ROADMAP.md)
 - [x] **v2.2 UI Unification & Tech Debt** - Phases 16-19 (shipped 2026-01-20) — [archive](milestones/v2.2-ROADMAP.md)
 - [x] **v3.0 The Gauntlet** - Phases 20-22 (shipped 2026-01-21)
-- [ ] **v3.1 Tutorial** - Phases 23-25 (in progress)
+- [x] **v3.1 Tutorial** - Phases 23-25 (shipped 2026-01-22)
 
 ## Phases
 
@@ -182,8 +182,8 @@ Plans:
 
 </details>
 
-<details open>
-<summary>v3.1 Tutorial (Phases 23-25) - IN PROGRESS</summary>
+<details>
+<summary>v3.1 Tutorial (Phases 23-25) - SHIPPED 2026-01-22</summary>
 
 ### Phase 23: Tutorial Foundation
 **Goal**: Tutorial infrastructure exists with scripted gameplay that reuses existing components
@@ -253,15 +253,15 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 25-01-PLAN.md — Tutorial content expansion (wild ones, Calza teaching steps)
-- [ ] 25-02-PLAN.md — Calza button and completion celebration (confetti, auto-return)
+- [x] 25-01-PLAN.md — Tutorial content expansion (wild ones, Calza teaching steps)
+- [x] 25-02-PLAN.md — Calza button and completion celebration (confetti, auto-return)
 
 </details>
 
 ## Progress
 
 **Execution Order:**
-Phase 25 is next. Phases 23-25 form v3.1 Tutorial milestone.
+v3.1 Tutorial milestone complete. Phases 23-25 all shipped.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -274,8 +274,8 @@ Phase 25 is next. Phases 23-25 form v3.1 Tutorial milestone.
 | 22 | v3.0 | 3/3 | Complete | 2026-01-21 |
 | 23 | v3.1 | 3/3 | Complete | 2026-01-22 |
 | 24 | v3.1 | 3/3 | Complete | 2026-01-22 |
-| 25 | v3.1 | 0/2 | Pending | — |
+| 25 | v3.1 | 2/2 | Complete | 2026-01-22 |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-22 after Phase 25 planning*
+*Last updated: 2026-01-22 after completing Phase 25 (v3.1 Tutorial milestone complete)*

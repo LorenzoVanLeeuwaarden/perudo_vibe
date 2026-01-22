@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 25 - Tutorial Content & Polish
-Plan: 1 of ? complete
-Status: In progress
-Last activity: 2026-01-22 — Completed 25-01-PLAN.md (Expand Tutorial Content)
+Plan: 2 of 2 complete
+Status: Phase complete
+Last activity: 2026-01-22 — Completed 25-02-PLAN.md (Calza & Completion)
 
-Progress: [█████████████░░░░░░░] 2/3 phases (v3.1 Tutorial milestone)
+Progress: [████████████████████] 3/3 phases (v3.1 Tutorial milestone)
 
 ## Production URLs
 
@@ -61,7 +61,7 @@ Progress: [█████████████░░░░░░░] 2/3 pha
 **v3.1 Progress:**
 - Phase 23 (Tutorial Foundation): COMPLETE (3/3 plans)
 - Phase 24 (Tutorial Guidance): COMPLETE (3/3 plans)
-- Phase 25 (Tutorial Content & Polish): In progress (1/? plans)
+- Phase 25 (Tutorial Content & Polish): COMPLETE (2/2 plans)
 
 ## Accumulated Context
 
@@ -193,6 +193,12 @@ Phase 25-01 Decisions:
 - calza-button added to targetElement union for tooltip targeting
 - totalSteps updated to 19 to sync with expanded script
 
+Phase 25-02 Decisions:
+- Calza button uses green gradient styling matching BidUI.tsx
+- Wild 1s count for all tutorial reveals (palifico=false)
+- Auto-return after 2 seconds per CONTEXT.md (no manual button)
+- Confetti respects prefers-reduced-motion
+
 ### Pending Todos
 
 None.
@@ -212,13 +218,12 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 25-01-PLAN.md (Expand Tutorial Content)
+Stopped at: Completed 25-02-PLAN.md (Calza & Completion)
 Resume file: None
 
 ## Next Steps
 
-1. Continue Phase 25: Tutorial Content & Polish (remaining plans)
-2. Complete v3.1 Tutorial milestone
+1. Complete v3.1 Tutorial milestone
 
 ---
-*Updated: 2026-01-22 after completing 25-01-PLAN.md (Expand Tutorial Content)*
+*Updated: 2026-01-22 after completing 25-02-PLAN.md (Calza & Completion)*
