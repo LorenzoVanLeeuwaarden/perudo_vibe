@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayerColor, PLAYER_COLORS, Bid } from '@/lib/types';
 import { DiceCup } from '@/components/DiceCup';
-import { BidUI } from '@/components/BidUI';
 import { Dice } from '@/components/Dice';
 import { ShaderBackground } from '@/components/ShaderBackground';
 import { DudoOverlay } from '@/components/DudoOverlay';
@@ -15,10 +14,185 @@ import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { countMatching } from '@/lib/gameLogic';
 import { TUTORIAL_SCRIPT, TUTORIAL_OPPONENTS } from '@/lib/tutorial/script';
+import { TutorialStep } from '@/lib/tutorial/types';
 import { useTutorialStore } from '@/stores/tutorialStore';
 import { Send, AlertTriangle } from 'lucide-react';
 
 type TutorialGameState = 'Rolling' | 'Bidding' | 'Reveal' | 'Complete';
+
+/**
+ * TutorialBidPanel - Constrained bid panel for tutorial mode.
+ *
+ * Shows the required bid values locked (no user selection) and constrains
+ * actions to the intended tutorial flow. Disabled buttons show tooltips
+ * explaining why they can't be used.
+ */
+interface TutorialBidPanelProps {
+  scriptStep: TutorialStep;
+  currentBid: Bid | null;
+  playerColor: PlayerColor;
+  onBid: (bid: Bid) => void;
+  onDudo: () => void;
+  useSimplifiedAnimations: boolean;
+  pulseAnimation: { filter: string[] };
+  pulseTransition: { duration: number; repeat: number; ease: string };
+}
+
+function TutorialBidPanel({
+  scriptStep,
+  currentBid,
+  playerColor,
+  onBid,
+  onDudo,
+  useSimplifiedAnimations,
+  pulseAnimation,
+  pulseTransition,
+}: TutorialBidPanelProps) {
+  const isBidAction = scriptStep.requiredAction.type === 'bid';
+  const isDudoAction = scriptStep.requiredAction.type === 'dudo';
+  const shouldPulseBid = scriptStep.highlightButton === 'bid';
+  const shouldPulseDudo = scriptStep.highlightButton === 'dudo';
+
+  // Get the required bid from the script (for 'bid' action type)
+  const requiredBid =
+    scriptStep.requiredAction.type === 'bid' ? scriptStep.requiredAction.bid : null;
+
+  // Handle bid click - use the required bid from the script
+  const handleBidClick = () => {
+    if (isBidAction && requiredBid) {
+      onBid(requiredBid);
+    }
+  };
+
+  // Disabled tooltip messages per CONTEXT.md
+  const getBidDisabledTooltip = () => {
+    if (isDudoAction) {
+      return "The bid is too high to raise! Call their bluff.";
+    }
+    return "First, let's learn basic bidding";
+  };
+
+  const getDudoDisabledTooltip = () => {
+    if (isBidAction && !currentBid) {
+      return "Let's make a bid first.";
+    }
+    if (scriptStep.requiredAction.type === 'wait') {
+      return "Not yet! Watch what happens first.";
+    }
+    return "Let's make a bid first.";
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="retro-panel p-4 sm:p-6 max-w-md w-full"
+      style={{
+        borderColor: PLAYER_COLORS[playerColor].border,
+        boxShadow: `
+          0 4px 0 0 #061212,
+          0 6px 10px 0 rgba(0, 0, 0, 0.5),
+          0 10px 20px 0 rgba(0, 0, 0, 0.3),
+          0 0 20px ${PLAYER_COLORS[playerColor].glow},
+          inset 0 1px 0 0 rgba(255, 255, 255, 0.05)
+        `,
+      }}
+    >
+      {/* Show the required bid as a preview (locked, non-interactive) */}
+      {requiredBid && (
+        <div className="mb-4">
+          <p className="text-white-soft/60 text-xs text-center mb-2">Your bid:</p>
+          <div className="flex items-center justify-center gap-3">
+            {/* Count display */}
+            <span
+              className="text-4xl sm:text-5xl font-black text-marigold"
+              style={{ textShadow: '0 0 20px var(--marigold), 0 2px 0 var(--marigold)' }}
+            >
+              {requiredBid.count}
+            </span>
+
+            {/* Multiplication sign */}
+            <span className="text-3xl sm:text-4xl font-black text-white-soft/30">×</span>
+
+            {/* Dice value preview */}
+            <Dice value={requiredBid.value} size="md" color={playerColor} />
+          </div>
+        </div>
+      )}
+
+      {/* Action buttons */}
+      <div className="flex flex-col gap-2 sm:gap-3">
+        {/* BID button */}
+        {isBidAction ? (
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleBidClick}
+            className="w-full retro-button retro-button-orange flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+            animate={
+              shouldPulseBid && !useSimplifiedAnimations ? pulseAnimation : undefined
+            }
+            transition={shouldPulseBid && !useSimplifiedAnimations ? pulseTransition : undefined}
+            style={
+              shouldPulseBid && useSimplifiedAnimations
+                ? { filter: `drop-shadow(0 0 15px ${PLAYER_COLORS[playerColor].glow})` }
+                : undefined
+            }
+          >
+            <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+            BID
+          </motion.button>
+        ) : (
+          <DisabledButtonWrapper tooltipText={getBidDisabledTooltip()} playerColor={playerColor}>
+            <button
+              aria-disabled="true"
+              className="w-full retro-button retro-button-orange flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base opacity-50 cursor-not-allowed"
+              onClick={(e) => e.preventDefault()}
+            >
+              <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+              BID
+            </button>
+          </DisabledButtonWrapper>
+        )}
+
+        {/* DUDO button - only shown when there's a current bid */}
+        {currentBid && (
+          isDudoAction ? (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onDudo}
+              className="w-full retro-button retro-button-danger flex items-center justify-center gap-1 text-xs sm:text-[11px] py-2 sm:py-2.5"
+              animate={
+                shouldPulseDudo && !useSimplifiedAnimations ? pulseAnimation : undefined
+              }
+              transition={shouldPulseDudo && !useSimplifiedAnimations ? pulseTransition : undefined}
+              style={
+                shouldPulseDudo && useSimplifiedAnimations
+                  ? { filter: `drop-shadow(0 0 15px ${PLAYER_COLORS[playerColor].glow})` }
+                  : undefined
+              }
+            >
+              <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              DUDO!
+            </motion.button>
+          ) : (
+            <DisabledButtonWrapper tooltipText={getDudoDisabledTooltip()} playerColor={playerColor}>
+              <button
+                aria-disabled="true"
+                className="w-full retro-button retro-button-danger flex items-center justify-center gap-1 text-xs sm:text-[11px] py-2 sm:py-2.5 opacity-50 cursor-not-allowed"
+                onClick={(e) => e.preventDefault()}
+              >
+                <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                DUDO!
+              </button>
+            </DisabledButtonWrapper>
+          )
+        )}
+      </div>
+    </motion.div>
+  );
+}
 
 interface TutorialOpponent {
   id: number;
@@ -365,14 +539,6 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
     handleReveal('player', currentBid, playerHand, opponents);
   }, [scriptStep, currentBid, playerHand, opponents, handleReveal]);
 
-  // Handle Calza (not used in Phase 23 script)
-  const handleCalza = useCallback(() => {
-    // Calza not taught in Phase 23 - this is a no-op
-  }, []);
-
-  // Can player Calza? (No in Phase 23)
-  const canCalza = false;
-
   // Reveal animation completion
   const handleRevealComplete = useCallback(() => {
     // After reveal, advance to complete or next step
@@ -531,20 +697,18 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
             />
           )}
 
-          {/* Bidding UI */}
-          {gameState === 'Bidding' && isMyTurn && (
+          {/* Tutorial Bidding UI - constrained to script actions */}
+          {gameState === 'Bidding' && isMyTurn && scriptStep && (
             <div className="w-full max-w-sm sm:max-w-md mx-auto px-2 sm:px-0">
-              <BidUI
+              <TutorialBidPanel
+                scriptStep={scriptStep}
                 currentBid={currentBid}
+                playerColor={playerColor}
                 onBid={handleBid}
                 onDudo={handleDudo}
-                onCalza={handleCalza}
-                isMyTurn={isMyTurn}
-                totalDice={totalDice}
-                playerColor={playerColor}
-                isPalifico={false}
-                canCalza={canCalza}
-                hideBidDisplay={true}
+                useSimplifiedAnimations={useSimplifiedAnimations}
+                pulseAnimation={pulseAnimation}
+                pulseTransition={pulseTransition}
               />
             </div>
           )}
