@@ -47,7 +47,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       currentBid: null,
       tooltip: {
         content:
-          "Welcome to Perudo! Everyone rolls dice secretly, then takes turns bidding on how many of a certain number exist across ALL players' hands. Bid too high and get caught? You lose a die. In this tutorial, you can see everyone's dice to learn how it works.",
+          "Welcome to The Last Die! Everyone rolls dice secretly, then takes turns bidding on how many of a certain number exist across ALL players' hands. Bid too high and get caught? You lose a die. In this tutorial, you can see everyone's dice to learn how it works.",
         position: 'bottom',
         targetElement: 'player-dice',
         dismissMode: 'click',
