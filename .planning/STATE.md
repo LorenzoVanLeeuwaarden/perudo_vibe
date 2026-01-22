@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 24 - Tutorial Guidance
-Plan: —
-Status: Ready to plan
-Last activity: 2026-01-22 — Phase 23 complete, verified
+Plan: 01 of ? complete
+Status: In progress
+Last activity: 2026-01-22 — Completed 24-01-PLAN.md (Tutorial Tooltip Components)
 
 Progress: [██████░░░░░░░░░░░░░░] 1/3 phases (v3.1 Tutorial milestone)
 
@@ -60,7 +60,7 @@ Progress: [██████░░░░░░░░░░░░░░] 1/3 pha
 
 **v3.1 Progress:**
 - Phase 23 (Tutorial Foundation): COMPLETE (3/3 plans)
-- Phase 24 (Tutorial Guided Flow): Not started
+- Phase 24 (Tutorial Guided Flow): In progress (1/? plans)
 - Phase 25 (Tutorial Polish): Not started
 
 ## Accumulated Context
@@ -165,6 +165,12 @@ Phase 23-03 Decisions:
 - Exit button available throughout tutorial (fixed top-left position)
 - 1.5s delay before showing first-time prompt
 
+Phase 24-01 Decisions:
+- CSS triangle arrows via border technique (no external library)
+- z-index layering: overlay z-[99], tooltip z-[100]
+- tabIndex={0} and aria-label for keyboard accessibility on disabled buttons
+- stopPropagation on overlay click prevents mobile tap-through
+
 ### Pending Todos
 
 None.
@@ -184,13 +190,13 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 23-03-PLAN.md (Tutorial Screen Integration) - Phase 23 complete
-Resume file: None (phase complete)
+Stopped at: Completed 24-01-PLAN.md (Tutorial Tooltip Components)
+Resume file: None
 
 ## Next Steps
 
-1. Start Phase 24: Tutorial Guided Flow (step-by-step explanations, UI overlays)
+1. Continue Phase 24: Integrate tooltips into TutorialGameplay
 2. Continue with Phase 25: Tutorial Polish (timing, edge cases, skip functionality)
 
 ---
-*Updated: 2026-01-22 after completing 23-03-PLAN.md (Phase 23 complete)*
+*Updated: 2026-01-22 after completing 24-01-PLAN.md*
