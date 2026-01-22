@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 
 ## Current Position
 
-Phase: 24 - Tutorial Guidance
-Plan: 02 of 3 complete
-Status: In progress
-Last activity: 2026-01-22 — Completed 24-02-PLAN.md (Tutorial Script Guidance)
+Phase: 25 - Tutorial Content & Polish
+Plan: 0 of ? complete
+Status: Pending
+Last activity: 2026-01-22 — Completed Phase 24 (Tutorial Guidance)
 
-Progress: [██████░░░░░░░░░░░░░░] 1/3 phases (v3.1 Tutorial milestone)
+Progress: [█████████████░░░░░░░] 2/3 phases (v3.1 Tutorial milestone)
 
 ## Production URLs
 
@@ -60,8 +60,8 @@ Progress: [██████░░░░░░░░░░░░░░] 1/3 pha
 
 **v3.1 Progress:**
 - Phase 23 (Tutorial Foundation): COMPLETE (3/3 plans)
-- Phase 24 (Tutorial Guided Flow): In progress (2/3 plans)
-- Phase 25 (Tutorial Polish): Not started
+- Phase 24 (Tutorial Guidance): COMPLETE (3/3 plans)
+- Phase 25 (Tutorial Content & Polish): Not started
 
 ## Accumulated Context
 
@@ -178,6 +178,13 @@ Phase 24-02 Decisions:
 - Step 5 (reveal) has no tooltip - DudoOverlay handles the drama
 - Friendly tone per CONTEXT.md: "Welcome!", "You have two 3s!", "Count the 5s:"
 
+Phase 24-03 Decisions:
+- Tooltip positions: 'top' for player-dice/buttons, 'bottom' for bid-display/opponent-dice
+- hasInitialSorted state prevents constant re-sorting after initial dice animation
+- Progressive reveal counting: dice reveal one-by-one, then matches highlight progressively
+- TutorialBidPanel as local component with constrained actions based on requiredAction.type
+- Tooltips only show during Bidding state (not during Rolling or Reveal)
+
 ### Pending Todos
 
 None.
@@ -197,13 +204,13 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 24-02-PLAN.md (Tutorial Script Guidance)
+Stopped at: Completed Phase 24 (Tutorial Guidance)
 Resume file: None
 
 ## Next Steps
 
-1. Continue Phase 24: Execute 24-03-PLAN.md (TutorialGameplay integration)
-2. Continue with Phase 25: Tutorial Polish (timing, edge cases, skip functionality)
+1. Start Phase 25: Tutorial Content & Polish (skip/progress UX, complete tutorial content)
+2. Complete v3.1 Tutorial milestone
 
 ---
-*Updated: 2026-01-22 after completing 24-02-PLAN.md*
+*Updated: 2026-01-22 after completing Phase 24 (Tutorial Guidance)*

@@ -225,9 +225,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 24-01-PLAN.md — Tooltip components (TutorialTooltip, TutorialOverlay, DisabledButtonWrapper)
-- [ ] 24-02-PLAN.md — Script enhancement with tooltip and highlighting data
-- [ ] 24-03-PLAN.md — TutorialGameplay integration with constrained actions
+- [x] 24-01-PLAN.md — Tooltip components (TutorialTooltip, TutorialOverlay, DisabledButtonWrapper)
+- [x] 24-02-PLAN.md — Script enhancement with tooltip and highlighting data
+- [x] 24-03-PLAN.md — TutorialGameplay integration with constrained actions
 
 ---
 
@@ -268,9 +268,9 @@ Phase 24 is next. Phases 23-25 form v3.1 Tutorial milestone.
 | 21 | v3.0 | 5/5 | Complete | 2026-01-21 |
 | 22 | v3.0 | 3/3 | Complete | 2026-01-21 |
 | 23 | v3.1 | 3/3 | Complete | 2026-01-22 |
-| 24 | v3.1 | 0/3 | Pending | — |
+| 24 | v3.1 | 3/3 | Complete | 2026-01-22 |
 | 25 | v3.1 | 0/? | Pending | — |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-22 after Phase 24 planning complete*
+*Last updated: 2026-01-22 after Phase 24 complete*

@@ -20,8 +20,8 @@ Requirements for tutorial mode. Each maps to roadmap phases.
 
 - [x] **GAME-01**: Tutorial runs as scripted 3-player game (user + 2 AI)
 - [x] **GAME-02**: Dice rolls are predetermined to create specific teaching moments
-- [ ] **GAME-03**: User makes every move but choices are constrained to intended action
-- [ ] **GAME-04**: Constrained moves show explanation of why other options are disabled
+- [x] **GAME-03**: User makes every move but choices are constrained to intended action
+- [x] **GAME-04**: Constrained moves show explanation of why other options are disabled
 - [x] **GAME-05**: Tutorial is a safe environment with no real game penalties
 
 ### Tutorial Content
@@ -33,9 +33,9 @@ Requirements for tutorial mode. Each maps to roadmap phases.
 
 ### Visual Guidance
 
-- [ ] **VIS-01**: Inline tooltips appear with 1-2 sentence explanations
-- [ ] **VIS-02**: Visual cues (highlights, arrows) point to interactive elements
-- [ ] **VIS-03**: Relevant dice animate (pulse/glow) during explanations
+- [x] **VIS-01**: Inline tooltips appear with 1-2 sentence explanations
+- [x] **VIS-02**: Visual cues (highlights, arrows) point to interactive elements
+- [x] **VIS-03**: Relevant dice animate (pulse/glow) during explanations
 - [x] **VIS-04**: Tutorial reuses actual game components (BidUI, Dice, etc.)
 
 ## Future Requirements
@@ -76,16 +76,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FLOW-06 | Phase 25 | Pending |
 | GAME-01 | Phase 23 | Complete |
 | GAME-02 | Phase 23 | Complete |
-| GAME-03 | Phase 24 | Pending |
-| GAME-04 | Phase 24 | Pending |
+| GAME-03 | Phase 24 | Complete |
+| GAME-04 | Phase 24 | Complete |
 | GAME-05 | Phase 23 | Complete |
 | CONT-01 | Phase 25 | Pending |
 | CONT-02 | Phase 25 | Pending |
 | CONT-03 | Phase 25 | Pending |
 | CONT-04 | Phase 25 | Pending |
-| VIS-01 | Phase 24 | Pending |
-| VIS-02 | Phase 24 | Pending |
-| VIS-03 | Phase 24 | Pending |
+| VIS-01 | Phase 24 | Complete |
+| VIS-02 | Phase 24 | Complete |
+| VIS-03 | Phase 24 | Complete |
 | VIS-04 | Phase 23 | Complete |
 
 **Coverage:**
@@ -95,4 +95,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-21*
-*Last updated: 2026-01-22 after Phase 23 complete*
+*Last updated: 2026-01-22 after Phase 24 complete*
