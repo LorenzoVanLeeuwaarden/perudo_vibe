@@ -472,11 +472,9 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
   const handleRollComplete = useCallback(() => {
     setIsRolling(false);
     setGameState('Bidding');
-    // After roll completes, advance from step 0 (roll-dice) to step 1 (first-bid)
-    if (scriptStep?.id === 'roll-dice') {
-      advanceStep();
-    }
-  }, [scriptStep?.id, advanceStep]);
+    // Don't auto-advance here - let step 0's tooltip show first
+    // The tooltip dismissal will advance to step 1
+  }, []);
 
   // Handle reveal (Dudo resolution) - defined first as it's used by other handlers
   const handleReveal = useCallback(
