@@ -10,11 +10,11 @@ Requirements for tutorial mode. Each maps to roadmap phases.
 ### Tutorial Flow
 
 - [x] **FLOW-01**: User can access tutorial from main menu ("How to Play" button)
-- [ ] **FLOW-02**: User can skip tutorial at any point via visible skip button
-- [ ] **FLOW-03**: User sees progress indicator showing current step and total steps
-- [ ] **FLOW-04**: User can exit tutorial mid-way and return to main menu
-- [ ] **FLOW-05**: User sees celebration on tutorial completion (confetti/toast)
-- [ ] **FLOW-06**: Tutorial completion state persists (don't auto-prompt on return)
+- [~] **FLOW-02**: User can skip tutorial at any point via visible skip button — DESCOPED (tutorial is short)
+- [~] **FLOW-03**: User sees progress indicator showing current step and total steps — DESCOPED (minimal UI)
+- [x] **FLOW-04**: User can exit tutorial mid-way and return to main menu
+- [x] **FLOW-05**: User sees celebration on tutorial completion (confetti/toast)
+- [x] **FLOW-06**: Tutorial completion state persists (don't auto-prompt on return)
 
 ### Tutorial Gameplay
 
@@ -26,10 +26,10 @@ Requirements for tutorial mode. Each maps to roadmap phases.
 
 ### Tutorial Content
 
-- [ ] **CONT-01**: Tutorial teaches basic bidding (what a bid is, how to make one)
-- [ ] **CONT-02**: Tutorial teaches calling Dudo (when and how to challenge)
-- [ ] **CONT-03**: Tutorial teaches wild ones (ones count as any value)
-- [ ] **CONT-04**: Tutorial teaches Calza as optional advanced concept
+- [x] **CONT-01**: Tutorial teaches basic bidding (what a bid is, how to make one)
+- [x] **CONT-02**: Tutorial teaches calling Dudo (when and how to challenge)
+- [x] **CONT-03**: Tutorial teaches wild ones (ones count as any value)
+- [x] **CONT-04**: Tutorial teaches Calza as optional advanced concept
 
 ### Visual Guidance
 
@@ -69,20 +69,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | FLOW-01 | Phase 23 | Complete |
-| FLOW-02 | Phase 25 | Pending |
-| FLOW-03 | Phase 25 | Pending |
-| FLOW-04 | Phase 25 | Pending |
-| FLOW-05 | Phase 25 | Pending |
-| FLOW-06 | Phase 25 | Pending |
+| FLOW-02 | Phase 25 | Descoped |
+| FLOW-03 | Phase 25 | Descoped |
+| FLOW-04 | Phase 25 | Complete |
+| FLOW-05 | Phase 25 | Complete |
+| FLOW-06 | Phase 23 | Complete |
 | GAME-01 | Phase 23 | Complete |
 | GAME-02 | Phase 23 | Complete |
 | GAME-03 | Phase 24 | Complete |
 | GAME-04 | Phase 24 | Complete |
 | GAME-05 | Phase 23 | Complete |
-| CONT-01 | Phase 25 | Pending |
-| CONT-02 | Phase 25 | Pending |
-| CONT-03 | Phase 25 | Pending |
-| CONT-04 | Phase 25 | Pending |
+| CONT-01 | Phase 25 | Complete |
+| CONT-02 | Phase 25 | Complete |
+| CONT-03 | Phase 25 | Complete |
+| CONT-04 | Phase 25 | Complete |
 | VIS-01 | Phase 24 | Complete |
 | VIS-02 | Phase 24 | Complete |
 | VIS-03 | Phase 24 | Complete |
@@ -90,9 +90,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 **Coverage:**
 - v3.1 requirements: 19 total
-- Mapped to phases: 19
-- Unmapped: 0
+- Complete: 17
+- Descoped: 2 (FLOW-02, FLOW-03 per CONTEXT.md)
 
 ---
 *Requirements defined: 2026-01-21*
-*Last updated: 2026-01-22 after Phase 24 complete*
+*Last updated: 2026-01-22 after Phase 25 complete*

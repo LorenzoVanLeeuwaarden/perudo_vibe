@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-21)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v3.1 Tutorial
+**Current focus:** v3.1 Tutorial COMPLETE
 
 ## Current Position
 
 Phase: 25 - Tutorial Content & Polish
 Plan: 2 of 2 complete
-Status: Phase complete
-Last activity: 2026-01-22 — Completed 25-02-PLAN.md (Calza & Completion)
+Status: Complete (verified)
+Last activity: 2026-01-22 — Phase 25 verified, v3.1 Tutorial milestone complete
 
-Progress: [████████████████████] 3/3 phases (v3.1 Tutorial milestone)
+Progress: [████████████████████] 3/3 phases (v3.1 Tutorial milestone COMPLETE)
 
 ## Production URLs
 
@@ -53,15 +53,11 @@ Progress: [████████████████████] 3/3 pha
 - Requirements: 23/24 complete (ACHI-04 descoped per user request)
 - Features shipped: Gauntlet mode, Leaderboard, Achievements
 
-**v3.1 Target:**
-- Phases: 3 (Phases 23-25)
-- Requirements: 19 total
-- Goal: Tutorial mode teaching all core rules
-
-**v3.1 Progress:**
-- Phase 23 (Tutorial Foundation): COMPLETE (3/3 plans)
-- Phase 24 (Tutorial Guidance): COMPLETE (3/3 plans)
-- Phase 25 (Tutorial Content & Polish): COMPLETE (2/2 plans)
+**v3.1 Summary:**
+- Phases: 3 (Phases 23-25) — ALL COMPLETE
+- Plans: 8/8 complete
+- Requirements: 17/19 complete (FLOW-02, FLOW-03 descoped per user request)
+- Features shipped: Tutorial mode teaching all core rules (Bid, Dudo, Wild Ones, Calza)
 
 ## Accumulated Context
 
@@ -218,12 +214,14 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 25-02-PLAN.md (Calza & Completion)
+Stopped at: Phase 25 verified, v3.1 milestone complete
 Resume file: None
 
 ## Next Steps
 
-1. Complete v3.1 Tutorial milestone
+1. Run `/gsd:audit-milestone` to verify cross-phase integration
+2. Run `/gsd:complete-milestone` to archive v3.1
+3. Start planning v3.2 or next milestone
 
 ---
-*Updated: 2026-01-22 after completing 25-02-PLAN.md (Calza & Completion)*
+*Updated: 2026-01-22 after Phase 25 verification (v3.1 Tutorial milestone complete)*
