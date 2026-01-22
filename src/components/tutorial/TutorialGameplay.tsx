@@ -305,11 +305,8 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
         }, 1500);
         return () => clearTimeout(timer);
       } else if (scriptStep.id === 'roll-dice') {
-        // Initial roll observation - advance after viewing
-        const timer = setTimeout(() => {
-          advanceStep();
-        }, 2000);
-        return () => clearTimeout(timer);
+        // Initial roll - don't auto-advance, let handleRollComplete handle it
+        // The tooltip will show after roll completes (when gameState === 'Bidding')
       } else if (scriptStep.id === 'reveal') {
         // Reveal step - wait for reveal animation
         // Don't auto-advance here, handleRevealComplete will handle it
@@ -321,8 +318,15 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
   }, [currentStep, scriptStep, onComplete, advanceStep]);
 
   // Show tooltip after brief delay when step has tooltip and not dismissed
+  // Only show tooltips when in Bidding state (not during Rolling or Reveal animations)
   useEffect(() => {
     if (!scriptStep?.tooltip || tooltipDismissed) return;
+
+    // Don't show tooltips during Rolling state - let the DiceCup be the focus
+    if (gameState === 'Rolling') return;
+
+    // Don't show tooltips during Reveal - DudoOverlay handles that
+    if (gameState === 'Reveal') return;
 
     // Show tooltip after delay for smooth transition
     const showTimer = setTimeout(() => {
@@ -330,7 +334,7 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
     }, 300);
 
     return () => clearTimeout(showTimer);
-  }, [currentStep, scriptStep?.tooltip, tooltipDismissed]);
+  }, [currentStep, scriptStep?.tooltip, tooltipDismissed, gameState]);
 
   // Handle auto-advance tooltips
   useEffect(() => {
@@ -468,7 +472,11 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
   const handleRollComplete = useCallback(() => {
     setIsRolling(false);
     setGameState('Bidding');
-  }, []);
+    // After roll completes, advance from step 0 (roll-dice) to step 1 (first-bid)
+    if (scriptStep?.id === 'roll-dice') {
+      advanceStep();
+    }
+  }, [scriptStep?.id, advanceStep]);
 
   // Handle reveal (Dudo resolution) - defined first as it's used by other handlers
   const handleReveal = useCallback(
