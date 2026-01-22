@@ -221,5 +221,96 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       lastBidder: 1, // Sam
       highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
     },
+
+    // ============================================
+    // ROUND 2: Teaching Wild Ones (1s count as any value)
+    // ============================================
+    // DICE VALUES:
+    // - Player: [1, 1, 5, 5, 3] = two wild 1s, two 5s, one 3
+    // - Alex:   [3, 3, 1, 6, 2] = two 3s, one wild 1, one 6, one 2
+    // - Sam:    [5, 4, 4, 2, 6] = one 5, two 4s, one 2, one 6
+    //
+    // Total 5s (including wilds): Player(2+2) + Alex(1) + Sam(1) = 6 fives
+    // So 5x fives is a safe bid (actually 6 exist)
+
+    // Step 9: Round 2 intro - explain wild ones
+    {
+      id: 'round2-roll',
+      playerDice: [1, 1, 5, 5, 3],
+      opponentDice: [
+        [3, 3, 1, 6, 2], // Alex: one wild 1
+        [5, 4, 4, 2, 6], // Sam: one 5
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: null,
+      roundStarter: 'player',
+      tooltip: {
+        content:
+          "New round! Notice the 1s in your hand - they're WILD! Ones count as any face value. Your two 1s can count as 5s, 3s, or whatever you need.",
+        position: 'top',
+        targetElement: 'player-dice',
+        dismissMode: 'click',
+      },
+      highlightDice: { type: 'jokers', targets: ['player'] },
+    },
+
+    // Step 10: Player bids using wild ones
+    {
+      id: 'ones-bid',
+      playerDice: [1, 1, 5, 5, 3],
+      opponentDice: [
+        [3, 3, 1, 6, 2],
+        [5, 4, 4, 2, 6],
+      ],
+      requiredAction: { type: 'bid', bid: { count: 5, value: 5 } },
+      currentBid: null,
+      roundStarter: 'player',
+      tooltip: {
+        content:
+          "You have two 5s + two wild 1s = four 5s in your hand alone! Sam has one more. Let's bid 5x fives.",
+        position: 'top',
+        targetElement: 'bid-button',
+        dismissMode: 'click',
+      },
+      highlightDice: { type: 'matching-value', value: 5, targets: ['player', 1] },
+      highlightButton: 'bid',
+    },
+
+    // Step 11: Alex calls Dudo (incorrectly - our bid is good)
+    {
+      id: 'ones-ai-dudo',
+      playerDice: [1, 1, 5, 5, 3],
+      opponentDice: [
+        [3, 3, 1, 6, 2],
+        [5, 4, 4, 2, 6],
+      ],
+      requiredAction: { type: 'wait' },
+      scriptedAIMoves: [{ type: 'dudo' }],
+      currentBid: { count: 5, value: 5 },
+      lastBidder: 'player',
+      tooltip: {
+        content: "Alex calls Dudo! He doesn't believe there are five 5s...",
+        position: 'bottom',
+        targetElement: 'bid-display',
+        dismissMode: 'auto',
+        autoAdvanceDelay: 2000,
+      },
+    },
+
+    // Step 12: Reveal showing wild ones counting
+    {
+      id: 'ones-reveal',
+      playerDice: [1, 1, 5, 5, 3],
+      opponentDice: [
+        [3, 3, 1, 6, 2],
+        [5, 4, 4, 2, 6],
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: { count: 5, value: 5 },
+      lastBidder: 'player',
+      highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
+      // Reveal will show: Player(2 fives + 2 ones = 4) + Alex(1 one = 1) + Sam(1 five = 1) = 6 total
+      // 6 >= 5, so Alex loses a die for wrong Dudo call
+    },
   ],
 };
