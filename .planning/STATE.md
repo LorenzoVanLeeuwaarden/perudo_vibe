@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 
 ## Current Position
 
-Phase: 23 - Tutorial Foundation
-Plan: 02 of 3 complete
-Status: In progress
-Last activity: 2026-01-22 — Completed 23-02-PLAN.md (Tutorial Script and Gameplay)
+Phase: 23 - Tutorial Foundation (COMPLETE)
+Plan: 03 of 3 complete
+Status: Phase complete
+Last activity: 2026-01-22 — Completed 23-03-PLAN.md (Tutorial Screen Integration)
 
-Progress: [██████░░░░░░░░░░░░░░] 2/3 plans (Phase 23)
+Progress: [██████████░░░░░░░░░░] 3/3 plans (Phase 23 complete)
 
 ## Production URLs
 
@@ -57,6 +57,11 @@ Progress: [██████░░░░░░░░░░░░░░] 2/3 pla
 - Phases: 3 (Phases 23-25)
 - Requirements: 19 total
 - Goal: Tutorial mode teaching all core rules
+
+**v3.1 Progress:**
+- Phase 23 (Tutorial Foundation): COMPLETE (3/3 plans)
+- Phase 24 (Tutorial Guided Flow): Not started
+- Phase 25 (Tutorial Polish): Not started
 
 ## Accumulated Context
 
@@ -153,6 +158,13 @@ Phase 23-02 Decisions:
 - Pass dice values to handleReveal to avoid circular hook dependencies
 - tutorialStore totalSteps updated to 6 (from placeholder 8)
 
+Phase 23-03 Decisions:
+- TutorialScreen follows GauntletModeScreen container pattern
+- First-time prompt dismissed via tutorial_prompt_dismissed localStorage key
+- TutorialComplete uses player color theming for success icon
+- Exit button available throughout tutorial (fixed top-left position)
+- 1.5s delay before showing first-time prompt
+
 ### Pending Todos
 
 None.
@@ -172,13 +184,13 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 23-02-PLAN.md (Tutorial Script and Gameplay)
-Resume file: .planning/phases/23-tutorial-foundation/23-03-PLAN.md
+Stopped at: Completed 23-03-PLAN.md (Tutorial Screen Integration) - Phase 23 complete
+Resume file: None (phase complete)
 
 ## Next Steps
 
-1. Execute 23-03-PLAN.md (Tutorial Screen Component)
-2. Continue with Phase 24-25
+1. Start Phase 24: Tutorial Guided Flow (step-by-step explanations, UI overlays)
+2. Continue with Phase 25: Tutorial Polish (timing, edge cases, skip functionality)
 
 ---
-*Updated: 2026-01-22 after completing 23-02-PLAN.md*
+*Updated: 2026-01-22 after completing 23-03-PLAN.md (Phase 23 complete)*
