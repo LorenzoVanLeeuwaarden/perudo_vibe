@@ -1625,7 +1625,7 @@ export default function LastDieGame() {
 
 
       {/* Dice count display - fixed at top (only for non-Bidding game states) */}
-      {gameState !== 'ModeSelection' && gameState !== 'Lobby' && gameState !== 'Bidding' && gameState !== 'Gauntlet' && (
+      {gameState !== 'ModeSelection' && gameState !== 'Lobby' && gameState !== 'Bidding' && gameState !== 'Gauntlet' && gameState !== 'Tutorial' && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
