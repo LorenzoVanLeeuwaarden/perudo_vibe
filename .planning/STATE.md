@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 25 - Tutorial Content & Polish
-Plan: 0 of ? complete
-Status: Pending
-Last activity: 2026-01-22 — Completed Phase 24 (Tutorial Guidance)
+Plan: 1 of ? complete
+Status: In progress
+Last activity: 2026-01-22 — Completed 25-01-PLAN.md (Expand Tutorial Content)
 
 Progress: [█████████████░░░░░░░] 2/3 phases (v3.1 Tutorial milestone)
 
@@ -61,7 +61,7 @@ Progress: [█████████████░░░░░░░] 2/3 pha
 **v3.1 Progress:**
 - Phase 23 (Tutorial Foundation): COMPLETE (3/3 plans)
 - Phase 24 (Tutorial Guidance): COMPLETE (3/3 plans)
-- Phase 25 (Tutorial Content & Polish): Not started
+- Phase 25 (Tutorial Content & Polish): In progress (1/? plans)
 
 ## Accumulated Context
 
@@ -185,6 +185,14 @@ Phase 24-03 Decisions:
 - TutorialBidPanel as local component with constrained actions based on requiredAction.type
 - Tooltips only show during Bidding state (not during Rolling or Reveal)
 
+Phase 25-01 Decisions:
+- Tutorial expanded from 9 to 19 steps (adding ones/calza teaching)
+- Teaching order: Bid -> Dudo -> Ones -> Calza (per CONTEXT.md)
+- Wild ones taught with dice [1,1,5,5,3] showing 1s count as any value
+- Calza taught with exactly 5 fours setup for guaranteed success
+- calza-button added to targetElement union for tooltip targeting
+- totalSteps updated to 19 to sync with expanded script
+
 ### Pending Todos
 
 None.
@@ -204,13 +212,13 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed Phase 24 (Tutorial Guidance)
+Stopped at: Completed 25-01-PLAN.md (Expand Tutorial Content)
 Resume file: None
 
 ## Next Steps
 
-1. Start Phase 25: Tutorial Content & Polish (skip/progress UX, complete tutorial content)
+1. Continue Phase 25: Tutorial Content & Polish (remaining plans)
 2. Complete v3.1 Tutorial milestone
 
 ---
-*Updated: 2026-01-22 after completing Phase 24 (Tutorial Guidance)*
+*Updated: 2026-01-22 after completing 25-01-PLAN.md (Expand Tutorial Content)*
