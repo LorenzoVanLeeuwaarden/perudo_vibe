@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayerColor, PLAYER_COLORS, Bid } from '@/lib/types';
 import { DiceCup } from '@/components/DiceCup';
@@ -10,11 +10,13 @@ import { ShaderBackground } from '@/components/ShaderBackground';
 import { DudoOverlay } from '@/components/DudoOverlay';
 import { SortedDiceDisplay } from '@/components/SortedDiceDisplay';
 import { RevealContent } from '@/components/RevealContent';
+import { TutorialTooltip, TutorialOverlay, DisabledButtonWrapper } from '@/components/tutorial';
 import { useIsFirefox } from '@/hooks/useIsFirefox';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { countMatching } from '@/lib/gameLogic';
 import { TUTORIAL_SCRIPT, TUTORIAL_OPPONENTS } from '@/lib/tutorial/script';
 import { useTutorialStore } from '@/stores/tutorialStore';
+import { Send, AlertTriangle } from 'lucide-react';
 
 type TutorialGameState = 'Rolling' | 'Bidding' | 'Reveal' | 'Complete';
 
@@ -72,6 +74,10 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
   const [dudoOverlayComplete, setDudoOverlayComplete] = useState(false);
   const [countingComplete, setCountingComplete] = useState(false);
 
+  // Tooltip state
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipDismissed, setTooltipDismissed] = useState(false);
+
   // Initialize opponents from script on mount
   useEffect(() => {
     const initialOpponents: TutorialOpponent[] = TUTORIAL_OPPONENTS.map((opp, i) => ({
@@ -92,6 +98,10 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
       onComplete();
       return;
     }
+
+    // Reset tooltip state for new step
+    setTooltipDismissed(false);
+    setShowTooltip(false);
 
     // Set dice from script (predetermined values)
     setPlayerHand(scriptStep.playerDice);
@@ -136,7 +146,95 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
   // eslint-disable-next-line react-hooks/exhaustive-deps -- processScriptedAIMove depends on scriptStep which causes infinite loop
   }, [currentStep, scriptStep, onComplete, advanceStep]);
 
+  // Show tooltip after brief delay when step has tooltip and not dismissed
+  useEffect(() => {
+    if (!scriptStep?.tooltip || tooltipDismissed) return;
+
+    // Show tooltip after delay for smooth transition
+    const showTimer = setTimeout(() => {
+      setShowTooltip(true);
+    }, 300);
+
+    return () => clearTimeout(showTimer);
+  }, [currentStep, scriptStep?.tooltip, tooltipDismissed]);
+
+  // Handle auto-advance tooltips
+  useEffect(() => {
+    if (!showTooltip || !scriptStep?.tooltip) return;
+    if (scriptStep.tooltip.dismissMode !== 'auto') return;
+
+    const delay = scriptStep.tooltip.autoAdvanceDelay || 1500;
+    const autoTimer = setTimeout(() => {
+      setShowTooltip(false);
+      setTooltipDismissed(true);
+      // For auto-advance tooltips with wait action, advance step after dismiss
+      if (scriptStep.requiredAction.type === 'wait') {
+        advanceStep();
+      }
+    }, delay);
+
+    return () => clearTimeout(autoTimer);
+  }, [showTooltip, scriptStep, advanceStep]);
+
   const totalDice = playerHand.length + opponents.reduce((sum, o) => sum + o.hand.length, 0);
+
+  // Handle tooltip dismissal
+  const handleTooltipDismiss = useCallback(() => {
+    setShowTooltip(false);
+    setTooltipDismissed(true);
+
+    // For click-to-continue tooltips with 'wait' action, advance step after dismissal
+    // For 'bid' or 'dudo' actions, user must still perform the action
+    if (scriptStep?.tooltip?.dismissMode === 'click' && scriptStep.requiredAction.type === 'wait') {
+      advanceStep();
+    }
+  }, [scriptStep, advanceStep]);
+
+  // Get tooltip position based on targetElement
+  const getTooltipPosition = useCallback(
+    (targetElement: string): React.CSSProperties => {
+      // Return CSS styles for manual positioning based on target
+      switch (targetElement) {
+        case 'player-dice':
+          // Bottom center of screen, pointing down at player dice
+          return {
+            bottom: '180px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+          };
+        case 'bid-button':
+        case 'dudo-button':
+          // Above BidUI area (center of screen)
+          return {
+            top: '45%',
+            left: '50%',
+            transform: 'translate(-50%, -100%)',
+          };
+        case 'bid-display':
+          // Below the current bid display
+          return {
+            top: '35%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+          };
+        case 'opponent-dice':
+          // Below opponent dice section
+          return {
+            top: '120px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+          };
+        default:
+          // Center of screen fallback
+          return {
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+          };
+      }
+    },
+    []
+  );
 
   // Handle scripted dice roll (just animations - dice are predetermined)
   const handleRoll = useCallback(() => {
@@ -543,6 +641,21 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
               isGameOver={false}
             />
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Tutorial tooltip and overlay */}
+      <AnimatePresence>
+        {showTooltip && scriptStep?.tooltip && (
+          <>
+            <TutorialOverlay onDismiss={handleTooltipDismiss} />
+            <TutorialTooltip
+              content={scriptStep.tooltip.content}
+              position={scriptStep.tooltip.position}
+              playerColor={playerColor}
+              style={getTooltipPosition(scriptStep.tooltip.targetElement)}
+            />
+          </>
         )}
       </AnimatePresence>
     </div>
