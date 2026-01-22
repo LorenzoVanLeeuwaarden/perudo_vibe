@@ -48,7 +48,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       tooltip: {
         content:
           "Welcome to The Last Die! Everyone rolls dice secretly, then takes turns bidding on how many of a certain number exist across ALL players' hands. Bid too high and get caught? You lose a die. In this tutorial, you can see everyone's dice to learn.",
-        position: 'bottom',
+        position: 'top',
         targetElement: 'player-dice',
         dismissMode: 'click',
       },
@@ -90,7 +90,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       tooltip: {
         content:
           "Nice! Now it's Alex's turn. Each player must RAISE the bid or call the bluff. To raise: increase the quantity (4x threes) OR the face value (3x fours). The bids keep climbing until someone doubts!",
-        position: 'top',
+        position: 'bottom',
         targetElement: 'bid-display',
         dismissMode: 'click',
       },
@@ -112,7 +112,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       lastBidder: 'player',
       tooltip: {
         content: 'Alex is thinking...',
-        position: 'top',
+        position: 'bottom',
         targetElement: 'opponent-dice',
         dismissMode: 'auto',
         autoAdvanceDelay: 2000,
@@ -134,7 +134,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       tooltip: {
         content:
           "Alex raised to 4x fours! He's betting there are at least four 4s on the table. He has two 4s himself, so he only needs two more to be right. Now it's Sam's turn.",
-        position: 'top',
+        position: 'bottom',
         targetElement: 'bid-display',
         dismissMode: 'click',
       },
@@ -157,7 +157,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       lastBidder: 0, // Alex
       tooltip: {
         content: 'Sam is thinking...',
-        position: 'top',
+        position: 'bottom',
         targetElement: 'opponent-dice',
         dismissMode: 'auto',
         autoAdvanceDelay: 2000,
@@ -179,7 +179,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       tooltip: {
         content:
           "Sam raised to 5x fives! That seems risky... When you think someone's bid is WRONG, you call DUDO (\"I doubt it!\"). If you're right, THEY lose a die. If you're wrong, YOU lose one.",
-        position: 'top',
+        position: 'bottom',
         targetElement: 'bid-display',
         dismissMode: 'click',
       },

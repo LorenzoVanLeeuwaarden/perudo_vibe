@@ -247,10 +247,15 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
   const [showDudoOverlay, setShowDudoOverlay] = useState(false);
   const [dudoOverlayComplete, setDudoOverlayComplete] = useState(false);
   const [countingComplete, setCountingComplete] = useState(false);
+  const [revealProgress, setRevealProgress] = useState(0);
+  const [highlightedDiceIndex, setHighlightedDiceIndex] = useState(-1);
 
   // Tooltip state
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipDismissed, setTooltipDismissed] = useState(false);
+
+  // Track if initial dice sort has happened to prevent constant re-sorting
+  const [hasInitialSorted, setHasInitialSorted] = useState(false);
 
   // Initialize opponents from script on mount
   useEffect(() => {
@@ -369,36 +374,42 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
   }, [scriptStep, advanceStep]);
 
   // Get tooltip position based on targetElement
+  // Position is where tooltip appears relative to target:
+  // 'top' = tooltip above target (arrow points down)
+  // 'bottom' = tooltip below target (arrow points up)
   const getTooltipPosition = useCallback(
     (targetElement: string): React.CSSProperties => {
-      // Return CSS styles for manual positioning based on target
       switch (targetElement) {
         case 'player-dice':
-          // Bottom center of screen, pointing down at player dice
+          // Tooltip ABOVE player dice (which are at bottom of screen)
+          // Arrow points DOWN at the dice
           return {
-            bottom: '180px',
+            bottom: '160px',
             left: '50%',
             transform: 'translateX(-50%)',
           };
         case 'bid-button':
         case 'dudo-button':
-          // Above BidUI area (center of screen)
+          // Tooltip ABOVE the bid panel (center area)
+          // Arrow points DOWN at the buttons
           return {
-            top: '45%',
+            top: '38%',
             left: '50%',
-            transform: 'translate(-50%, -100%)',
+            transform: 'translateX(-50%)',
           };
         case 'bid-display':
-          // Below the current bid display
+          // Tooltip BELOW the current bid display
+          // Arrow points UP at the bid
           return {
-            top: '35%',
+            top: '32%',
             left: '50%',
             transform: 'translateX(-50%)',
           };
         case 'opponent-dice':
-          // Below opponent dice section
+          // Tooltip BELOW opponent dice (at top of screen)
+          // Arrow points UP at opponent dice
           return {
-            top: '120px',
+            top: '140px',
             left: '50%',
             transform: 'translateX(-50%)',
           };
@@ -472,6 +483,8 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
   const handleRollComplete = useCallback(() => {
     setIsRolling(false);
     setGameState('Bidding');
+    // Mark initial sort as done after a brief delay to let animation complete
+    setTimeout(() => setHasInitialSorted(true), 500);
     // Don't auto-advance here - let step 0's tooltip show first
     // The tooltip dismissal will advance to step 1
   }, []);
@@ -565,6 +578,73 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
     }
   }, [gameState, isRolling, playerHand.length, handleRoll]);
 
+  // Progressive counting animation for reveal phase
+  useEffect(() => {
+    if (gameState !== 'Reveal' || !currentBid || !dudoOverlayComplete) return;
+    if (countingComplete) return;
+
+    // Reset states
+    setRevealProgress(0);
+    setHighlightedDiceIndex(-1);
+
+    const bid = currentBid;
+
+    // Build list of all dice with their global indices
+    const allDice: { value: number; globalIdx: number; playerId: 'player' | number }[] = [];
+    let globalIdx = 0;
+
+    playerHand.forEach((value) => {
+      allDice.push({ value, globalIdx, playerId: 'player' });
+      globalIdx++;
+    });
+
+    opponents.forEach((opp, oppIdx) => {
+      opp.hand.forEach((value) => {
+        allDice.push({ value, globalIdx, playerId: oppIdx });
+        globalIdx++;
+      });
+    });
+
+    // Find matching dice indices
+    const matchingIndices = allDice
+      .filter((d) => d.value === bid.value)
+      .map((d) => d.globalIdx);
+
+    let currentRevealIdx = 0;
+    let currentHighlightIdx = 0;
+    let isHighlightingPhase = false;
+
+    const processNext = () => {
+      if (!isHighlightingPhase) {
+        // Reveal phase - show dice one by one
+        if (currentRevealIdx < allDice.length) {
+          currentRevealIdx++;
+          setRevealProgress(currentRevealIdx);
+          setTimeout(processNext, 80); // Fast reveal
+        } else {
+          // Start highlighting matches
+          isHighlightingPhase = true;
+          currentHighlightIdx = 0;
+          setTimeout(processNext, 300);
+        }
+      } else {
+        // Highlight phase - highlight matching dice one by one
+        if (currentHighlightIdx < matchingIndices.length) {
+          setHighlightedDiceIndex(matchingIndices[currentHighlightIdx]);
+          currentHighlightIdx++;
+          setTimeout(processNext, 400); // Slower for emphasis
+        } else {
+          // All done
+          setCountingComplete(true);
+        }
+      }
+    };
+
+    // Start animation after brief delay
+    const timeout = setTimeout(processNext, 500);
+    return () => clearTimeout(timeout);
+  }, [gameState, currentBid, playerHand, opponents, dudoOverlayComplete, countingComplete]);
+
   // Check if a die matches the bid (no jokers wild for Phase 23)
   const isDieMatching = useCallback(
     (value: number) => {
@@ -574,9 +654,9 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
     [currentBid]
   );
 
-  // Get matching dice for reveal counting
-  const getCountedDice = useCallback(() => {
-    if (!currentBid || !countingComplete) return [];
+  // Get all matching dice with indices
+  const getAllMatchingDice = useCallback(() => {
+    if (!currentBid) return [];
 
     const matches: { value: number; color: PlayerColor; globalIdx: number; isJoker: boolean }[] = [];
     let globalIdx = 0;
@@ -610,7 +690,37 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
     });
 
     return matches;
-  }, [currentBid, playerHand, opponents, playerColor, countingComplete]);
+  }, [currentBid, playerHand, opponents, playerColor]);
+
+  // Get counted dice (progressive - only up to current highlight)
+  const getCountedDice = useCallback(() => {
+    const allMatches = getAllMatchingDice();
+    if (countingComplete) return allMatches;
+    if (highlightedDiceIndex < 0) return [];
+    return allMatches.filter((m) => m.globalIdx <= highlightedDiceIndex);
+  }, [getAllMatchingDice, countingComplete, highlightedDiceIndex]);
+
+  // Check if a die has been revealed in the animation
+  const isDieRevealed = useCallback(
+    (globalIdx: number) => {
+      return globalIdx < revealProgress;
+    },
+    [revealProgress]
+  );
+
+  // Check if a die is currently highlighted (matching and counted)
+  const isDieHighlighted = useCallback(
+    (globalIdx: number) => {
+      if (!currentBid) return false;
+      const allMatches = getAllMatchingDice();
+      const matchIdx = allMatches.findIndex((m) => m.globalIdx === globalIdx);
+      if (matchIdx === -1) return false;
+      if (countingComplete) return true;
+      const currentMatch = allMatches.findIndex((m) => m.globalIdx === highlightedDiceIndex);
+      return matchIdx <= currentMatch;
+    },
+    [currentBid, getAllMatchingDice, countingComplete, highlightedDiceIndex]
+  );
 
   return (
     <div className="relative w-full h-full overflow-hidden">
@@ -773,7 +883,7 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
                 dice={playerHand}
                 color={playerColor}
                 size="lg"
-                animateSort={true}
+                animateSort={!hasInitialSorted}
                 highlightValue={playerHighlightValue}
               />
             </motion.div>
@@ -794,8 +904,7 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
             onComplete={() => {
               setShowDudoOverlay(false);
               setDudoOverlayComplete(true);
-              // Auto-complete counting for simplified reveal in Phase 23
-              setTimeout(() => setCountingComplete(true), 500);
+              // Progressive counting animation will be triggered by useEffect
             }}
           />
         )}
@@ -827,7 +936,7 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
               isCalza={false}
               countingComplete={countingComplete}
               countedDice={getCountedDice()}
-              isCountingStarted={countingComplete}
+              isCountingStarted={highlightedDiceIndex >= 0 || countingComplete}
               players={[
                 {
                   id: 'player',
@@ -850,8 +959,8 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
                 return playerHand.length + opponents.slice(0, idx).reduce((sum, o) => sum + o.hand.length, 0);
               }}
               isPlayerSectionRevealed={() => true}
-              isDieRevealed={() => true}
-              isDieHighlighted={() => false}
+              isDieRevealed={isDieRevealed}
+              isDieHighlighted={isDieHighlighted}
               isDieMatching={isDieMatching}
               dyingDieOwner={null}
               dyingDieIndex={-1}
