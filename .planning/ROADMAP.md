@@ -232,31 +232,36 @@ Plans:
 ---
 
 ### Phase 25: Tutorial Content & Polish
-**Goal**: Complete tutorial teaches all core rules with skip/progress UX and completion celebration
+**Goal**: Complete tutorial teaches all core rules with completion celebration
 
 **Dependencies**: Phase 24 (requires guidance system infrastructure)
 
-**Requirements**: FLOW-02, FLOW-03, FLOW-04, FLOW-05, FLOW-06, CONT-01, CONT-02, CONT-03, CONT-04
+**Requirements**: FLOW-04, FLOW-05, FLOW-06, CONT-01, CONT-02, CONT-03, CONT-04
+
+**Note:** FLOW-02 (skip button) and FLOW-03 (progress indicator) descoped per CONTEXT.md decisions - tutorial is short enough to complete in one sitting.
 
 **Success Criteria:**
-1. User learns basic bidding (what a bid is, how to make one)
-2. User learns calling Dudo (when to challenge, what happens when you call)
+1. User learns basic bidding (what a bid is, how to make one) - covered by Phase 23-24
+2. User learns calling Dudo (when to challenge, what happens when you call) - covered by Phase 23-24
 3. User learns wild ones rule (ones count as any face value)
-4. User learns Calza as optional advanced concept (exact match challenge)
-5. User can skip tutorial at any point via visible skip button
-6. Progress indicator shows current step and total steps throughout tutorial
-7. User can exit mid-tutorial and return to main menu
-8. Celebration (confetti/toast) plays on tutorial completion
-9. Tutorial completion persists — app does not auto-prompt returning players
+4. User learns Calza (exact match challenge)
+5. User can exit mid-tutorial and return to main menu (exit button visible throughout)
+6. Celebration (confetti) plays on tutorial completion
+7. Tutorial auto-returns to main menu after celebration
+8. Tutorial completion persists (app does not auto-prompt returning players) - covered by Phase 23
 
-**Plans:** TBD (created during plan-phase)
+**Plans:** 2 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Tutorial content expansion (wild ones, Calza teaching steps)
+- [ ] 25-02-PLAN.md — Calza button and completion celebration (confetti, auto-return)
 
 </details>
 
 ## Progress
 
 **Execution Order:**
-Phase 24 is next. Phases 23-25 form v3.1 Tutorial milestone.
+Phase 25 is next. Phases 23-25 form v3.1 Tutorial milestone.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -269,8 +274,8 @@ Phase 24 is next. Phases 23-25 form v3.1 Tutorial milestone.
 | 22 | v3.0 | 3/3 | Complete | 2026-01-21 |
 | 23 | v3.1 | 3/3 | Complete | 2026-01-22 |
 | 24 | v3.1 | 3/3 | Complete | 2026-01-22 |
-| 25 | v3.1 | 0/? | Pending | — |
+| 25 | v3.1 | 0/2 | Pending | — |
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-22 after Phase 24 complete*
+*Last updated: 2026-01-22 after Phase 25 planning*
