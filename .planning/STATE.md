@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 24 - Tutorial Guidance
-Plan: 01 of ? complete
+Plan: 02 of 3 complete
 Status: In progress
-Last activity: 2026-01-22 — Completed 24-01-PLAN.md (Tutorial Tooltip Components)
+Last activity: 2026-01-22 — Completed 24-02-PLAN.md (Tutorial Script Guidance)
 
 Progress: [██████░░░░░░░░░░░░░░] 1/3 phases (v3.1 Tutorial milestone)
 
@@ -60,7 +60,7 @@ Progress: [██████░░░░░░░░░░░░░░] 1/3 pha
 
 **v3.1 Progress:**
 - Phase 23 (Tutorial Foundation): COMPLETE (3/3 plans)
-- Phase 24 (Tutorial Guided Flow): In progress (1/? plans)
+- Phase 24 (Tutorial Guided Flow): In progress (2/3 plans)
 - Phase 25 (Tutorial Polish): Not started
 
 ## Accumulated Context
@@ -171,6 +171,13 @@ Phase 24-01 Decisions:
 - tabIndex={0} and aria-label for keyboard accessibility on disabled buttons
 - stopPropagation on overlay click prevents mobile tap-through
 
+Phase 24-02 Decisions:
+- Tooltip targetElement is union of 5 possible targets
+- HighlightDiceConfig supports matching-value, jokers, and all highlight types
+- Auto-advance delay set to 1500ms for AI thinking steps
+- Step 5 (reveal) has no tooltip - DudoOverlay handles the drama
+- Friendly tone per CONTEXT.md: "Welcome!", "You have two 3s!", "Count the 5s:"
+
 ### Pending Todos
 
 None.
@@ -190,13 +197,13 @@ None (cleared in v2.2)
 ## Session Continuity
 
 Last session: 2026-01-22
-Stopped at: Completed 24-01-PLAN.md (Tutorial Tooltip Components)
+Stopped at: Completed 24-02-PLAN.md (Tutorial Script Guidance)
 Resume file: None
 
 ## Next Steps
 
-1. Continue Phase 24: Integrate tooltips into TutorialGameplay
+1. Continue Phase 24: Execute 24-03-PLAN.md (TutorialGameplay integration)
 2. Continue with Phase 25: Tutorial Polish (timing, edge cases, skip functionality)
 
 ---
-*Updated: 2026-01-22 after completing 24-01-PLAN.md*
+*Updated: 2026-01-22 after completing 24-02-PLAN.md*
