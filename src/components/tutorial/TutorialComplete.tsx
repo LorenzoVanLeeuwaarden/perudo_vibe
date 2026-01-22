@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
 
 interface TutorialCompleteProps {
@@ -11,6 +13,50 @@ interface TutorialCompleteProps {
 
 export function TutorialComplete({ playerColor, onExit }: TutorialCompleteProps) {
   const colorConfig = PLAYER_COLORS[playerColor];
+
+  // Fire confetti on mount
+  useEffect(() => {
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    // Main burst from center
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: [colorConfig.bg, colorConfig.glow, '#ffd700', '#ffffff'],
+      disableForReducedMotion: true,
+    });
+
+    // Side cannons after 200ms
+    const sideTimer = setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: [colorConfig.bg, colorConfig.glow, '#ffd700'],
+      });
+      confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: [colorConfig.bg, colorConfig.glow, '#ffd700'],
+      });
+    }, 200);
+
+    return () => clearTimeout(sideTimer);
+  }, [colorConfig]);
+
+  // Auto-return to main menu after 2 seconds (per CONTEXT.md)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onExit();
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [onExit]);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -34,39 +80,15 @@ export function TutorialComplete({ playerColor, onExit }: TutorialCompleteProps)
           <CheckCircle className="w-10 h-10 text-white" />
         </motion.div>
 
-        {/* Title */}
+        {/* Title - per CONTEXT.md: "You're ready to play!" */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-3xl font-bold text-white-soft mb-3"
+          className="text-3xl font-bold text-white-soft"
         >
-          Tutorial Complete!
+          You&apos;re ready to play!
         </motion.h1>
-
-        {/* Message */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="text-white-soft/70 mb-8"
-        >
-          You&apos;ve learned the basics of Perudo. Ready to play for real?
-        </motion.p>
-
-        {/* Action button */}
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onExit}
-          className="retro-button retro-button-orange flex items-center gap-2 mx-auto"
-        >
-          Start Playing
-          <ArrowRight className="w-5 h-5" />
-        </motion.button>
       </motion.div>
     </div>
   );
