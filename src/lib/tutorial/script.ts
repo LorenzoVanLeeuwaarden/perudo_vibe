@@ -34,7 +34,7 @@ export const TUTORIAL_OPPONENTS = [
 export const TUTORIAL_SCRIPT: TutorialScript = {
   opponents: [...TUTORIAL_OPPONENTS],
   steps: [
-    // Step 0: Initial roll - user observes their dice and opponents' dice
+    // Step 0: Initial roll - welcome and game overview
     {
       id: 'roll-dice',
       playerDice: [3, 3, 5, 2, 6],
@@ -42,20 +42,19 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
         [4, 4, 2, 6, 2], // Alex: two 4s, three 2s, one 6
         [5, 5, 3, 3, 4], // Sam: two 5s, two 3s, one 4
       ],
-      requiredAction: { type: 'wait' }, // Just observe dice
+      requiredAction: { type: 'wait' },
       roundStarter: 'player',
       currentBid: null,
       tooltip: {
         content:
-          "Welcome to The Last Die! Everyone rolls dice secretly, then takes turns bidding on how many of a certain number exist across ALL players' hands. Bid too high and get caught? You lose a die. In this tutorial, you can see everyone's dice to learn how it works.",
+          "Welcome to The Last Die! Everyone rolls dice secretly, then takes turns bidding on how many of a certain number exist across ALL players' hands. Bid too high and get caught? You lose a die. In this tutorial, you can see everyone's dice to learn.",
         position: 'bottom',
         targetElement: 'player-dice',
         dismissMode: 'click',
       },
     },
 
-    // Step 1: Player makes opening bid - tutorial guides them to bid 3x threes
-    // Player has two 3s, Sam has two 3s = at least 4 threes total, so 3x threes is safe
+    // Step 1: Player makes opening bid
     {
       id: 'first-bid',
       playerDice: [3, 3, 5, 2, 6],
@@ -68,7 +67,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       roundStarter: 'player',
       tooltip: {
         content:
-          'You have two 3s! Start with a safe bid: 3x threes. Click BID to confirm.',
+          "Look at your dice - you have two 3s! A bid is a guess about ALL dice on the table. Let's bid \"3x threes\" - meaning we think there are at least three 3s total. Click BID!",
         position: 'top',
         targetElement: 'bid-button',
         dismissMode: 'click',
@@ -77,8 +76,27 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       highlightButton: 'bid',
     },
 
-    // Step 2: Alex bids - player observes
-    // Alex raises to 4x fours (reasonable - Alex has two 4s)
+    // Step 2: Explain turn passing and bid rules
+    {
+      id: 'explain-turns',
+      playerDice: [3, 3, 5, 2, 6],
+      opponentDice: [
+        [4, 4, 2, 6, 2],
+        [5, 5, 3, 3, 4],
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: { count: 3, value: 3 },
+      lastBidder: 'player',
+      tooltip: {
+        content:
+          "Nice! Now it's Alex's turn. Each player must RAISE the bid or call the bluff. To raise: increase the quantity (4x threes) OR the face value (3x fours). The bids keep climbing until someone doubts!",
+        position: 'top',
+        targetElement: 'bid-display',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 3: Alex bids
     {
       id: 'alex-bids',
       playerDice: [3, 3, 5, 2, 6],
@@ -88,7 +106,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       ],
       requiredAction: { type: 'wait' },
       scriptedAIMoves: [
-        { type: 'bid', bid: { count: 4, value: 4 } }, // Alex bids 4x fours
+        { type: 'bid', bid: { count: 4, value: 4 } },
       ],
       currentBid: { count: 3, value: 3 },
       lastBidder: 'player',
@@ -97,13 +115,33 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
         position: 'top',
         targetElement: 'opponent-dice',
         dismissMode: 'auto',
-        autoAdvanceDelay: 1500,
+        autoAdvanceDelay: 2000,
       },
       highlightDice: { type: 'matching-value', value: 4, targets: [0] },
     },
 
-    // Step 3: Sam bids - player observes
-    // Sam overbids to 5x fives (aggressive - only 3 fives exist!)
+    // Step 4: Explain Alex's bid
+    {
+      id: 'explain-alex-bid',
+      playerDice: [3, 3, 5, 2, 6],
+      opponentDice: [
+        [4, 4, 2, 6, 2],
+        [5, 5, 3, 3, 4],
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: { count: 4, value: 4 },
+      lastBidder: 0, // Alex
+      tooltip: {
+        content:
+          "Alex raised to 4x fours! He's betting there are at least four 4s on the table. He has two 4s himself, so he only needs two more to be right. Now it's Sam's turn.",
+        position: 'top',
+        targetElement: 'bid-display',
+        dismissMode: 'click',
+      },
+      highlightDice: { type: 'matching-value', value: 4, targets: [0] },
+    },
+
+    // Step 5: Sam bids
     {
       id: 'sam-bids',
       playerDice: [3, 3, 5, 2, 6],
@@ -113,7 +151,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       ],
       requiredAction: { type: 'wait' },
       scriptedAIMoves: [
-        { type: 'bid', bid: { count: 5, value: 5 } }, // Sam bids 5x fives (overbid!)
+        { type: 'bid', bid: { count: 5, value: 5 } },
       ],
       currentBid: { count: 4, value: 4 },
       lastBidder: 0, // Alex
@@ -122,14 +160,33 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
         position: 'top',
         targetElement: 'opponent-dice',
         dismissMode: 'auto',
-        autoAdvanceDelay: 1500,
+        autoAdvanceDelay: 2000,
       },
       highlightDice: { type: 'matching-value', value: 5, targets: [1] },
     },
 
-    // Step 4: Player's turn - must call Dudo
-    // Total fives: 1 (player) + 0 (Alex) + 2 (Sam) = 3 fives
-    // Sam's bid of 5x fives is wrong, so Dudo is correct!
+    // Step 6: Explain Sam's bid and introduce DUDO
+    {
+      id: 'explain-dudo',
+      playerDice: [3, 3, 5, 2, 6],
+      opponentDice: [
+        [4, 4, 2, 6, 2],
+        [5, 5, 3, 3, 4],
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: { count: 5, value: 5 },
+      lastBidder: 1, // Sam
+      tooltip: {
+        content:
+          "Sam raised to 5x fives! That seems risky... When you think someone's bid is WRONG, you call DUDO (\"I doubt it!\"). If you're right, THEY lose a die. If you're wrong, YOU lose one.",
+        position: 'top',
+        targetElement: 'bid-display',
+        dismissMode: 'click',
+      },
+      highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
+    },
+
+    // Step 7: Player calls Dudo
     {
       id: 'player-dudo',
       playerDice: [3, 3, 5, 2, 6],
@@ -142,7 +199,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       lastBidder: 1, // Sam
       tooltip: {
         content:
-          "Count the 5s: You have 1, Alex has 0, Sam has 2. That's only 3 fives total! Sam's bid of 5x fives is wrong. Call DUDO!",
+          "Let's count the 5s: You have 1. Alex has 0. Sam has 2. That's only 3 fives total - but Sam claimed 5! His bid is wrong. Call DUDO!",
         position: 'top',
         targetElement: 'dudo-button',
         dismissMode: 'click',
@@ -151,8 +208,7 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       highlightButton: 'dudo',
     },
 
-    // Step 5: Reveal - counting animation shows Sam was wrong
-    // Player wins! Sam loses a die for overbidding.
+    // Step 8: Reveal
     {
       id: 'reveal',
       playerDice: [3, 3, 5, 2, 6],
@@ -160,11 +216,9 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
         [4, 4, 2, 6, 2],
         [5, 5, 3, 3, 4],
       ],
-      requiredAction: { type: 'wait' }, // Watch reveal animation
+      requiredAction: { type: 'wait' },
       currentBid: { count: 5, value: 5 },
       lastBidder: 1, // Sam
-      // No tooltip initially - DudoOverlay handles the drama
-      // After reveal, TutorialGameplay will show completion message
       highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
     },
   ],

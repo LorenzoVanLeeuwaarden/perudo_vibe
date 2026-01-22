@@ -31,7 +31,7 @@ export const useTutorialStore = create<TutorialState>((set, get) => ({
   // Initial state
   screen: 'gameplay',
   currentStep: 0,
-  totalSteps: 6, // Matches TUTORIAL_SCRIPT.steps.length
+  totalSteps: 9, // Matches TUTORIAL_SCRIPT.steps.length
   isCompleted: false,
 
   // Actions
