@@ -45,6 +45,13 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       requiredAction: { type: 'wait' }, // Just observe dice
       roundStarter: 'player',
       currentBid: null,
+      tooltip: {
+        content:
+          "Welcome! These are your dice. In tutorial mode, you can see everyone's dice to learn how the game works.",
+        position: 'bottom',
+        targetElement: 'player-dice',
+        dismissMode: 'click',
+      },
     },
 
     // Step 1: Player makes opening bid - tutorial guides them to bid 3x threes
@@ -59,6 +66,15 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       requiredAction: { type: 'bid', bid: { count: 3, value: 3 } },
       currentBid: null,
       roundStarter: 'player',
+      tooltip: {
+        content:
+          'You have two 3s! Start with a safe bid: 3x threes. Click BID to confirm.',
+        position: 'top',
+        targetElement: 'bid-button',
+        dismissMode: 'click',
+      },
+      highlightDice: { type: 'matching-value', value: 3, targets: ['player'] },
+      highlightButton: 'bid',
     },
 
     // Step 2: Alex bids - player observes
@@ -76,6 +92,14 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       ],
       currentBid: { count: 3, value: 3 },
       lastBidder: 'player',
+      tooltip: {
+        content: 'Alex is thinking...',
+        position: 'top',
+        targetElement: 'opponent-dice',
+        dismissMode: 'auto',
+        autoAdvanceDelay: 1500,
+      },
+      highlightDice: { type: 'matching-value', value: 4, targets: [0] },
     },
 
     // Step 3: Sam bids - player observes
@@ -93,6 +117,14 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       ],
       currentBid: { count: 4, value: 4 },
       lastBidder: 0, // Alex
+      tooltip: {
+        content: 'Sam is thinking...',
+        position: 'top',
+        targetElement: 'opponent-dice',
+        dismissMode: 'auto',
+        autoAdvanceDelay: 1500,
+      },
+      highlightDice: { type: 'matching-value', value: 5, targets: [1] },
     },
 
     // Step 4: Player's turn - must call Dudo
@@ -108,6 +140,15 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       requiredAction: { type: 'dudo' },
       currentBid: { count: 5, value: 5 },
       lastBidder: 1, // Sam
+      tooltip: {
+        content:
+          "Count the 5s: You have 1, Alex has 0, Sam has 2. That's only 3 fives total! Sam's bid of 5x fives is wrong. Call DUDO!",
+        position: 'top',
+        targetElement: 'dudo-button',
+        dismissMode: 'click',
+      },
+      highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
+      highlightButton: 'dudo',
     },
 
     // Step 5: Reveal - counting animation shows Sam was wrong
@@ -122,6 +163,9 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       requiredAction: { type: 'wait' }, // Watch reveal animation
       currentBid: { count: 5, value: 5 },
       lastBidder: 1, // Sam
+      // No tooltip initially - DudoOverlay handles the drama
+      // After reveal, TutorialGameplay will show completion message
+      highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
     },
   ],
 };
