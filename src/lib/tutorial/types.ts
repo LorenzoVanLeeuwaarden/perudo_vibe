@@ -10,7 +10,7 @@ export interface TutorialTooltipData {
   /** Where tooltip appears relative to target element */
   position: 'top' | 'bottom' | 'left' | 'right';
   /** Which element the tooltip points to */
-  targetElement: 'player-dice' | 'bid-button' | 'dudo-button' | 'bid-display' | 'opponent-dice';
+  targetElement: 'player-dice' | 'bid-button' | 'dudo-button' | 'calza-button' | 'bid-display' | 'opponent-dice';
   /** How to dismiss: click anywhere or auto-advance after delay */
   dismissMode: 'click' | 'auto';
   /** Delay in ms for auto-advance mode */
@@ -85,7 +85,7 @@ export interface TutorialStep {
   highlightDice?: HighlightDiceConfig;
 
   /** Which button to highlight with pulsing glow */
-  highlightButton?: 'bid' | 'dudo';
+  highlightButton?: 'bid' | 'dudo' | 'calza';
 }
 
 /**
