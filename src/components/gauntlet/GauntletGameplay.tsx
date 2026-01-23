@@ -64,7 +64,7 @@ export function GauntletGameplay({
   playerColor,
   playerInitialDiceCount,
   opponentName,
-  opponentPersonalityId,
+  opponentPersonalityId: _opponentPersonalityId,
 }: GauntletGameplayProps) {
   const isFirefox = useIsFirefox();
   const prefersReducedMotion = useReducedMotion();
@@ -89,7 +89,7 @@ export function GauntletGameplay({
   const [currentBid, setCurrentBid] = useState<Bid | null>(null);
   const [isMyTurn, setIsMyTurn] = useState(true);
   const [isRolling, setIsRolling] = useState(false);
-  const [roundResult, setRoundResult] = useState<'win' | 'lose' | null>(null);
+  const [_roundResult, setRoundResult] = useState<'win' | 'lose' | null>(null);
   const [roundStarter, setRoundStarter] = useState<'player' | string>('player'); // Who starts the next round (loser of previous)
   const [sessionMemory, setSessionMemory] = useState<SessionMemory | null>(null);
   const [aiPersonality, setAiPersonality] = useState<Personality | null>(null);
@@ -171,7 +171,7 @@ export function GauntletGameplay({
     }
   }, [opponent, playerDiceCount, maxDiceDeficit, gameState]);
 
-  const colorConfig = PLAYER_COLORS[playerColor];
+  const _colorConfig = PLAYER_COLORS[playerColor];
 
   // Pick a random color for opponent (excluding player's color)
   const [opponentColor] = useState<PlayerColor>(() => {
@@ -321,7 +321,6 @@ export function GauntletGameplay({
         opp.hand,
         null, // No current bid - this is the opening bid
         totalDice,
-        false, // No palifico in Gauntlet
         'player',
         memory,
         opp.diceCount,
@@ -408,8 +407,8 @@ export function GauntletGameplay({
       }
 
       const allDice = [...playerHand, ...opp.hand];
-      // In Gauntlet, jokers are always wild (no palifico)
-      const matchingCount = countMatching(allDice, bid.value, false);
+      // Jokers are always wild
+      const matchingCount = countMatching(allDice, bid.value);
       setActualCount(matchingCount);
 
       let playerWins: boolean;
@@ -699,7 +698,6 @@ export function GauntletGameplay({
           opp.hand,
           currentBidValue,
           totalDice,
-          false, // No palifico in Gauntlet
           'player',
           memory,
           opp.diceCount,
@@ -1042,7 +1040,6 @@ export function GauntletGameplay({
                 isMyTurn={isMyTurn}
                 totalDice={totalDice}
                 playerColor={playerColor}
-                isPalifico={false}
                 canCalza={canCalza}
                 hideBidDisplay={true}
                 onValueChange={setSelectedBidValue}
@@ -1150,7 +1147,6 @@ export function GauntletGameplay({
               bid={currentBid}
               lastBidderName={lastBidder === 'player' ? 'You' : opponent.name}
               lastBidderColor={lastBidder === 'player' ? playerColor : opponent.color}
-              isPalifico={false}
               actualCount={actualCount}
               isCalza={calzaCaller !== null}
               countingComplete={countingComplete}

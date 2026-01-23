@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { ChevronUp, ChevronDown, AlertTriangle, Send, Target, Bot, Lock } from 'lucide-react';
+import { ChevronUp, ChevronDown, AlertTriangle, Send, Target, Bot } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { Bid, PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { isValidBid } from '@/lib/gameLogic';
@@ -15,7 +15,6 @@ interface BidUIProps {
   onCalza: () => void;
   isMyTurn: boolean;
   totalDice: number;
-  isPalifico?: boolean;
   canCalza?: boolean;
   playerColor: PlayerColor;
   lastBidderColor?: PlayerColor;
@@ -32,7 +31,6 @@ export function BidUI({
   onCalza,
   isMyTurn,
   totalDice,
-  isPalifico = false,
   canCalza = false,
   playerColor,
   lastBidderColor,
@@ -43,14 +41,11 @@ export function BidUI({
 }: BidUIProps) {
   const getInitialCount = () => {
     if (!currentBid) return 1;
-    if (isPalifico) return currentBid.count + 1;
     return currentBid.count;
   };
 
   const getInitialValue = () => {
     if (!currentBid) return 2;
-    if (isPalifico) return currentBid.value;
-    // Start with same value, user must increase either count or value
     return currentBid.value;
   };
 
@@ -64,8 +59,6 @@ export function BidUI({
       // Initialize count based on current bid
       if (!currentBid) {
         setCount(1);
-      } else if (isPalifico) {
-        setCount(currentBid.count + 1);
       } else {
         setCount(currentBid.count);
       }
@@ -76,7 +69,7 @@ export function BidUI({
         setValue(currentBid.value);
       }
     }
-  }, [isMyTurn, currentBid, isPalifico]);
+  }, [isMyTurn, currentBid]);
 
   // Notify parent of value changes for dice highlighting
   useEffect(() => {
@@ -85,11 +78,11 @@ export function BidUI({
     }
   }, [value, isMyTurn, onValueChange]);
 
-  const validation = isValidBid({ count, value }, currentBid, totalDice, isPalifico);
+  const validation = isValidBid({ count, value }, currentBid, totalDice);
 
   // Don't render empty panel when there's nothing to show
   const hasBidToDisplay = currentBid && !hideBidDisplay;
-  const hasContentToShow = isMyTurn || hasBidToDisplay || isPalifico;
+  const hasContentToShow = isMyTurn || hasBidToDisplay;
 
   if (!hasContentToShow) {
     return null;
@@ -109,31 +102,25 @@ export function BidUI({
     setCountDirection('down');
     setCount((c) => Math.max(c - 1, 1));
   };
-  // In palifico, value is only locked AFTER first bid is made
-  const isValueLocked = isPalifico && currentBid !== null;
   // Opening bid cannot be jokers (value=1), so skip it when cycling
   const isOpeningBid = !currentBid;
   const incrementValue = () => {
-    if (!isValueLocked) {
-      setValueDirection('up');
-      setValue((v) => {
-        const next = v === 6 ? 1 : v + 1;
-        // Skip jokers for opening bid
-        if (isOpeningBid && next === 1) return 2;
-        return next;
-      });
-    }
+    setValueDirection('up');
+    setValue((v) => {
+      const next = v === 6 ? 1 : v + 1;
+      // Skip jokers for opening bid
+      if (isOpeningBid && next === 1) return 2;
+      return next;
+    });
   };
   const decrementValue = () => {
-    if (!isValueLocked) {
-      setValueDirection('down');
-      setValue((v) => {
-        const next = v === 1 ? 6 : v - 1;
-        // Skip jokers for opening bid
-        if (isOpeningBid && next === 1) return 6;
-        return next;
-      });
-    }
+    setValueDirection('down');
+    setValue((v) => {
+      const next = v === 1 ? 6 : v - 1;
+      // Skip jokers for opening bid
+      if (isOpeningBid && next === 1) return 6;
+      return next;
+    });
   };
 
   return (
@@ -152,18 +139,6 @@ export function BidUI({
         `,
       }}
     >
-      {isPalifico && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="mb-4 text-center"
-        >
-          <span className="px-4 py-1 bg-red-danger/20 border border-red-danger rounded-full text-red-danger text-xs font-bold uppercase tracking-wider">
-            Palifico Round
-          </span>
-        </motion.div>
-      )}
-
       {currentBid && !hideBidDisplay && (
         <div className="mb-6 relative">
           {/* Player chip badge - tucked into top border */}
@@ -197,8 +172,7 @@ export function BidUI({
                   value={currentBid.value}
                   index={i}
                   size="sm"
-                  isPalifico={isPalifico}
-                  color={lastBidderColor || playerColor}
+                                    color={lastBidderColor || playerColor}
                 />
               </motion.div>
             ))}
@@ -264,24 +238,13 @@ export function BidUI({
             <span className="text-4xl sm:text-5xl font-black text-white-soft/30">×</span>
 
             {/* VALUE selector */}
-            <div className="flex flex-col items-center relative">
-              {/* Icon label - Lock when value is locked */}
-              {isValueLocked && (
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2 bg-purple-deep px-1.5 py-0.5 rounded-sm z-10">
-                  <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-danger/70" />
-                </div>
-              )}
+            <div className="flex flex-col items-center">
               <div className="flex flex-col items-center gap-1">
                 <motion.button
-                  whileHover={!isValueLocked ? { scale: 1.1 } : {}}
-                  whileTap={!isValueLocked ? { scale: 0.95 } : {}}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={incrementValue}
-                  disabled={isValueLocked}
-                  className={`w-10 h-7 sm:w-12 sm:h-8 flex items-center justify-center rounded border transition-colors ${
-                    isValueLocked
-                      ? 'bg-purple-deep border-purple-mid opacity-30 cursor-not-allowed'
-                      : 'bg-purple-mid hover:bg-purple-light border-turquoise-dark'
-                  }`}
+                  className="w-10 h-7 sm:w-12 sm:h-8 flex items-center justify-center bg-purple-mid hover:bg-purple-light rounded border border-turquoise-dark transition-colors"
                 >
                   <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-white-soft" />
                 </motion.button>
@@ -302,20 +265,15 @@ export function BidUI({
                       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                       className="absolute"
                     >
-                      <Dice value={value} size="md" isPalifico={isPalifico} color={playerColor} />
+                      <Dice value={value} size="md" color={playerColor} />
                     </motion.div>
                   </AnimatePresence>
                 </div>
                 <motion.button
-                  whileHover={!isValueLocked ? { scale: 1.1 } : {}}
-                  whileTap={!isValueLocked ? { scale: 0.95 } : {}}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={decrementValue}
-                  disabled={isValueLocked}
-                  className={`w-10 h-7 sm:w-12 sm:h-8 flex items-center justify-center rounded border transition-colors ${
-                    isValueLocked
-                      ? 'bg-purple-deep border-purple-mid opacity-30 cursor-not-allowed'
-                      : 'bg-purple-mid hover:bg-purple-light border-turquoise-dark'
-                  }`}
+                  className="w-10 h-7 sm:w-12 sm:h-8 flex items-center justify-center bg-purple-mid hover:bg-purple-light rounded border border-turquoise-dark transition-colors"
                 >
                   <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-white-soft" />
                 </motion.button>

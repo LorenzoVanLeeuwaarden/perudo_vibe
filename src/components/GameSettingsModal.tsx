@@ -30,16 +30,12 @@ export function GameSettingsModal({ isOpen, onClose, settings, onSave, isHost }:
 
   const hasChanges =
     localSettings.startingDice !== settings.startingDice ||
-    localSettings.palificoEnabled !== settings.palificoEnabled ||
     localSettings.turnTimeoutMs !== settings.turnTimeoutMs;
 
   const handleSave = () => {
     const changes: Partial<GameSettings> = {};
     if (localSettings.startingDice !== settings.startingDice) {
       changes.startingDice = localSettings.startingDice;
-    }
-    if (localSettings.palificoEnabled !== settings.palificoEnabled) {
-      changes.palificoEnabled = localSettings.palificoEnabled;
     }
     if (localSettings.turnTimeoutMs !== settings.turnTimeoutMs) {
       changes.turnTimeoutMs = localSettings.turnTimeoutMs;
@@ -115,42 +111,6 @@ export function GameSettingsModal({ isOpen, onClose, settings, onSave, isHost }:
                   <Plus className="w-5 h-5 text-white-soft" />
                 </motion.button>
               </div>
-            </div>
-
-            {/* Wild Ones (Palifico) */}
-            <div className="mb-6">
-              <h3 className="text-sm font-bold text-white-soft/80 uppercase tracking-wider mb-3">
-                Rules
-              </h3>
-              <motion.button
-                whileHover={isHost ? { scale: 1.02 } : {}}
-                whileTap={isHost ? { scale: 0.98 } : {}}
-                onClick={() => isHost && setLocalSettings(s => ({ ...s, palificoEnabled: !s.palificoEnabled }))}
-                disabled={!isHost}
-                className={`w-full p-4 rounded-lg border-2 flex items-center justify-between transition-colors ${
-                  localSettings.palificoEnabled
-                    ? 'bg-purple-mid/50 border-purple-glow'
-                    : 'bg-purple-deep/50 border-purple-mid'
-                } ${!isHost ? 'cursor-not-allowed opacity-75' : ''}`}
-              >
-                <div className="text-left">
-                  <p className="font-bold text-white-soft">Wild Ones (Palifico)</p>
-                  <p className="text-xs text-white-soft/60">
-                    Ones count as wilds (except in palifico rounds)
-                  </p>
-                </div>
-                <div
-                  className={`w-12 h-7 rounded-full p-1 transition-colors ${
-                    localSettings.palificoEnabled ? 'bg-green-crt' : 'bg-purple-deep'
-                  }`}
-                >
-                  <motion.div
-                    className="w-5 h-5 rounded-full bg-white shadow-md"
-                    animate={{ x: localSettings.palificoEnabled ? 20 : 0 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  />
-                </div>
-              </motion.button>
             </div>
 
             {/* Turn Time */}

@@ -55,7 +55,6 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     type: z.literal('UPDATE_SETTINGS'),
     settings: z.object({
       startingDice: z.number().int().min(1).max(5).optional(),
-      palificoEnabled: z.boolean().optional(),
       turnTimeoutMs: z.number().int().min(10000).max(120000).optional(),
     }),
     timestamp: TimestampSchema,

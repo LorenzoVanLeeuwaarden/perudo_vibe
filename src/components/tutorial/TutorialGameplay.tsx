@@ -547,10 +547,10 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
       setDudoOverlayComplete(false);
       setCountingComplete(false);
 
-      // Count actual matching dice - palifico=false means wild 1s count
+      // Count actual matching dice - wild 1s count
       // This allows teaching wild ones properly in Round 2 and Calza in Round 3
       const allDice = [...playerDice, ...opponentList.flatMap((o) => o.hand)];
-      const matching = countMatching(allDice, bidToReveal.value, false);
+      const matching = countMatching(allDice, bidToReveal.value);
       setActualCount(matching);
     },
     []
@@ -1126,7 +1126,6 @@ export function TutorialGameplay({ playerColor, onComplete }: TutorialGameplayPr
               lastBidderColor={
                 revealLastBidder === 'player' ? playerColor : opponents[revealLastBidder as number]?.color || 'orange'
               }
-              isPalifico={false}
               actualCount={actualCount}
               isCalza={isCalzaCall}
               countingComplete={countingComplete}

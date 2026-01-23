@@ -30,7 +30,7 @@ import { countMatching } from '../gameLogic';
  * - Positional factors (risk/reward)
  */
 export function calculateDudoUtility(context: AgentContext): UtilityScore {
-  const { currentBid, hand, totalDice, isPalifico, lastBidderId, personality, memory } = context;
+  const { currentBid, hand, totalDice, lastBidderId, personality, memory } = context;
 
   if (!currentBid || !lastBidderId) {
     return {
@@ -48,7 +48,7 @@ export function calculateDudoUtility(context: AgentContext): UtilityScore {
 
   // CRITICAL: If our hand alone satisfies the bid, dudo is GUARANTEED to fail
   // Never call dudo on something we already have in our own hand
-  const matchingInOurHand = countMatching(hand, currentBid.value, isPalifico);
+  const matchingInOurHand = countMatching(hand, currentBid.value);
   if (matchingInOurHand >= currentBid.count) {
     return {
       action: 'dudo',
@@ -68,7 +68,6 @@ export function calculateDudoUtility(context: AgentContext): UtilityScore {
     currentBid,
     hand,
     totalDice,
-    isPalifico,
     memory
   );
 
@@ -102,7 +101,7 @@ export function calculateDudoUtility(context: AgentContext): UtilityScore {
 
   // Positional adjustment
   let positionalAdjustment = 0;
-  const bidRatio = calculateBidRatio(currentBid, totalDice, isPalifico);
+  const bidRatio = calculateBidRatio(currentBid, totalDice);
 
   // High bid ratio means bid is aggressive, more likely to be a bluff
   // BUT: Don't encourage dudo if we have significant coverage of the bid
@@ -160,7 +159,7 @@ export function calculateDudoUtility(context: AgentContext): UtilityScore {
  * - Risk/reward (gaining vs losing a die)
  */
 export function calculateCalzaUtility(context: AgentContext): UtilityScore {
-  const { currentBid, hand, totalDice, isPalifico, personality, memory, myDiceCount } = context;
+  const { currentBid, hand, totalDice, personality, memory, myDiceCount } = context;
 
   if (!currentBid) {
     return {
@@ -181,7 +180,6 @@ export function calculateCalzaUtility(context: AgentContext): UtilityScore {
     currentBid,
     hand,
     totalDice,
-    isPalifico
   );
 
   // Calculate expected count and deviation
@@ -189,7 +187,6 @@ export function calculateCalzaUtility(context: AgentContext): UtilityScore {
     currentBid.value,
     hand,
     totalDice,
-    isPalifico,
     memory
   );
   const deviation = Math.abs(currentBid.count - expectedCount);
@@ -219,7 +216,7 @@ export function calculateCalzaUtility(context: AgentContext): UtilityScore {
 
   // Bonus if bid count is close to what we have in hand
   const matchingInHand = hand.filter(
-    (d) => d === currentBid.value || (!isPalifico && d === 1 && currentBid.value !== 1)
+    (d) => d === currentBid.value || (d === 1 && currentBid.value !== 1)
   ).length;
   if (matchingInHand >= currentBid.count * 0.4) {
     positionalAdjustment += 1;
@@ -272,7 +269,7 @@ export function calculateBidUtility(
   candidate: BidCandidate,
   context: AgentContext
 ): UtilityScore {
-  const { hand, totalDice, isPalifico, personality, memory, currentBid } = context;
+  const { hand, totalDice, personality, memory, currentBid } = context;
   const { bid, strategy, baseScore } = candidate;
 
   // Success probability
@@ -280,7 +277,6 @@ export function calculateBidUtility(
     bid,
     hand,
     totalDice,
-    isPalifico,
     memory
   );
 
@@ -321,12 +317,12 @@ export function calculateBidUtility(
 
   // Bonus for bidding on values we have
   const matchingInHand = hand.filter(
-    (d) => d === bid.value || (!isPalifico && d === 1 && bid.value !== 1)
+    (d) => d === bid.value || (d === 1 && bid.value !== 1)
   ).length;
   positionalAdjustment += matchingInHand * 1.5;
 
   // Bid ratio consideration
-  const bidRatio = calculateBidRatio(bid, totalDice, isPalifico);
+  const bidRatio = calculateBidRatio(bid, totalDice);
   if (bidRatio > 0.9) {
     positionalAdjustment -= 3; // Very high ratio is dangerous
   } else if (bidRatio > 0.75) {

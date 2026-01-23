@@ -8,7 +8,6 @@ interface DiceProps {
   index?: number;
   isRevealing?: boolean;
   size?: 'xs' | 'sm' | 'md' | 'lg';
-  isPalifico?: boolean;
   color?: PlayerColor;
   highlighted?: boolean;
   dimmed?: boolean;
@@ -118,7 +117,6 @@ export function Dice({
   index = 0,
   isRevealing = false,
   size = 'md',
-  isPalifico = false,
   color = 'orange',
   highlighted = false,
   dimmed = false,
@@ -184,13 +182,13 @@ export function Dice({
       `,
   };
 
-  const style = isJoker && !isPalifico ? jokerStyle : regularStyle;
+  const style = isJoker ? jokerStyle : regularStyle;
 
   // Animation phases based on dice state
   const shouldAnimate = !highlighted && !dimmed && !isRevealing;
 
   // Joker-specific animations - more energetic bounce and glow
-  const jokerBounceAnimation = isJoker && !isPalifico && shouldAnimate
+  const jokerBounceAnimation = isJoker && shouldAnimate
     ? {
         y: [0, -4, 0, -3, 0],
         rotate: [tilt, tilt + 3, tilt, tilt - 2, tilt],
@@ -198,7 +196,7 @@ export function Dice({
       }
     : {};
 
-  const jokerBounceTransition = isJoker && !isPalifico && shouldAnimate
+  const jokerBounceTransition = isJoker && shouldAnimate
     ? {
         y: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' },
         rotate: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' },
@@ -253,7 +251,7 @@ export function Dice({
         cursor-pointer
         transform-gpu
         ${highlighted ? 'z-10' : ''}
-        ${isJoker && !isPalifico ? 'joker-glow' : ''}
+        ${isJoker ? 'joker-glow' : ''}
         dice-shine
         dice-shine-delay-${index % 5}
       `}

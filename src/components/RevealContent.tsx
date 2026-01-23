@@ -26,7 +26,6 @@ interface RevealContentProps {
   bid: { count: number; value: number };
   lastBidderName: string;
   lastBidderColor: PlayerColor;
-  isPalifico: boolean;
 
   // Result info
   actualCount: number;
@@ -64,7 +63,6 @@ export function RevealContent({
   bid,
   lastBidderName,
   lastBidderColor,
-  isPalifico,
   actualCount,
   isCalza,
   countingComplete,
@@ -186,8 +184,7 @@ export function RevealContent({
                   value={bid.value}
                   index={i}
                   size="xs"
-                  isPalifico={isPalifico}
-                  color={lastBidderColor}
+                                    color={lastBidderColor}
                 />
               </motion.div>
             ))}
@@ -233,8 +230,7 @@ export function RevealContent({
                       value={match.value}
                       index={i}
                       size="xs"
-                      isPalifico={isPalifico && !match.isJoker}
-                      color={match.color}
+                                            color={match.color}
                       highlighted
                     />
                   </motion.div>
@@ -277,8 +273,7 @@ export function RevealContent({
                 isEliminated={player.isEliminated}
                 baseIdx={baseIdx}
                 isRevealed={isPlayerSectionRevealed(baseIdx)}
-                isPalifico={isPalifico}
-                isDieRevealed={isDieRevealed}
+                                isDieRevealed={isDieRevealed}
                 isDieHighlighted={isDieHighlighted}
                 isDieMatching={isDieMatching}
                 dyingDieOwner={dyingDieOwner}

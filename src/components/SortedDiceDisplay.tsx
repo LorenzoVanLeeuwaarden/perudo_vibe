@@ -12,7 +12,6 @@ const HIGHLIGHT_SCALE = 1.08;
 interface SortedDiceDisplayProps {
   dice: number[];
   color: PlayerColor;
-  isPalifico?: boolean;
   size?: 'sm' | 'md' | 'lg';
   animateSort?: boolean;
   highlightValue?: number | null;
@@ -21,13 +20,13 @@ interface SortedDiceDisplayProps {
 
 /**
  * Determine if a die should be highlighted based on the current bid value
- * Jokers (value=1) match any non-joker bid unless in palifico
+ * Jokers (value=1) match any non-joker bid
  */
-function shouldHighlight(dieValue: number, bidValue: number | null, isPalifico: boolean): boolean {
+function shouldHighlight(dieValue: number, bidValue: number | null): boolean {
   if (!bidValue) return false;
   if (dieValue === bidValue) return true;
-  // Jokers are wild and match non-joker bids, except in palifico
-  if (!isPalifico && dieValue === 1 && bidValue !== 1) return true;
+  // Jokers are wild and match non-joker bids
+  if (dieValue === 1 && bidValue !== 1) return true;
   return false;
 }
 
@@ -40,7 +39,6 @@ interface DiceWithId {
 export function SortedDiceDisplay({
   dice,
   color,
-  isPalifico = false,
   size = 'md',
   animateSort = true,
   highlightValue = null,
@@ -121,7 +119,7 @@ export function SortedDiceDisplay({
         className="flex gap-1.5 sm:gap-3"
       >
         {displayDice.map((die, displayIndex) => {
-          const isHighlighted = shouldHighlight(die.value, highlightValue, isPalifico);
+          const isHighlighted = shouldHighlight(die.value, highlightValue);
           return (
             <Reorder.Item
               as="div"
@@ -163,7 +161,6 @@ export function SortedDiceDisplay({
                 value={die.value}
                 index={displayIndex}
                 size={size}
-                isPalifico={isPalifico}
                 color={color}
               />
             </Reorder.Item>
@@ -181,7 +178,7 @@ export function SortedDiceDisplay({
     >
       <AnimatePresence mode="popLayout">
         {displayDice.map((die, displayIndex) => {
-          const isHighlighted = shouldHighlight(die.value, highlightValue, isPalifico);
+          const isHighlighted = shouldHighlight(die.value, highlightValue);
           return (
             <motion.div
               key={die.id}
@@ -229,7 +226,6 @@ export function SortedDiceDisplay({
                 value={die.value}
                 index={displayIndex}
                 size={size}
-                isPalifico={isPalifico}
                 color={color}
               />
             </motion.div>

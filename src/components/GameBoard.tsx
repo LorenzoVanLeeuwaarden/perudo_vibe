@@ -178,7 +178,6 @@ export function GameBoard({
                   color={player.color as PlayerColor}
                   isActive={player.id === gameState.currentTurnPlayerId}
                   isEliminated={player.isEliminated}
-                  hasPalifico={gameState.isPalifico && player.id === gameState.roundStarterId}
                   showThinking={player.id === gameState.currentTurnPlayerId && gameState.phase === 'bidding'}
                   thinkingPrompt={player.id === myPlayerId ? 'Your turn' : 'Thinking'}
                   showDisconnectedVisual={shouldShowDisconnectedVisual(player, currentTime)}
@@ -320,7 +319,6 @@ export function GameBoard({
                               value={gameState.currentBid!.value}
                               index={i}
                               size="sm"
-                              isPalifico={gameState.isPalifico}
                               color={lastBidderColor || myColor}
                             />
                           </motion.div>
@@ -360,7 +358,6 @@ export function GameBoard({
                   onCalza={handleCalza}
                   isMyTurn={isMyTurn}
                   totalDice={totalDice}
-                  isPalifico={gameState.isPalifico}
                   canCalza={canCalza ?? false}
                   playerColor={myColor}
                   lastBidderColor={lastBidderColor}
@@ -422,7 +419,6 @@ export function GameBoard({
               <SortedDiceDisplay
                 dice={myHand}
                 color={myColor}
-                isPalifico={gameState.isPalifico}
                 size="lg"
                 animateSort={true}
                 highlightValue={isMyTurn ? selectedBidValue : (gameState.currentBid?.value ?? null)}
@@ -460,7 +456,6 @@ export function GameBoard({
           roundResult={roundResult}
           onContinue={handleContinueRound}
           showOverlay={showDudoOverlay}
-          isPalifico={gameState.isPalifico}
         />
       )}
 

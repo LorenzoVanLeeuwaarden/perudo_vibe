@@ -34,26 +34,23 @@ function binomialProbability(n: number, k: number, p: number): number {
  * @param bid - The bid to evaluate
  * @param hand - The timeout player's hand (known dice)
  * @param totalDice - Total dice in play across all players
- * @param isPalifico - Whether this is a palifico round (no wild aces)
  * @returns Probability between 0 and 1 that the bid is wrong
  */
 export function calculateBidFailureProbability(
   bid: Bid,
   hand: number[],
-  totalDice: number,
-  isPalifico: boolean
+  totalDice: number
 ): number {
   // Count matching dice in our hand
-  const knownMatching = countMatching(hand, bid.value, isPalifico);
+  const knownMatching = countMatching(hand, bid.value);
 
   // Number of unknown dice (other players' dice)
   const unknownDice = totalDice - hand.length;
 
   // Probability of a single unknown die matching the bid value
-  // - In palifico: only exact value matches (1/6)
   // - For aces: only aces match (1/6)
   // - For 2-6: value OR aces match (2/6)
-  const p = isPalifico ? 1/6 : (bid.value === 1 ? 1/6 : 2/6);
+  const p = bid.value === 1 ? 1/6 : 2/6;
 
   // We need (bid.count - knownMatching) matches from unknownDice
   const needed = bid.count - knownMatching;
@@ -83,17 +80,9 @@ export function calculateBidFailureProbability(
  * Strategy: Make the smallest legal bid increase
  */
 function generateMinimumBid(
-  currentBid: Bid,
-  hand: number[],
-  totalDice: number,
-  isPalifico: boolean
+  currentBid: Bid
 ): Bid {
-  // In palifico, can only increase count (same value)
-  if (isPalifico) {
-    return { count: currentBid.count + 1, value: currentBid.value };
-  }
-
-  // Non-palifico: try same count + higher value first (smaller commitment)
+  // Try same count + higher value first (smaller commitment)
   // then fall back to count + 1 with same value
   if (currentBid.value < 6) {
     // Can increase value keeping same count
@@ -109,20 +98,19 @@ function generateMinimumBid(
  *
  * Strategy: Bid on the value we have the most of
  */
-function generateSafeOpeningBid(hand: number[], isPalifico: boolean): Bid {
+function generateSafeOpeningBid(hand: number[]): Bid {
   // Count occurrences of each value in hand
   const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
   for (const die of hand) {
     counts[die]++;
   }
 
-  // Find the value we have the most of (excluding aces in non-palifico for variety)
+  // Find the value we have the most of (aces are wild, so effective count = count[v] + count[1])
   let bestValue = 2;
   let bestCount = 0;
 
   for (let v = 2; v <= 6; v++) {
-    // In non-palifico, aces are wild, so effective count = count[v] + count[1]
-    const effectiveCount = isPalifico ? counts[v] : counts[v] + counts[1];
+    const effectiveCount = counts[v] + counts[1];
     if (effectiveCount > bestCount) {
       bestCount = effectiveCount;
       bestValue = v;
@@ -148,26 +136,23 @@ function generateSafeOpeningBid(hand: number[], isPalifico: boolean): Bid {
  * @param hand - The timeout player's dice
  * @param currentBid - The current bid (null if first bid of round)
  * @param totalDice - Total dice in play
- * @param isPalifico - Whether this is a palifico round
  * @returns Either a bid action or a dudo action
  */
 export function generateTimeoutAIMove(
   hand: number[],
   currentBid: Bid | null,
-  totalDice: number,
-  isPalifico: boolean
+  totalDice: number
 ): { type: 'bid'; bid: Bid } | { type: 'dudo' } {
   // If no current bid, must make opening bid
   if (!currentBid) {
-    return { type: 'bid', bid: generateSafeOpeningBid(hand, isPalifico) };
+    return { type: 'bid', bid: generateSafeOpeningBid(hand) };
   }
 
   // Calculate probability the current bid is wrong
   const probBidWrong = calculateBidFailureProbability(
     currentBid,
     hand,
-    totalDice,
-    isPalifico
+    totalDice
   );
 
   // Only call dudo if very confident bid is wrong (>80% threshold)
@@ -177,10 +162,10 @@ export function generateTimeoutAIMove(
   }
 
   // Generate minimum valid bid
-  const minBid = generateMinimumBid(currentBid, hand, totalDice, isPalifico);
+  const minBid = generateMinimumBid(currentBid);
 
   // Validate the bid is actually valid (sanity check)
-  const validation = isValidBid(minBid, currentBid, totalDice, isPalifico);
+  const validation = isValidBid(minBid, currentBid, totalDice);
   if (!validation.valid) {
     // If minimum bid isn't valid (shouldn't happen), call dudo as fallback
     return { type: 'dudo' };
@@ -194,18 +179,16 @@ export function generateTimeoutAIMove(
 // =============================================================================
 
 /**
- * Validates a bid according to Perudo rules:
+ * Validates a bid according to The Last Die rules:
  * 1. Normal bid: increase count (with same or higher value) OR increase value (with same or higher count)
  * 2. You can ONLY decrease value when switching TO aces
  * 3. Bidding aces from non-aces: minimum count is ceil(previous_count / 2)
  * 4. Bidding non-aces from aces: minimum count is (ace_count * 2) + 1
- * 5. Palifico: can only increase count, not value
  */
 export function isValidBid(
   newBid: Bid,
   currentBid: Bid | null,
-  totalDice: number,
-  isPalifico: boolean
+  totalDice: number
 ): { valid: boolean; reason?: string } {
   // Basic validation
   if (newBid.count < 1 || newBid.count > totalDice) {
@@ -225,17 +208,6 @@ export function isValidBid(
 
   const biddingAces = newBid.value === 1;
   const currentIsAces = currentBid.value === 1;
-
-  // Palifico rules: can only increase count, same value
-  if (isPalifico) {
-    if (newBid.value !== currentBid.value) {
-      return { valid: false, reason: 'Palifico: can only increase count' };
-    }
-    if (newBid.count <= currentBid.count) {
-      return { valid: false, reason: `Must bid more than ${currentBid.count}` };
-    }
-    return { valid: true };
-  }
 
   // Switching TO aces from non-aces (special half-count rule)
   if (biddingAces && !currentIsAces) {
@@ -281,12 +253,10 @@ export function isValidBid(
 }
 
 /**
- * Count matching dice according to Perudo rules
+ * Count matching dice according to The Last Die rules
+ * Aces (1s) are always wild and count towards any value
  */
-export function countMatching(dice: number[], value: number, isPalifico: boolean): number {
-  if (isPalifico) {
-    return dice.filter((d) => d === value).length;
-  }
+export function countMatching(dice: number[], value: number): number {
   if (value === 1) {
     return dice.filter((d) => d === 1).length;
   }
@@ -299,18 +269,15 @@ export function countMatching(dice: number[], value: number, isPalifico: boolean
 export function shouldAICallDudo(
   bid: Bid,
   aiHand: number[],
-  totalDice: number,
-  isPalifico: boolean
+  totalDice: number
 ): boolean {
   // Count how many matching dice the AI has
-  const aiMatching = countMatching(aiHand, bid.value, isPalifico);
+  const aiMatching = countMatching(aiHand, bid.value);
 
   // Estimate expected count from other players
   // Probability of any die matching: 1/3 for non-aces (value + aces), 1/6 for aces
   const otherDice = totalDice - aiHand.length;
-  const probability = isPalifico
-    ? 1/6
-    : (bid.value === 1 ? 1/6 : 2/6); // 2/6 because the value OR a 1 matches
+  const probability = bid.value === 1 ? 1/6 : 2/6; // 2/6 because the value OR a 1 matches
 
   const expectedFromOthers = otherDice * probability;
   const expectedTotal = aiMatching + expectedFromOthers;
@@ -337,14 +304,11 @@ export function shouldAICallDudo(
 export function shouldAICallCalza(
   bid: Bid,
   aiHand: number[],
-  totalDice: number,
-  isPalifico: boolean
+  totalDice: number
 ): boolean {
-  const aiMatching = countMatching(aiHand, bid.value, isPalifico);
+  const aiMatching = countMatching(aiHand, bid.value);
   const otherDice = totalDice - aiHand.length;
-  const probability = isPalifico
-    ? 1/6
-    : (bid.value === 1 ? 1/6 : 2/6);
+  const probability = bid.value === 1 ? 1/6 : 2/6;
 
   const expectedFromOthers = otherDice * probability;
   const expectedTotal = aiMatching + expectedFromOthers;
@@ -393,22 +357,17 @@ export function shouldAICallCalza(
 export function generateAIBid(
   currentBid: Bid,
   aiHand: number[],
-  totalDice: number,
-  isPalifico: boolean
+  totalDice: number
 ): Bid | null {
   // First check if AI should call Dudo
-  if (shouldAICallDudo(currentBid, aiHand, totalDice, isPalifico)) {
+  if (shouldAICallDudo(currentBid, aiHand, totalDice)) {
     return null; // Signal to call Dudo
-  }
-
-  if (isPalifico) {
-    return { count: currentBid.count + 1, value: currentBid.value };
   }
 
   // Count what AI has (including jokers)
   const valueCounts: Record<number, number> = {};
   for (let v = 1; v <= 6; v++) {
-    valueCounts[v] = countMatching(aiHand, v, isPalifico);
+    valueCounts[v] = countMatching(aiHand, v);
   }
 
   // Pure counts (without jokers)
@@ -560,7 +519,7 @@ export function generateAIBid(
 
   // Filter to valid bids
   const validBids = strategies.filter(bid =>
-    isValidBid(bid, currentBid, totalDice, isPalifico).valid
+    isValidBid(bid, currentBid, totalDice).valid
   );
 
   if (validBids.length === 0) {

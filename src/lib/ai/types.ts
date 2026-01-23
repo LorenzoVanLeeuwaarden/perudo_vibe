@@ -173,8 +173,6 @@ export interface AgentContext {
   currentBid: Bid | null;
   /** Total dice in play across all players */
   totalDice: number;
-  /** Whether this is a palifico round */
-  isPalifico: boolean;
   /** ID of the last bidder (null if opening) */
   lastBidderId: string | null;
   /** AI's personality configuration */

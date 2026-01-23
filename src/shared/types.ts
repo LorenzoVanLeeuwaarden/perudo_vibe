@@ -20,7 +20,7 @@ export type GamePhase = 'lobby' | 'rolling' | 'bidding' | 'reveal' | 'ended';
  */
 export interface Bid {
   count: number;
-  value: number; // 1-6, where 1 (aces) are wild in non-palifico rounds
+  value: number; // 1-6, where 1 (aces) are wild
 }
 
 /**
@@ -44,7 +44,6 @@ export interface ServerPlayer {
  */
 export interface GameSettings {
   startingDice: number;     // Default 5
-  palificoEnabled: boolean; // Wild ones rule changes when player has 1 die
   turnTimeoutMs: number;    // Per-turn timer (0 = disabled)
 }
 
@@ -60,7 +59,6 @@ export interface ServerGameState {
   roundStarterId: string | null;     // Who started this round (for turn order)
   lastBidderId: string | null;       // Who placed the last bid
   lastRoundLoserId: string | null;   // Who lost the previous round (starts next round)
-  isPalifico: boolean;               // True when round starter has exactly 1 die
   roundNumber: number;
   turnStartedAt: number | null;      // Timestamp for turn timer
   lastActionWasTimeout: boolean;     // True if last action was AI timeout (for UI badge)
@@ -90,7 +88,6 @@ export type PublicPlayerState = Omit<ServerPlayer, 'hand'>;
  */
 export const DEFAULT_GAME_SETTINGS: GameSettings = {
   startingDice: 5,
-  palificoEnabled: true,
   turnTimeoutMs: 30000,
 };
 

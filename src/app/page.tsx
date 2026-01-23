@@ -150,13 +150,11 @@ export default function LastDieGame() {
   const [, setIsRolling] = useState(false);
   const [, setRoundResult] = useState<'win' | 'lose' | null>(null);
   const [playerDiceCount, setPlayerDiceCount] = useState(5);
-  const [isPalifico, setIsPalifico] = useState(false);
   const [dudoCaller, setDudoCaller] = useState<'player' | number | null>(null);
   const [calzaCaller, setCalzaCaller] = useState<'player' | number | null>(null);
   const [actualCount, setActualCount] = useState<number>(0);
   const [playerColor, setPlayerColor] = useState<PlayerColor>('blue');
   const [showSettings, setShowSettings] = useState(false);
-  const [palificoEnabled, setPalificoEnabled] = useState(false);
   const [lastBidder, setLastBidder] = useState<'player' | number | null>(null);
   const [highlightedDiceIndex, setHighlightedDiceIndex] = useState<number>(-1);
   const [selectedBidValue, setSelectedBidValue] = useState<number | null>(null); // Track bid value being selected
@@ -202,7 +200,6 @@ export default function LastDieGame() {
   const opponentsRef = useRef(opponents);
   const currentBidRef = useRef(currentBid);
   const lastBidderRef = useRef(lastBidder);
-  const isPalificoRef = useRef(isPalifico);
   const roundStarterRef = useRef(roundStarter);
   const revealCancelledRef = useRef(false);
 
@@ -216,9 +213,6 @@ export default function LastDieGame() {
   useEffect(() => {
     lastBidderRef.current = lastBidder;
   }, [lastBidder]);
-  useEffect(() => {
-    isPalificoRef.current = isPalifico;
-  }, [isPalifico]);
   useEffect(() => {
     roundStarterRef.current = roundStarter;
   }, [roundStarter]);
@@ -335,10 +329,6 @@ export default function LastDieGame() {
     setActualCount(0);
     setLastBidder(null);
     lastBidderRef.current = null;
-    // Check if anyone has exactly 1 die (Palifico) - only if enabled
-    const anyPalifico = palificoEnabled && (playerDiceCount === 1 || newOpponents.some(o => o.diceCount === 1));
-    setIsPalifico(anyPalifico);
-    isPalificoRef.current = anyPalifico; // Sync update
 
     // Initialize sophisticated AI system
     const opponentIds = newOpponents.map(o => o.id.toString());
@@ -379,7 +369,7 @@ export default function LastDieGame() {
       initialStats.opponents[i] = { ...emptyStats };
     }
     setGameStats(initialStats);
-  }, [playerDiceCount, opponentCount, initializeOpponents, palificoEnabled]);
+  }, [playerDiceCount, opponentCount, initializeOpponents]);
 
   const handleRoll = useCallback(() => {
     setIsRolling(true);
@@ -401,7 +391,6 @@ export default function LastDieGame() {
       // Use refs to get the most current values (avoids stale closure issues)
       const bid = currentBidRef.current;
       const lastBidderValue = lastBidderRef.current;
-      const palifico = isPalificoRef.current;
 
 
       if (!bid) {
@@ -441,7 +430,7 @@ export default function LastDieGame() {
         ...playerHand,
         ...opps.flatMap(o => o.hand)
       ];
-      const matchingCount = countMatching(allDice, bid.value, palifico);
+      const matchingCount = countMatching(allDice, bid.value);
       setActualCount(matchingCount);
 
 
@@ -697,7 +686,6 @@ export default function LastDieGame() {
     }
 
     const currentTotalDice = playerDiceCount + opps.reduce((sum, o) => sum + o.diceCount, 0);
-    const palifico = isPalificoRef.current;
 
     // Build opponent dice counts for context
     const opponentDiceCounts: Record<string, number> = {};
@@ -727,7 +715,6 @@ export default function LastDieGame() {
       opponent.hand,
       bidValue,
       currentTotalDice,
-      palifico,
       lastBidderValue === 'player' ? 'player' : lastBidderValue.toString(),
       memory || createSessionMemory('temp', opps.map(o => o.id.toString())),
       opponent.diceCount,
@@ -919,7 +906,6 @@ export default function LastDieGame() {
     setTimeout(() => {
       const memory = sessionMemoryRef.current;
       const currentTotalDice = playerDiceCount + opps.reduce((sum, o) => sum + o.diceCount, 0);
-      const palifico = isPalificoRef.current;
 
       // Build opponent dice counts for context
       const opponentDiceCounts: Record<string, number> = {};
@@ -949,7 +935,6 @@ export default function LastDieGame() {
         starter.hand,
         null, // No current bid for opening
         currentTotalDice,
-        palifico,
         null, // No last bidder for opening
         memory || createSessionMemory('temp', opps.map(o => o.id.toString())),
         starter.diceCount,
@@ -1184,12 +1169,8 @@ export default function LastDieGame() {
       setRevealOpponentDiceCounts(null);
       setRevealProgress(0);
       setRevealComplete(false);
-      // Check if anyone has exactly 1 die (Palifico) - only if enabled
-      const anyPalifico = palificoEnabled && (playerDiceCount === 1 || opponents.some(o => o.diceCount === 1 && !o.isEliminated));
-      setIsPalifico(anyPalifico);
-      isPalificoRef.current = anyPalifico; // Sync update
     }
-  }, [playerDiceCount, opponents, palificoEnabled]);
+  }, [playerDiceCount, opponents]);
 
   // Can only Calza if an opponent made the last bid
   const canCalza = typeof lastBidder === 'number' && currentBid !== null;
@@ -1209,8 +1190,6 @@ export default function LastDieGame() {
     setLastBidder(null);
     setLoser(null);
     setRoundStarter('player');
-    setIsPalifico(false);
-    isPalificoRef.current = false;
     setGameStats(null);
     setShowStats(false);
     // Reset AI state
@@ -1235,8 +1214,6 @@ export default function LastDieGame() {
     setLastBidder(null);
     setLoser(null);
     setRoundStarter('player');
-    setIsPalifico(false);
-    isPalificoRef.current = false;
     setGameStats(null);
     setShowStats(false);
     // Reset AI state
@@ -1291,11 +1268,9 @@ export default function LastDieGame() {
     const matches: { playerIdx: number; dieIdx: number; globalIdx: number }[] = [];
     let globalIdx = 0;
 
-    // Check player's dice
+    // Check player's dice (aces are always wild)
     playerHand.forEach((value, dieIdx) => {
-      const isMatch = isPalifico
-        ? value === currentBid.value
-        : (value === currentBid.value || (value === 1 && currentBid.value !== 1));
+      const isMatch = value === currentBid.value || (value === 1 && currentBid.value !== 1);
       if (isMatch) {
         matches.push({ playerIdx: -1, dieIdx, globalIdx });
       }
@@ -1305,9 +1280,7 @@ export default function LastDieGame() {
     // Check each opponent's dice
     opponents.forEach((opponent, oppIdx) => {
       opponent.hand.forEach((value, dieIdx) => {
-        const isMatch = isPalifico
-          ? value === currentBid.value
-          : (value === currentBid.value || (value === 1 && currentBid.value !== 1));
+        const isMatch = value === currentBid.value || (value === 1 && currentBid.value !== 1);
         if (isMatch) {
           matches.push({ playerIdx: oppIdx, dieIdx, globalIdx });
         }
@@ -1316,7 +1289,7 @@ export default function LastDieGame() {
     });
 
     return matches;
-  }, [currentBid, gameState, playerHand, opponents, isPalifico]);
+  }, [currentBid, gameState, playerHand, opponents]);
 
   // Run the reveal animation when we enter Reveal state
   // For each player: pop in section → reveal dice → highlight matches → next player
@@ -1335,7 +1308,6 @@ export default function LastDieGame() {
     setRevealComplete(false);
     setHighlightedDiceIndex(-1);
 
-    const palifico = isPalificoRef.current;
     const bid = currentBid;
 
     // Build list of players: -1 for human, then opponent indices
@@ -1353,9 +1325,8 @@ export default function LastDieGame() {
       return opponents[playerIdx as number]?.hand || [];
     };
 
-    // Check if a die matches the bid
+    // Check if a die matches the bid (aces are always wild)
     const isDieMatch = (value: number): boolean => {
-      if (palifico) return value === bid.value;
       return value === bid.value || (value === 1 && bid.value !== 1);
     };
 
@@ -1483,12 +1454,11 @@ export default function LastDieGame() {
     return matchIdx <= currentHighlightedMatch;
   }, [currentBid, gameState, getAllMatchingDiceIndices, countingComplete, highlightedDiceIndex]);
 
-  // Check if a die matches the bid
+  // Check if a die matches the bid (aces are always wild)
   const isDieMatching = useCallback((value: number) => {
     if (!currentBid) return false;
-    if (isPalifico) return value === currentBid.value;
     return value === currentBid.value || (value === 1 && currentBid.value !== 1);
-  }, [currentBid, isPalifico]);
+  }, [currentBid]);
 
   // Get matching dice with their global indices for incremental reveal
   const getMatchingDiceWithIndices = useCallback(() => {
@@ -1497,16 +1467,14 @@ export default function LastDieGame() {
     const matches: { value: number; color: PlayerColor; isJoker: boolean; globalIdx: number }[] = [];
     let globalIdx = 0;
 
-    // Check player's dice
+    // Check player's dice (aces are always wild)
     playerHand.forEach(value => {
-      const isMatch = isPalifico
-        ? value === currentBid.value
-        : (value === currentBid.value || (value === 1 && currentBid.value !== 1));
+      const isMatch = value === currentBid.value || (value === 1 && currentBid.value !== 1);
       if (isMatch) {
         matches.push({
           value,
           color: playerColor,
-          isJoker: !isPalifico && value === 1 && currentBid.value !== 1,
+          isJoker: value === 1 && currentBid.value !== 1,
           globalIdx
         });
       }
@@ -1516,14 +1484,12 @@ export default function LastDieGame() {
     // Check each opponent's dice
     opponents.forEach(opponent => {
       opponent.hand.forEach(value => {
-        const isMatch = isPalifico
-          ? value === currentBid.value
-          : (value === currentBid.value || (value === 1 && currentBid.value !== 1));
+        const isMatch = value === currentBid.value || (value === 1 && currentBid.value !== 1);
         if (isMatch) {
           matches.push({
             value,
             color: opponent.color,
-            isJoker: !isPalifico && value === 1 && currentBid.value !== 1,
+            isJoker: value === 1 && currentBid.value !== 1,
             globalIdx
           });
         }
@@ -1532,7 +1498,7 @@ export default function LastDieGame() {
     });
 
     return matches;
-  }, [currentBid, playerHand, opponents, isPalifico, playerColor]);
+  }, [currentBid, playerHand, opponents, playerColor]);
 
   // Get currently counted dice (those that have been highlighted so far)
   const getCountedDice = useCallback(() => {
@@ -1639,8 +1605,7 @@ export default function LastDieGame() {
             diceCount={getDisplayPlayerDiceCount()}
             color={playerColor}
             isActive={isMyTurn}
-            hasPalifico={palificoEnabled && getDisplayPlayerDiceCount() === 1}
-            isEliminated={false}
+                        isEliminated={false}
             showThinking={false}
             thinkingPrompt=""
           />
@@ -1649,7 +1614,6 @@ export default function LastDieGame() {
           {opponents.map((opponent) => {
             const isThinking = currentTurnIndex === opponent.id;
             const displayCount = getDisplayOpponentDiceCount(opponent.id);
-            const hasPalifico = palificoEnabled && displayCount === 1 && !opponent.isEliminated;
             return (
               <PlayerDiceBadge
                 key={opponent.id}
@@ -1657,8 +1621,7 @@ export default function LastDieGame() {
                 diceCount={displayCount}
                 color={opponent.color}
                 isActive={isThinking}
-                hasPalifico={hasPalifico}
-                isEliminated={opponent.isEliminated}
+                                isEliminated={opponent.isEliminated}
                 showThinking={false}
                 thinkingPrompt=""
               />
@@ -1837,24 +1800,21 @@ export default function LastDieGame() {
                   diceCount={getDisplayPlayerDiceCount()}
                   color={playerColor}
                   isActive={isMyTurn}
-                  hasPalifico={palificoEnabled && getDisplayPlayerDiceCount() === 1}
-                  isEliminated={false}
+                                    isEliminated={false}
                   showThinking={false}
                   thinkingPrompt=""
                 />
                 {opponents.map((opponent) => {
                   const isThinking = currentTurnIndex === opponent.id && gameState === 'Bidding';
                   const displayCount = getDisplayOpponentDiceCount(opponent.id);
-                  const hasPalifico = palificoEnabled && displayCount === 1 && !opponent.isEliminated;
-                  return (
+                        return (
                     <PlayerDiceBadge
                       key={opponent.id}
                       playerName={opponent.name}
                       diceCount={displayCount}
                       color={opponent.color}
                       isActive={isThinking}
-                      hasPalifico={hasPalifico}
-                      isEliminated={opponent.isEliminated}
+                                            isEliminated={opponent.isEliminated}
                       showThinking={isThinking}
                       thinkingPrompt={aiThinkingPrompt}
                     />
@@ -1942,8 +1902,7 @@ export default function LastDieGame() {
                                 value={currentBid.value}
                                 index={i}
                                 size="sm"
-                                isPalifico={isPalifico}
-                                color={getLastBidderColor() || playerColor}
+                                                                color={getLastBidderColor() || playerColor}
                               />
                             </motion.div>
                           ))}
@@ -1982,8 +1941,7 @@ export default function LastDieGame() {
                     onCalza={handleCalza}
                     isMyTurn={isMyTurn}
                     totalDice={totalDice}
-                    isPalifico={isPalifico}
-                    canCalza={canCalza}
+                                        canCalza={canCalza}
                     playerColor={playerColor}
                     lastBidderColor={getLastBidderColor()}
                     lastBidderName={lastBidder === 'player' ? 'You' : lastBidder !== null ? opponents.find(o => o.id === lastBidder)?.name : undefined}
@@ -2028,8 +1986,7 @@ export default function LastDieGame() {
                   <SortedDiceDisplay
                     dice={playerHand}
                     color={playerColor}
-                    isPalifico={isPalifico}
-                    size="lg"
+                                        size="lg"
                     animateSort={true}
                     highlightValue={isMyTurn ? selectedBidValue : (currentBid ? currentBid.value : null)}
                     draggable={true}
@@ -2052,8 +2009,7 @@ export default function LastDieGame() {
                 bid={currentBid}
                 lastBidderName={lastBidder === 'player' ? 'You' : opponents.find(o => o.id === lastBidder)?.name || 'Unknown'}
                 lastBidderColor={getLastBidderColor()}
-                isPalifico={isPalifico}
-                actualCount={actualCount}
+                                actualCount={actualCount}
                 isCalza={calzaCaller !== null}
                 countingComplete={countingComplete}
                 countedDice={getCountedDice()}
@@ -2198,39 +2154,6 @@ export default function LastDieGame() {
                     );
                   })}
                 </div>
-              </div>
-
-              {/* Palifico Toggle */}
-              <div className="mb-6">
-                <h3 className="text-sm font-bold text-white-soft/80 uppercase tracking-wider mb-3">Rules</h3>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setPalificoEnabled(!palificoEnabled)}
-                  className={`w-full p-4 rounded-lg border-2 flex items-center justify-between transition-colors ${
-                    palificoEnabled
-                      ? 'bg-purple-mid/50 border-purple-glow'
-                      : 'bg-purple-deep/50 border-purple-mid'
-                  }`}
-                >
-                  <div className="text-left">
-                    <p className="font-bold text-white-soft">Palifico Mode</p>
-                    <p className="text-xs text-white-soft/60">
-                      When a player has 1 die: no wilds, value locked
-                    </p>
-                  </div>
-                  <div
-                    className={`w-12 h-7 rounded-full p-1 transition-colors ${
-                      palificoEnabled ? 'bg-green-crt' : 'bg-purple-deep'
-                    }`}
-                  >
-                    <motion.div
-                      className="w-5 h-5 rounded-full bg-white shadow-md"
-                      animate={{ x: palificoEnabled ? 20 : 0 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    />
-                  </div>
-                </motion.button>
               </div>
 
               {/* Preview */}

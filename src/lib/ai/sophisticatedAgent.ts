@@ -38,7 +38,6 @@ import { adjustPersonalityParams } from './personalities';
  * @param hand - The AI's dice
  * @param currentBid - Current bid on the table (null if opening)
  * @param totalDice - Total dice in play
- * @param isPalifico - Whether palifico rules apply
  * @param lastBidderId - ID of the last bidder (null if opening)
  * @param memory - Session memory state
  * @param myDiceCount - Number of dice the AI has
@@ -52,7 +51,6 @@ export function createAgentContext(
   hand: number[],
   currentBid: Bid | null,
   totalDice: number,
-  isPalifico: boolean,
   lastBidderId: string | null,
   memory: SessionMemory,
   myDiceCount: number,
@@ -67,7 +65,6 @@ export function createAgentContext(
     hand,
     currentBid,
     totalDice,
-    isPalifico,
     lastBidderId,
     personality,
     memory,
@@ -92,7 +89,7 @@ export function createAgentContext(
  * @returns AIDecision with action, optional bid, and thought process
  */
 export function makeDecision(context: AgentContext): AIDecision {
-  const { currentBid, totalDice, isPalifico, lastBidderId, personality } = context;
+  const { currentBid, totalDice, lastBidderId, personality } = context;
 
   // Check for boring game adjustments
   const boringGame = evaluateBoringGame(context);
@@ -170,8 +167,7 @@ export function makeDecision(context: AgentContext): AIDecision {
   const validCandidates = filterValidCandidates(
     rawCandidates,
     currentBid,
-    totalDice,
-    isPalifico
+    totalDice
   );
 
   // Calculate bid utilities
@@ -313,7 +309,6 @@ export function createSimpleContext(
   hand: number[],
   currentBid: Bid | null,
   totalDice: number,
-  isPalifico: boolean,
   lastBidderId: string | null,
   myDiceCount: number
 ): AgentContext {
@@ -334,7 +329,6 @@ export function createSimpleContext(
     hand,
     currentBid,
     totalDice,
-    isPalifico,
     lastBidderId,
     personality,
     memory: minimalMemory,

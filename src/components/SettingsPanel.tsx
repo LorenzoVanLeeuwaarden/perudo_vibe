@@ -12,8 +12,6 @@ interface SettingsPanelProps {
   onClose: () => void;
   playerColor: PlayerColor;
   setPlayerColor: (color: PlayerColor) => void;
-  palificoEnabled: boolean;
-  setPalificoEnabled: (enabled: boolean) => void;
 }
 
 export function SettingsPanel({
@@ -21,8 +19,6 @@ export function SettingsPanel({
   onClose,
   playerColor,
   setPlayerColor,
-  palificoEnabled,
-  setPalificoEnabled,
 }: SettingsPanelProps) {
   return (
     <AnimatePresence>
@@ -89,39 +85,6 @@ export function SettingsPanel({
                   );
                 })}
               </div>
-            </div>
-
-            {/* Palifico Toggle */}
-            <div className="mb-6">
-              <h3 className="text-sm font-bold text-white-soft/80 uppercase tracking-wider mb-3">Rules</h3>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setPalificoEnabled(!palificoEnabled)}
-                className={`w-full p-4 rounded-lg border-2 flex items-center justify-between transition-colors ${
-                  palificoEnabled
-                    ? 'bg-purple-mid/50 border-purple-glow'
-                    : 'bg-purple-deep/50 border-purple-mid'
-                }`}
-              >
-                <div className="text-left">
-                  <p className="font-bold text-white-soft">Palifico Mode</p>
-                  <p className="text-xs text-white-soft/60">
-                    When a player has 1 die: no wilds, value locked
-                  </p>
-                </div>
-                <div
-                  className={`w-12 h-7 rounded-full p-1 transition-colors ${
-                    palificoEnabled ? 'bg-green-crt' : 'bg-purple-deep'
-                  }`}
-                >
-                  <motion.div
-                    className="w-5 h-5 rounded-full bg-white shadow-md"
-                    animate={{ x: palificoEnabled ? 20 : 0 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  />
-                </div>
-              </motion.button>
             </div>
 
             {/* Preview */}

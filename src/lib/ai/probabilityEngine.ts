@@ -65,11 +65,9 @@ void _binomialCumulativeLessThan;
 
 /**
  * Gets the base probability for a single die to match a bid value
+ * Aces (1s) are always wild and match any value
  */
-export function getBaseProbability(value: number, isPalifico: boolean): number {
-  if (isPalifico) {
-    return 1 / 6; // Only exact matches in palifico
-  }
+export function getBaseProbability(value: number): number {
   return value === 1 ? 1 / 6 : 2 / 6; // Aces: 1/6, Others: 2/6 (value + aces)
 }
 
@@ -78,10 +76,9 @@ export function getBaseProbability(value: number, isPalifico: boolean): number {
  */
 export function calculateExpectedValue(
   value: number,
-  totalDice: number,
-  isPalifico: boolean
+  totalDice: number
 ): number {
-  const p = getBaseProbability(value, isPalifico);
+  const p = getBaseProbability(value);
   return totalDice * p;
 }
 
@@ -98,10 +95,9 @@ export function calculateExpectedValue(
 export function getWeightedExpectedCount(
   value: number,
   totalDice: number,
-  isPalifico: boolean,
   memory: SessionMemory | null
 ): number {
-  const baseExpected = calculateExpectedValue(value, totalDice, isPalifico);
+  const baseExpected = calculateExpectedValue(value, totalDice);
 
   if (!memory) {
     return baseExpected;
@@ -135,24 +131,22 @@ export function getWeightedExpectedCount(
  * @param bid - The bid to evaluate
  * @param hand - The evaluating player's dice
  * @param totalDice - Total dice in play
- * @param isPalifico - Whether palifico rules apply
  * @param memory - Session memory for weighted calculations
  */
 export function calculateBidSuccessProbability(
   bid: Bid,
   hand: number[],
   totalDice: number,
-  isPalifico: boolean,
   memory: SessionMemory | null = null
 ): number {
   // Count matching dice in our hand
-  const knownMatching = countMatching(hand, bid.value, isPalifico);
+  const knownMatching = countMatching(hand, bid.value);
 
   // Number of unknown dice
   const unknownDice = totalDice - hand.length;
 
   // Base probability for unknown dice
-  const p = getBaseProbability(bid.value, isPalifico);
+  const p = getBaseProbability(bid.value);
 
   // How many more do we need from unknown dice?
   const needed = bid.count - knownMatching;
@@ -190,10 +184,9 @@ export function calculateBidFailureProbability(
   bid: Bid,
   hand: number[],
   totalDice: number,
-  isPalifico: boolean,
   memory: SessionMemory | null = null
 ): number {
-  return 1 - calculateBidSuccessProbability(bid, hand, totalDice, isPalifico, memory);
+  return 1 - calculateBidSuccessProbability(bid, hand, totalDice, memory);
 }
 
 /**
@@ -202,16 +195,14 @@ export function calculateBidFailureProbability(
  * @param bid - The bid to evaluate
  * @param hand - The evaluating player's dice
  * @param totalDice - Total dice in play
- * @param isPalifico - Whether palifico rules apply
  */
 export function calculateExactMatchProbability(
   bid: Bid,
   hand: number[],
-  totalDice: number,
-  isPalifico: boolean
+  totalDice: number
 ): number {
   // Count matching dice in our hand
-  const knownMatching = countMatching(hand, bid.value, isPalifico);
+  const knownMatching = countMatching(hand, bid.value);
 
   // Number of unknown dice
   const unknownDice = totalDice - hand.length;
@@ -230,7 +221,7 @@ export function calculateExactMatchProbability(
   }
 
   // Base probability
-  const p = getBaseProbability(bid.value, isPalifico);
+  const p = getBaseProbability(bid.value);
 
   // Calculate P(X = needed) using binomial distribution
   return binomialProbability(unknownDice, needed, p);
@@ -248,12 +239,11 @@ export function calculateExpectedTotalCount(
   value: number,
   hand: number[],
   totalDice: number,
-  isPalifico: boolean,
   memory: SessionMemory | null = null
 ): number {
-  const knownMatching = countMatching(hand, value, isPalifico);
+  const knownMatching = countMatching(hand, value);
   const unknownDice = totalDice - hand.length;
-  const p = getBaseProbability(value, isPalifico);
+  const p = getBaseProbability(value);
 
   let expectedFromOthers = unknownDice * p;
 
@@ -275,10 +265,9 @@ export function calculateExpectedTotalCount(
  */
 export function calculateBidRatio(
   bid: Bid,
-  totalDice: number,
-  isPalifico: boolean
+  totalDice: number
 ): number {
-  const expected = calculateExpectedValue(bid.value, totalDice, isPalifico);
+  const expected = calculateExpectedValue(bid.value, totalDice);
   return expected > 0 ? bid.count / expected : 0;
 }
 
@@ -294,12 +283,11 @@ export function calculateCountConfidenceInterval(
   value: number,
   hand: number[],
   totalDice: number,
-  isPalifico: boolean,
   confidenceLevel: number = 0.9
 ): [number, number] {
-  const knownMatching = countMatching(hand, value, isPalifico);
+  const knownMatching = countMatching(hand, value);
   const unknownDice = totalDice - hand.length;
-  const p = getBaseProbability(value, isPalifico);
+  const p = getBaseProbability(value);
 
   // Find bounds using cumulative probability
   const alpha = (1 - confidenceLevel) / 2;
@@ -338,11 +326,10 @@ export function compareBidLikelihood(
   bid1: Bid,
   bid2: Bid,
   hand: number[],
-  totalDice: number,
-  isPalifico: boolean
+  totalDice: number
 ): number {
-  const prob1 = calculateBidSuccessProbability(bid1, hand, totalDice, isPalifico);
-  const prob2 = calculateBidSuccessProbability(bid2, hand, totalDice, isPalifico);
+  const prob1 = calculateBidSuccessProbability(bid1, hand, totalDice);
+  const prob2 = calculateBidSuccessProbability(bid2, hand, totalDice);
   return prob1 - prob2; // Positive means bid1 more likely
 }
 
@@ -353,12 +340,11 @@ export function findMaxConfidentBid(
   value: number,
   hand: number[],
   totalDice: number,
-  isPalifico: boolean,
   minSuccessProbability: number = 0.5
 ): number {
-  const knownMatching = countMatching(hand, value, isPalifico);
+  const knownMatching = countMatching(hand, value);
   const unknownDice = totalDice - hand.length;
-  const p = getBaseProbability(value, isPalifico);
+  const p = getBaseProbability(value);
 
   // Start from the known count and go up
   for (let count = knownMatching; count <= totalDice; count++) {

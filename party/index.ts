@@ -17,7 +17,6 @@ import { rollDice, isValidBid, countMatching, generateTimeoutAIMove } from '../s
 // Default game settings
 const DEFAULT_SETTINGS: GameSettings = {
   startingDice: STARTING_DICE,
-  palificoEnabled: false,
   turnTimeoutMs: DEFAULT_TURN_TIMEOUT_MS,
 };
 
@@ -271,8 +270,7 @@ export default class GameServer implements Party.Server {
     const aiMove = generateTimeoutAIMove(
       player.hand,
       gameState.currentBid,
-      totalDice,
-      gameState.isPalifico
+      totalDice
     );
 
     // Mark that this action was a timeout
@@ -351,7 +349,7 @@ export default class GameServer implements Party.Server {
       // Calculate actual count (same logic as handleCallDudo)
       let actualCount = 0;
       for (const p of activePlayers) {
-        actualCount += countMatching(p.hand, gameState.currentBid!.value, gameState.isPalifico);
+        actualCount += countMatching(p.hand, gameState.currentBid!.value);
       }
 
       // Build allHands for reveal
@@ -944,7 +942,6 @@ export default class GameServer implements Party.Server {
       roundStarterId: firstPlayer?.id ?? null,
       lastBidderId: null,
       lastRoundLoserId: null,
-      isPalifico: false,
       roundNumber: 1,
       turnStartedAt: Date.now(),
       lastActionWasTimeout: false,
@@ -1006,14 +1003,6 @@ export default class GameServer implements Party.Server {
       }
     }
 
-    // Check for palifico: round starter has exactly 1 die
-    const roundStarter = gameState.players.find(p => p.id === gameState.roundStarterId);
-    if (roundStarter && roundStarter.diceCount === 1 && this.roomState.settings.palificoEnabled) {
-      gameState.isPalifico = true;
-    } else {
-      gameState.isPalifico = false;
-    }
-
     // Transition to bidding phase
     gameState.phase = 'bidding';
     gameState.turnStartedAt = Date.now();
@@ -1069,7 +1058,7 @@ export default class GameServer implements Party.Server {
     const totalDice = activePlayers.reduce((sum, p) => sum + p.diceCount, 0);
 
     // Validate bid
-    const validation = isValidBid(msg.bid, gameState.currentBid, totalDice, gameState.isPalifico);
+    const validation = isValidBid(msg.bid, gameState.currentBid, totalDice);
     if (!validation.valid) {
       this.sendToConnection(sender, {
         type: 'ERROR',
@@ -1158,7 +1147,7 @@ export default class GameServer implements Party.Server {
     const activePlayers = gameState.players.filter(p => !p.isEliminated);
     let actualCount = 0;
     for (const player of activePlayers) {
-      actualCount += countMatching(player.hand, gameState.currentBid.value, gameState.isPalifico);
+      actualCount += countMatching(player.hand, gameState.currentBid.value);
     }
 
     // Build allHands for reveal
@@ -1291,7 +1280,7 @@ export default class GameServer implements Party.Server {
     const activePlayers = gameState.players.filter(p => !p.isEliminated);
     let actualCount = 0;
     for (const player of activePlayers) {
-      actualCount += countMatching(player.hand, gameState.currentBid.value, gameState.isPalifico);
+      actualCount += countMatching(player.hand, gameState.currentBid.value);
     }
 
     // Build allHands for reveal
@@ -1455,14 +1444,6 @@ export default class GameServer implements Party.Server {
 
     gameState.roundStarterId = newStarterId;
     gameState.currentTurnPlayerId = newStarterId;
-
-    // Check palifico: round starter has exactly 1 die
-    const roundStarter = activePlayers.find(p => p.id === newStarterId);
-    if (roundStarter && roundStarter.diceCount === 1 && this.roomState.settings.palificoEnabled) {
-      gameState.isPalifico = true;
-    } else {
-      gameState.isPalifico = false;
-    }
 
     // Roll dice for each non-eliminated player immediately
     // (No need for 'rolling' phase - we roll synchronously here)

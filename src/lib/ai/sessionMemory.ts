@@ -222,7 +222,7 @@ function handleRoundRevealed(memory: SessionMemory, event: MemoryEvent): Session
     // Was this a bluff? Check if they had dice supporting the bid
     // A bid is considered a bluff if the bidder had fewer matching dice
     // than what a "confident" bid would imply (less than 50% of bid count)
-    const bidderMatching = countMatching(bidderHand, finalBid.value, false);
+    const bidderMatching = countMatching(bidderHand, finalBid.value);
     const wasConfidentBid = bidderMatching >= Math.ceil(finalBid.count * 0.3);
 
     if (wasConfidentBid) {

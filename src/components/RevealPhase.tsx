@@ -21,7 +21,6 @@ interface RevealPhaseProps {
   roundResult: RoundResult;
   onContinue: () => void;
   showOverlay: boolean;
-  isPalifico?: boolean;
 }
 
 export function RevealPhase({
@@ -30,7 +29,6 @@ export function RevealPhase({
   roundResult,
   onContinue,
   showOverlay,
-  isPalifico = false,
 }: RevealPhaseProps) {
   const [visible, setVisible] = useState(false);
   const [skipped, setSkipped] = useState(false);
@@ -52,7 +50,7 @@ export function RevealPhase({
   const isGameOver = activePlayers.filter(p => !p.isEliminated).length <= 1;
 
   // Get all matching dice with their player colors
-  // Jokers (1s) count as wildcards for both Dudo and Calza, UNLESS it's palifico mode
+  // Jokers (1s) count as wildcards for both Dudo and Calza
   const getMatchingDice = useCallback(() => {
     const matches: Array<{ value: number; color: PlayerColor; globalIdx: number; isJoker: boolean }> = [];
     let globalIdx = 0;
@@ -60,10 +58,8 @@ export function RevealPhase({
     for (const player of activePlayers) {
       const hand = revealedHands[player.id] || [];
       for (const value of hand) {
-        // In palifico, only exact matches count. Otherwise jokers (1s) are wild.
-        const isMatch = isPalifico
-          ? value === bid.value
-          : (value === bid.value || (value === 1 && bid.value !== 1));
+        // Jokers (1s) are wild
+        const isMatch = value === bid.value || (value === 1 && bid.value !== 1);
         if (isMatch) {
           matches.push({
             value,
@@ -76,7 +72,7 @@ export function RevealPhase({
       }
     }
     return matches;
-  }, [activePlayers, revealedHands, bid.value, isPalifico]);
+  }, [activePlayers, revealedHands, bid.value]);
 
   // Get currently counted (revealed) matching dice
   const getCountedDice = useCallback(() => {
@@ -179,11 +175,9 @@ export function RevealPhase({
   }, [highlightedDiceIndex, countingComplete]);
 
   const isDieMatching = useCallback((value: number) => {
-    // In palifico, only exact matches. Otherwise jokers (1s) are wild (unless bidding on 1s).
-    return isPalifico
-      ? value === bid.value
-      : (value === bid.value || (value === 1 && bid.value !== 1));
-  }, [bid.value, isPalifico]);
+    // Jokers (1s) are wild (unless bidding on 1s)
+    return value === bid.value || (value === 1 && bid.value !== 1);
+  }, [bid.value]);
 
   const isPlayerSectionRevealed = useCallback((startIdx: number) => {
     if (skipped) return true;
@@ -244,7 +238,6 @@ export function RevealPhase({
               bid={bid}
               lastBidderName={lastBidder?.name || 'Unknown'}
               lastBidderColor={(lastBidder?.color as PlayerColor) || 'orange'}
-              isPalifico={isPalifico}
               actualCount={actualCount}
               isCalza={isCalza}
               countingComplete={countingComplete}

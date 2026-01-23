@@ -10,7 +10,6 @@ interface SlotMachineProps {
   isRevealed: boolean;
   onPull: () => void;
   onReveal: () => void;
-  isPalifico?: boolean;
   playerColor: PlayerColor;
 }
 
@@ -19,7 +18,6 @@ export function SlotMachine({
   isRevealed,
   onPull,
   onReveal,
-  isPalifico = false,
   playerColor
 }: SlotMachineProps) {
   const [isSpinning, setIsSpinning] = useState(false);
@@ -166,7 +164,6 @@ export function SlotMachine({
                       index={index}
                       isRevealing={true}
                       size="md"
-                      isPalifico={isPalifico}
                       color={playerColor}
                     />
                   ))}

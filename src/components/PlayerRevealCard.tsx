@@ -13,7 +13,6 @@ interface PlayerRevealCardProps {
   isEliminated?: boolean;
   baseIdx: number;
   isRevealed: boolean;
-  isPalifico: boolean;
 
   // Callback functions for determining dice state
   isDieRevealed: (globalIdx: number) => boolean;
@@ -41,10 +40,9 @@ export function PlayerRevealCard({
   playerName,
   hand,
   color,
-  isEliminated = false,
+  isEliminated: _isEliminated = false,
   baseIdx,
-  isRevealed: _isRevealed, // Kept for API compatibility, card is now always visible
-  isPalifico,
+  isRevealed: _isRevealed, // Kept for API compatibility
   isDieRevealed,
   isDieHighlighted,
   isDieMatching,
@@ -113,7 +111,6 @@ export function PlayerRevealCard({
                   value={value}
                   index={baseIdx + i}
                   size={diceSize}
-                  isPalifico={isPalifico}
                   color={color}
                   highlighted={isHighlighted}
                   dimmed={countingComplete && !isMatching}

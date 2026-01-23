@@ -25,14 +25,14 @@ import {
  * Goal: Put maximum pressure on a weak opponent
  */
 export function evaluateSqueeze(context: AgentContext): BidCandidate | null {
-  const { currentBid, totalDice, isPalifico, opponentDiceCounts, nextPlayerId, personality } = context;
+  const { currentBid, totalDice, opponentDiceCounts, nextPlayerId, personality } = context;
 
-  if (!currentBid || !nextPlayerId || isPalifico) {
+  if (!currentBid || !nextPlayerId) {
     return null;
   }
 
   // Check if squeeze conditions are met
-  const bidRatio = calculateBidRatio(currentBid, totalDice, isPalifico);
+  const bidRatio = calculateBidRatio(currentBid, totalDice);
   const nextPlayerDice = opponentDiceCounts[nextPlayerId] || 5;
 
   // Squeeze activates at 75%+ bid ratio with vulnerable next player
@@ -52,7 +52,7 @@ export function evaluateSqueeze(context: AgentContext): BidCandidate | null {
   };
 
   // Validate the squeeze bid
-  const validation = isValidBid(squeezeBid, currentBid, totalDice, isPalifico);
+  const validation = isValidBid(squeezeBid, currentBid, totalDice);
   if (!validation.valid) {
     return null;
   }
@@ -74,10 +74,10 @@ export function evaluateSqueeze(context: AgentContext): BidCandidate | null {
  * Best used when: early in round, have some aces, bid count is low
  */
 export function evaluateAceFlushing(context: AgentContext): BidCandidate | null {
-  const { currentBid, hand, totalDice, isPalifico, memory, personality } = context;
+  const { currentBid, hand, totalDice, memory, personality } = context;
 
-  // Can't flush aces in palifico or if opening bid
-  if (isPalifico || !currentBid) {
+  // Can't flush aces if opening bid
+  if (!currentBid) {
     return null;
   }
 
@@ -110,7 +110,7 @@ export function evaluateAceFlushing(context: AgentContext): BidCandidate | null 
   };
 
   // Validate
-  const validation = isValidBid(aceFlushBid, currentBid, totalDice, isPalifico);
+  const validation = isValidBid(aceFlushBid, currentBid, totalDice);
   if (!validation.valid) {
     return null;
   }
@@ -120,7 +120,6 @@ export function evaluateAceFlushing(context: AgentContext): BidCandidate | null 
     aceFlushBid,
     hand,
     totalDice,
-    isPalifico,
     memory
   );
 
@@ -191,12 +190,8 @@ export function evaluateBoringGame(context: AgentContext): {
  * Used by: Bluffer and Shark personalities
  */
 export function evaluateLiarsLeap(context: AgentContext): BidCandidate | null {
-  const { currentBid, hand, totalDice, isPalifico, opponentDiceCounts, myDiceCount, personality } = context;
+  const { currentBid, hand, totalDice, opponentDiceCounts, myDiceCount, personality } = context;
 
-  // Can't use in palifico
-  if (isPalifico) {
-    return null;
-  }
 
   // Need to be dominant: 4+ dice
   if (myDiceCount < 4) {
@@ -232,7 +227,7 @@ export function evaluateLiarsLeap(context: AgentContext): BidCandidate | null {
   const poisonValue = zeroCounts[Math.floor(Math.random() * zeroCounts.length)];
 
   // Calculate "safe" bid ratio (35-45% of expected)
-  const expectedCount = calculateExpectedValue(poisonValue, totalDice, isPalifico);
+  const expectedCount = calculateExpectedValue(poisonValue, totalDice);
   const safeCount = Math.max(
     currentBid ? currentBid.count + 1 : 2,
     Math.floor(expectedCount * (0.35 + Math.random() * 0.10))
@@ -247,13 +242,13 @@ export function evaluateLiarsLeap(context: AgentContext): BidCandidate | null {
   };
 
   // Validate
-  const validation = isValidBid(liarsLeapBid, currentBid, totalDice, isPalifico);
+  const validation = isValidBid(liarsLeapBid, currentBid, totalDice);
   if (!validation.valid) {
     return null;
   }
 
   // Check probability - even though we're bluffing, others might have it
-  const successProb = calculateBidSuccessProbability(liarsLeapBid, hand, totalDice, isPalifico, null);
+  const successProb = calculateBidSuccessProbability(liarsLeapBid, hand, totalDice, null);
   if (successProb < 0.35) {
     return null; // Too risky even for a bluff
   }
@@ -274,7 +269,7 @@ export function evaluateLiarsLeap(context: AgentContext): BidCandidate | null {
  * Generates minimum valid bid
  */
 function generateMinimumBid(context: AgentContext): BidCandidate | null {
-  const { currentBid, totalDice, isPalifico } = context;
+  const { currentBid, totalDice } = context;
 
   if (!currentBid) {
     return null; // Use opening bid generator instead
@@ -282,9 +277,7 @@ function generateMinimumBid(context: AgentContext): BidCandidate | null {
 
   let minBid: Bid;
 
-  if (isPalifico) {
-    minBid = { count: currentBid.count + 1, value: currentBid.value };
-  } else if (currentBid.value < 6) {
+  if (currentBid.value < 6) {
     // Same count, higher value is smallest increase
     minBid = { count: currentBid.count, value: currentBid.value + 1 };
   } else {
@@ -292,7 +285,7 @@ function generateMinimumBid(context: AgentContext): BidCandidate | null {
     minBid = { count: currentBid.count + 1, value: currentBid.value };
   }
 
-  const validation = isValidBid(minBid, currentBid, totalDice, isPalifico);
+  const validation = isValidBid(minBid, currentBid, totalDice);
   if (!validation.valid) {
     return null;
   }
@@ -309,20 +302,20 @@ function generateMinimumBid(context: AgentContext): BidCandidate | null {
  * Generates competitive bid (jump to reasonable level)
  */
 function generateCompetitiveBid(context: AgentContext): BidCandidate | null {
-  const { currentBid, totalDice, isPalifico } = context;
+  const { currentBid, totalDice } = context;
 
   if (!currentBid) {
     return null;
   }
 
-  const bidRatio = calculateBidRatio(currentBid, totalDice, isPalifico);
+  const bidRatio = calculateBidRatio(currentBid, totalDice);
 
   // Only generate competitive bid if current is low
   if (bidRatio >= 0.55) {
     return null;
   }
 
-  const expectedCount = calculateExpectedValue(currentBid.value, totalDice, isPalifico);
+  const expectedCount = calculateExpectedValue(currentBid.value, totalDice);
   let targetCount: number;
 
   if (bidRatio < 0.35) {
@@ -341,7 +334,7 @@ function generateCompetitiveBid(context: AgentContext): BidCandidate | null {
     value: currentBid.value,
   };
 
-  const validation = isValidBid(competitiveBid, currentBid, totalDice, isPalifico);
+  const validation = isValidBid(competitiveBid, currentBid, totalDice);
   if (!validation.valid) {
     return null;
   }
@@ -358,7 +351,7 @@ function generateCompetitiveBid(context: AgentContext): BidCandidate | null {
  * Generates aggressive bid (large jump to pressure)
  */
 function generateAggressiveBid(context: AgentContext): BidCandidate | null {
-  const { currentBid, totalDice, isPalifico, personality } = context;
+  const { currentBid, totalDice, personality } = context;
 
   if (!currentBid) {
     return null;
@@ -375,7 +368,7 @@ function generateAggressiveBid(context: AgentContext): BidCandidate | null {
     value: currentBid.value,
   };
 
-  const validation = isValidBid(aggressiveBid, currentBid, totalDice, isPalifico);
+  const validation = isValidBid(aggressiveBid, currentBid, totalDice);
   if (!validation.valid) {
     return null;
   }
@@ -392,9 +385,9 @@ function generateAggressiveBid(context: AgentContext): BidCandidate | null {
  * Generates value-based bid (bid on what we have)
  */
 function generateValueBid(context: AgentContext): BidCandidate | null {
-  const { currentBid, hand, totalDice, isPalifico } = context;
+  const { currentBid, hand, totalDice } = context;
 
-  if (!currentBid || isPalifico) {
+  if (!currentBid) {
     return null;
   }
 
@@ -402,7 +395,7 @@ function generateValueBid(context: AgentContext): BidCandidate | null {
   let bestValue = 2;
   let bestCount = 0;
   for (let v = 2; v <= 6; v++) {
-    const matching = countMatching(hand, v, false);
+    const matching = countMatching(hand, v);
     if (matching > bestCount) {
       bestCount = matching;
       bestValue = v;
@@ -421,7 +414,7 @@ function generateValueBid(context: AgentContext): BidCandidate | null {
     valueBid = { count: currentBid.count + 1, value: bestValue };
   }
 
-  const validation = isValidBid(valueBid, currentBid, totalDice, isPalifico);
+  const validation = isValidBid(valueBid, currentBid, totalDice);
   if (!validation.valid) {
     return null;
   }
@@ -438,9 +431,9 @@ function generateValueBid(context: AgentContext): BidCandidate | null {
  * Generates bluff bid (bid on something we don't have)
  */
 function generateBluffBid(context: AgentContext): BidCandidate | null {
-  const { currentBid, hand, totalDice, isPalifico, personality } = context;
+  const { currentBid, hand, totalDice, personality } = context;
 
-  if (!currentBid || isPalifico) {
+  if (!currentBid) {
     return null;
   }
 
@@ -455,7 +448,7 @@ function generateBluffBid(context: AgentContext): BidCandidate | null {
     const pureCount = hand.filter((d) => d === v).length;
     if (pureCount === 0 && acesInHand >= 1) {
       const bluffBid: Bid = { count: currentBid.count, value: v };
-      const validation = isValidBid(bluffBid, currentBid, totalDice, isPalifico);
+      const validation = isValidBid(bluffBid, currentBid, totalDice);
       if (validation.valid) {
         return {
           bid: bluffBid,
@@ -474,9 +467,9 @@ function generateBluffBid(context: AgentContext): BidCandidate | null {
  * Generates ace switch bid (to or from aces)
  */
 function generateAceSwitchBid(context: AgentContext): BidCandidate | null {
-  const { currentBid, hand, totalDice, isPalifico } = context;
+  const { currentBid, hand, totalDice } = context;
 
-  if (!currentBid || isPalifico) {
+  if (!currentBid) {
     return null;
   }
 
@@ -495,7 +488,7 @@ function generateAceSwitchBid(context: AgentContext): BidCandidate | null {
     let bestValue = 2;
     let bestCount = 0;
     for (let v = 2; v <= 6; v++) {
-      const matching = countMatching(hand, v, false);
+      const matching = countMatching(hand, v);
       if (matching > bestCount) {
         bestCount = matching;
         bestValue = v;
@@ -503,7 +496,7 @@ function generateAceSwitchBid(context: AgentContext): BidCandidate | null {
     }
 
     const switchBid: Bid = { count: minCount, value: bestValue };
-    const validation = isValidBid(switchBid, currentBid, totalDice, isPalifico);
+    const validation = isValidBid(switchBid, currentBid, totalDice);
     if (validation.valid) {
       return {
         bid: switchBid,
@@ -516,7 +509,7 @@ function generateAceSwitchBid(context: AgentContext): BidCandidate | null {
     // Switch TO aces
     const minAceCount = Math.ceil(currentBid.count / 2);
     const switchBid: Bid = { count: minAceCount, value: 1 };
-    const validation = isValidBid(switchBid, currentBid, totalDice, isPalifico);
+    const validation = isValidBid(switchBid, currentBid, totalDice);
     if (validation.valid) {
       return {
         bid: switchBid,
@@ -534,12 +527,12 @@ function generateAceSwitchBid(context: AgentContext): BidCandidate | null {
  * Generates opening bid
  */
 function generateOpeningBid(context: AgentContext): BidCandidate {
-  const { hand, totalDice, isPalifico, personality } = context;
+  const { hand, totalDice, personality } = context;
 
   // Count values in hand
   const valueCounts: Record<number, number> = {};
   for (let v = 2; v <= 6; v++) {
-    valueCounts[v] = countMatching(hand, v, isPalifico);
+    valueCounts[v] = countMatching(hand, v);
   }
 
   // Find best value
@@ -647,11 +640,10 @@ export function generateBidCandidates(context: AgentContext): BidCandidate[] {
 export function filterValidCandidates(
   candidates: BidCandidate[],
   currentBid: Bid | null,
-  totalDice: number,
-  isPalifico: boolean
+  totalDice: number
 ): BidCandidate[] {
   return candidates.filter((c) => {
-    const validation = isValidBid(c.bid, currentBid, totalDice, isPalifico);
+    const validation = isValidBid(c.bid, currentBid, totalDice);
     return validation.valid;
   });
 }

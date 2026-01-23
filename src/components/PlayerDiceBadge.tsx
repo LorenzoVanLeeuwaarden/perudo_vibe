@@ -9,7 +9,6 @@ interface PlayerDiceBadgeProps {
   diceCount: number;
   color: PlayerColor;
   isActive: boolean;
-  hasPalifico?: boolean;
   isEliminated?: boolean;
   showThinking?: boolean;
   thinkingPrompt?: string;
@@ -22,7 +21,6 @@ export function PlayerDiceBadge({
   diceCount,
   color,
   isActive,
-  hasPalifico = false,
   isEliminated = false,
   showThinking = false,
   thinkingPrompt = 'Thinking',
@@ -38,27 +36,12 @@ export function PlayerDiceBadge({
       animate={{
         boxShadow: isActive
           ? `0 0 ${showThinking ? '25px' : '20px'} ${colorConfig.glow}, 0 0 ${showThinking ? '50px' : '40px'} ${colorConfig.glow}`
-          : hasPalifico
-          ? '0 0 15px rgba(255, 51, 102, 0.5), 0 8px 0 0 rgba(26, 10, 46, 0.9)'
           : '0 8px 0 0 rgba(26, 10, 46, 0.9)',
-        borderColor: isActive ? colorConfig.bg : hasPalifico ? '#ff3366' : 'var(--purple-light)',
+        borderColor: isActive ? colorConfig.bg : 'var(--purple-light)',
         scale: showThinking ? 1.05 : 1,
       }}
       transition={{ duration: 0.3 }}
     >
-      {/* Palifico badge */}
-      {hasPalifico && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1, opacity: [0.7, 1, 0.7] }}
-          transition={{ opacity: { duration: 1.5, repeat: Infinity } }}
-          className="absolute -top-2.5 sm:-top-3 left-1/2 -translate-x-1/2 px-1.5 sm:px-2 py-0.5 bg-red-danger rounded text-[8px] sm:text-[10px] font-bold text-white uppercase tracking-wider z-10"
-          style={{ boxShadow: '0 0 10px rgba(255, 51, 102, 0.5)' }}
-        >
-          Palifico!
-        </motion.div>
-      )}
-
       {/* Thinking bubble - appears below the badge */}
       <AnimatePresence>
         {showThinking && (

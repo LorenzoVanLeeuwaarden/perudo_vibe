@@ -4,7 +4,7 @@ export type PlayerColor = 'blue' | 'green' | 'orange' | 'yellow' | 'purple' | 'r
 
 export interface Bid {
   count: number;
-  value: number; // 1-6, where 1 (aces/palifico) are wild
+  value: number; // 1-6, where 1 (aces) are wild
 }
 
 export interface Player {
