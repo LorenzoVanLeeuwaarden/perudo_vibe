@@ -50,6 +50,47 @@ export type ScriptedAIMove =
   | { type: 'calza' };
 
 /**
+ * Visible UI sections configuration for progressive reveal.
+ * Controls which parts of the game interface are visible during each step.
+ */
+export interface VisibleUI {
+  /** Player's dice area (bottom of screen) */
+  playerDice?: boolean;
+  /** Bid panel with action buttons */
+  bidPanel?: boolean;
+  /** Opponent dice (top of screen) */
+  opponentDice?: boolean;
+  /** Current bid display */
+  currentBid?: boolean;
+}
+
+/**
+ * Floating label configuration for diegetic callouts.
+ */
+export interface FloatingLabelConfig {
+  /** The label text (e.g., "YOUR HAND") */
+  text: string;
+  /** Vertical position */
+  position: 'top' | 'center' | 'bottom';
+  /** Horizontal alignment */
+  align?: 'left' | 'center' | 'right';
+}
+
+/**
+ * Visual connection lines configuration.
+ */
+export interface ConnectionConfig {
+  /** Where lines originate */
+  origin: 'player-dice' | 'opponent-dice' | 'center';
+  /** Where lines point to */
+  target: 'center' | 'bid-display';
+  /** Number of lines */
+  lineCount?: number;
+  /** CSS color for glow */
+  color?: string;
+}
+
+/**
  * Single step in the tutorial.
  * Each step defines the game state and what action is expected.
  */
@@ -86,6 +127,29 @@ export interface TutorialStep {
 
   /** Which button to highlight with pulsing glow */
   highlightButton?: 'bid' | 'dudo' | 'calza';
+
+  /** Which UI sections are visible (for progressive reveal) */
+  visibleUI?: VisibleUI;
+
+  // === Balatro-style atmospheric additions ===
+
+  /** Dealer's whisper - atmospheric floating text */
+  whisper?: string;
+
+  /** Floating diegetic label (e.g., "YOUR HAND") */
+  floatingLabel?: FloatingLabelConfig;
+
+  /** Show glowing connection lines between dice and target */
+  connection?: ConnectionConfig;
+
+  /** Which element to spotlight (dims everything else) */
+  spotlight?: 'player-dice' | 'bid-button' | 'dudo-button' | 'calza-button' | 'bid-display' | 'opponent-dice' | 'center' | 'full-dim';
+
+  /** Button with slow "breathing" scale animation */
+  breathingButton?: 'bid' | 'dudo' | 'calza';
+
+  /** Trigger screen shake on action completion */
+  shakeOnAction?: boolean;
 }
 
 /**

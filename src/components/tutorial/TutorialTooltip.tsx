@@ -1,140 +1,83 @@
 'use client';
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { PlayerColor, PLAYER_COLORS } from '@/lib/types';
+import { PlayerColor } from '@/lib/types';
+import { TerminalMessage } from './TerminalMessage';
+import { PointerArrow } from './PointerArrow';
 
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
+type TargetElement =
+  | 'player-dice'
+  | 'bid-button'
+  | 'dudo-button'
+  | 'calza-button'
+  | 'bid-display'
+  | 'opponent-dice';
 
 interface TutorialTooltipProps {
   content: string;
   position: TooltipPosition;
   playerColor: PlayerColor;
+  targetElement: TargetElement;
   onDismiss?: () => void;
-  targetRef?: React.RefObject<HTMLElement | null>;
   style?: React.CSSProperties;
 }
 
+/**
+ * TutorialTooltip - Terminal-style tooltip with pointer arrow.
+ *
+ * Combines TerminalMessage (typewriter text) with PointerArrow (neon indicator)
+ * for a system/terminal aesthetic tutorial experience.
+ */
 export function TutorialTooltip({
   content,
   position,
   playerColor,
-  onDismiss,
-  targetRef,
+  targetElement,
   style,
 }: TutorialTooltipProps) {
-  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
-  const colors = PLAYER_COLORS[playerColor];
-
-  // Calculate position from targetRef if provided
-  useEffect(() => {
-    if (targetRef?.current) {
-      const rect = targetRef.current.getBoundingClientRect();
-      const gap = 12; // Space between tooltip and target
-
-      let top = 0;
-      let left = 0;
-
-      switch (position) {
-        case 'bottom':
-          top = rect.bottom + gap;
-          left = rect.left + rect.width / 2;
-          break;
-        case 'top':
-          top = rect.top - gap;
-          left = rect.left + rect.width / 2;
-          break;
-        case 'left':
-          top = rect.top + rect.height / 2;
-          left = rect.left - gap;
-          break;
-        case 'right':
-          top = rect.top + rect.height / 2;
-          left = rect.right + gap;
-          break;
-      }
-
-      setCoords({ top, left });
+  // Determine arrow direction based on position
+  // Position is where tooltip appears relative to target
+  // So arrow points in the opposite direction
+  const arrowDirection = useMemo(() => {
+    switch (position) {
+      case 'top':
+        return 'down'; // Tooltip above target, arrow points down
+      case 'bottom':
+        return 'up'; // Tooltip below target, arrow points up
+      case 'left':
+        return 'right';
+      case 'right':
+        return 'left';
     }
-  }, [targetRef, position]);
+  }, [position]);
 
-  // Get arrow styles based on position
-  const getArrowStyles = (): React.CSSProperties => {
-    const baseStyles: React.CSSProperties = {
+  // Calculate arrow position relative to tooltip
+  const arrowPositionStyle = useMemo((): React.CSSProperties => {
+    const base: React.CSSProperties = {
       position: 'absolute',
-      width: 0,
-      height: 0,
-      borderStyle: 'solid',
     };
 
     switch (position) {
-      case 'bottom':
-        // Arrow points up
-        return {
-          ...baseStyles,
-          top: -8,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          borderWidth: '0 8px 8px 8px',
-          borderColor: `transparent transparent ${colors.border} transparent`,
-        };
       case 'top':
-        // Arrow points down
-        return {
-          ...baseStyles,
-          bottom: -8,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          borderWidth: '8px 8px 0 8px',
-          borderColor: `${colors.border} transparent transparent transparent`,
-        };
-      case 'left':
-        // Arrow points right
-        return {
-          ...baseStyles,
-          top: '50%',
-          right: -8,
-          transform: 'translateY(-50%)',
-          borderWidth: '8px 0 8px 8px',
-          borderColor: `transparent transparent transparent ${colors.border}`,
-        };
-      case 'right':
-        // Arrow points left
-        return {
-          ...baseStyles,
-          top: '50%',
-          left: -8,
-          transform: 'translateY(-50%)',
-          borderWidth: '8px 8px 8px 0',
-          borderColor: `transparent ${colors.border} transparent transparent`,
-        };
-    }
-  };
-
-  // Get transform styles based on position for centering
-  const getTransformStyles = (): React.CSSProperties => {
-    switch (position) {
+        // Tooltip is above target, arrow below tooltip pointing down
+        return { ...base, bottom: -40, left: '50%', transform: 'translateX(-50%)' };
       case 'bottom':
-        return { transform: 'translateX(-50%)' };
-      case 'top':
-        return { transform: 'translate(-50%, -100%)' };
+        // Tooltip is below target, arrow above tooltip pointing up
+        return { ...base, top: -40, left: '50%', transform: 'translateX(-50%)' };
       case 'left':
-        return { transform: 'translate(-100%, -50%)' };
+        return { ...base, right: -40, top: '50%', transform: 'translateY(-50%)' };
       case 'right':
-        return { transform: 'translateY(-50%)' };
+        return { ...base, left: -40, top: '50%', transform: 'translateY(-50%)' };
     }
-  };
+  }, [position]);
 
-  // Use style override if provided, otherwise use calculated coords
-  const positionStyles: React.CSSProperties = style
-    ? style
-    : coords
-    ? {
-        top: coords.top,
-        left: coords.left,
-        ...getTransformStyles(),
-      }
-    : { visibility: 'hidden' as const };
+  // Determine if we should show arrow for this target element
+  const showArrow = useMemo(() => {
+    // Show arrow for action-related targets
+    return ['bid-button', 'dudo-button', 'calza-button', 'player-dice'].includes(targetElement);
+  }, [targetElement]);
 
   return (
     <motion.div
@@ -142,24 +85,22 @@ export function TutorialTooltip({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.2 }}
-      className="fixed z-[100] max-w-xs"
-      style={positionStyles}
-      onClick={onDismiss}
+      className="fixed z-[100] max-w-sm"
+      style={style}
     >
-      {/* Arrow pointer */}
-      <div style={getArrowStyles()} />
+      {/* Terminal message */}
+      <TerminalMessage message={content} playerColor={playerColor} />
 
-      {/* Tooltip body */}
-      <div
-        className="rounded-lg p-4 text-sm text-white-soft"
-        style={{
-          background: 'rgba(13, 4, 22, 0.95)',
-          border: `2px solid ${colors.border}`,
-          boxShadow: `0 0 20px ${colors.glow}`,
-        }}
-      >
-        {content}
-      </div>
+      {/* Pointer arrow */}
+      {showArrow && (
+        <div style={arrowPositionStyle}>
+          <PointerArrow
+            direction={arrowDirection}
+            playerColor={playerColor}
+            size={28}
+          />
+        </div>
+      )}
     </motion.div>
   );
 }

@@ -10,7 +10,6 @@ import { DiceCup } from '@/components/DiceCup';
 import { BidUI } from '@/components/BidUI';
 import { Dice } from '@/components/Dice';
 import { ShaderBackground } from '@/components/ShaderBackground';
-import { CasinoLogo } from '@/components/CasinoLogo';
 import { VictoryScreen } from '@/components/VictoryScreen';
 import { DefeatScreen } from '@/components/DefeatScreen';
 import { DudoOverlay } from '@/components/DudoOverlay';
@@ -269,10 +268,10 @@ export default function LastDieGame() {
     setGameState('Tutorial');
   }, []);
 
-  const handleExitTutorial = useCallback(() => {
-    useTutorialStore.getState().exitTutorial();
-    setGameState('ModeSelection');
-  }, []);
+  const handleExitTutorial = () => {
+    // Force reload to get back to menu - React state wasn't working
+    window.location.href = '/';
+  };
 
   // First-time visitor tutorial prompt
   useEffect(() => {
@@ -2266,7 +2265,7 @@ export default function LastDieGame() {
               }}
             >
               <h2 className="text-xl font-bold text-white-soft mb-3">
-                New to Perudo?
+                New to The Last Die?
               </h2>
               <p className="text-white-soft/70 text-sm mb-6">
                 Learn the rules with a quick tutorial. It only takes a few minutes!

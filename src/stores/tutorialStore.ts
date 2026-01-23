@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { TUTORIAL_SCRIPT } from '@/lib/tutorial/script';
 
 type TutorialScreen = 'gameplay' | 'complete';
 
@@ -31,7 +32,7 @@ export const useTutorialStore = create<TutorialState>((set, get) => ({
   // Initial state
   screen: 'gameplay',
   currentStep: 0,
-  totalSteps: 19, // Matches TUTORIAL_SCRIPT.steps.length (9 original + 10 new for ones/calza)
+  totalSteps: TUTORIAL_SCRIPT.steps.length,
   isCompleted: false,
 
   // Actions

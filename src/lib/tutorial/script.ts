@@ -1,8 +1,7 @@
 import { TutorialScript } from './types';
 
 /**
- * Tutorial opponent definitions per CONTEXT.md:
- * "Alex and Sam" - non-threatening, friendly names
+ * Tutorial opponent definitions
  */
 export const TUTORIAL_OPPONENTS = [
   { name: 'Alex', color: 'green' },
@@ -10,99 +9,120 @@ export const TUTORIAL_OPPONENTS = [
 ] as const;
 
 /**
- * Tutorial script with predetermined dice and scripted moves.
+ * Tutorial script - Balatro-style atmospheric "rigged round" experience.
  *
- * This script creates a basic teaching scenario:
- * 1. Roll dice (show all hands in god mode)
- * 2. Player makes opening bid
- * 3. Observe Alex bid
- * 4. Observe Sam bid (overbids)
- * 5. Player calls Dudo
- * 6. Reveal (player wins - Sam's bid was wrong)
- *
- * DICE VALUES (consistent throughout the round - no jokers for clearer counting):
- * - Player: [3, 3, 5, 2, 6] = one 5, two 3s
- * - Alex:   [4, 4, 2, 6, 2] = two 4s
- * - Sam:    [5, 5, 3, 3, 4] = two 5s, two 3s
- *
- * Total fives in play: 1 (player) + 0 (Alex) + 2 (Sam) = 3 fives
- * When Sam bids "5x fives", that's wrong (only 3 exist), so Dudo is correct.
- *
- * Note: Phase 24-25 will expand this to teach all rules (jokers, calza, palifico).
- * Phase 23 focuses on the scripted gameplay infrastructure.
+ * ROUND 1: Basic bidding and correct Dudo (Sam loses)
+ * ROUND 2: Wrong Dudo - player loses a die (teaches jokers count)
+ * ROUND 3: Bidding on jokers (half count mechanic)
+ * ROUND 4: Calza (player gains die back)
  */
 export const TUTORIAL_SCRIPT: TutorialScript = {
   opponents: [...TUTORIAL_OPPONENTS],
   steps: [
-    // Step 0: Initial roll - welcome and game overview
+    // ============================================
+    // ROUND 1: Basic Bidding and Correct Dudo
+    // ============================================
+
+    // Step 0: Goal + your dice
     {
-      id: 'roll-dice',
+      id: 'intro-goal',
       playerDice: [3, 3, 5, 2, 6],
       opponentDice: [
-        [4, 4, 2, 6, 2], // Alex: two 4s, three 2s, one 6
-        [5, 5, 3, 3, 4], // Sam: two 5s, two 3s, one 4
+        [4, 4, 2, 6, 2],
+        [5, 5, 3, 3, 6],
       ],
       requiredAction: { type: 'wait' },
       roundStarter: 'player',
       currentBid: null,
+      whisper: "The goal is simple: don't lose all your dice.",
+      spotlight: 'full-dim',
+      visibleUI: { playerDice: false },
       tooltip: {
-        content:
-          "Welcome to The Last Die! Everyone rolls dice secretly, then takes turns bidding on how many of a certain number exist across ALL players' hands. Bid too high and get caught? You lose a die. In this tutorial, you can see everyone's dice to learn.",
+        content: '',
         position: 'top',
         targetElement: 'player-dice',
         dismissMode: 'click',
       },
     },
 
-    // Step 1: Player makes opening bid
+    // Step 1: Show your dice
+    {
+      id: 'roll-dice',
+      playerDice: [3, 3, 5, 2, 6],
+      opponentDice: [
+        [4, 4, 2, 6, 2],
+        [5, 5, 3, 3, 6],
+      ],
+      requiredAction: { type: 'wait' },
+      roundStarter: 'player',
+      currentBid: null,
+      whisper: 'These are your dice. Study them well...',
+      floatingLabel: { text: 'YOUR HAND', position: 'bottom' },
+      spotlight: 'player-dice',
+      visibleUI: { playerDice: true },
+      tooltip: {
+        content: '',
+        position: 'top',
+        targetElement: 'player-dice',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 2: Focus on threes and make bid
     {
       id: 'first-bid',
       playerDice: [3, 3, 5, 2, 6],
       opponentDice: [
         [4, 4, 2, 6, 2],
-        [5, 5, 3, 3, 4],
+        [5, 5, 3, 3, 6],
       ],
       requiredAction: { type: 'bid', bid: { count: 3, value: 3 } },
       currentBid: null,
       roundStarter: 'player',
+      whisper: "We have some threes. Let's make a bid.",
+      spotlight: 'player-dice',
+      highlightDice: { type: 'matching-value', value: 3, targets: ['player'] },
+      connection: { origin: 'player-dice', target: 'center', lineCount: 2, color: 'rgba(249, 115, 22, 0.7)' },
+      breathingButton: 'bid',
+      shakeOnAction: true,
+      visibleUI: { playerDice: true, bidPanel: true },
       tooltip: {
-        content:
-          "Look at your dice - you have two 3s! A bid is a guess about ALL dice on the table. Let's bid \"3x threes\" - meaning we think there are at least three 3s total. Click BID!",
+        content: '',
         position: 'top',
         targetElement: 'bid-button',
         dismissMode: 'click',
       },
-      highlightDice: { type: 'matching-value', value: 3, targets: ['player'] },
-      highlightButton: 'bid',
     },
 
-    // Step 2: Explain turn passing and bid rules
+    // Step 3: Turn goes to Alex
     {
       id: 'explain-turns',
       playerDice: [3, 3, 5, 2, 6],
       opponentDice: [
         [4, 4, 2, 6, 2],
-        [5, 5, 3, 3, 4],
+        [5, 5, 3, 3, 6],
       ],
       requiredAction: { type: 'wait' },
       currentBid: { count: 3, value: 3 },
       lastBidder: 'player',
+      whisper: 'The turn goes to Alex.',
+      spotlight: 'opponent-dice',
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
       tooltip: {
-        content:
-          "Nice! Now it's Alex's turn. Each player must RAISE the bid or call the bluff. To raise: increase the quantity (4x threes) OR the face value (3x fours). The bids keep climbing until someone doubts!",
+        content: '',
         position: 'bottom',
-        targetElement: 'bid-display',
+        targetElement: 'opponent-dice',
         dismissMode: 'click',
       },
     },
 
-    // Step 3: Alex bids
+    // Step 4: Alex has two 4s
     {
       id: 'alex-bids',
       playerDice: [3, 3, 5, 2, 6],
       opponentDice: [
         [4, 4, 2, 6, 2],
-        [5, 5, 3, 3, 4],
+        [5, 5, 3, 3, 6],
       ],
       requiredAction: { type: 'wait' },
       scriptedAIMoves: [
@@ -110,340 +130,560 @@ export const TUTORIAL_SCRIPT: TutorialScript = {
       ],
       currentBid: { count: 3, value: 3 },
       lastBidder: 'player',
+      whisper: 'He has two 4s. He makes a bid.',
+      spotlight: 'opponent-dice',
+      highlightDice: { type: 'matching-value', value: 4, targets: [0] },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
       tooltip: {
-        content: 'Alex is thinking...',
+        content: '',
         position: 'bottom',
         targetElement: 'opponent-dice',
-        dismissMode: 'auto',
-        autoAdvanceDelay: 2000,
+        dismissMode: 'click',
       },
-      highlightDice: { type: 'matching-value', value: 4, targets: [0] },
     },
 
-    // Step 4: Explain Alex's bid
+    // Step 5: Alex's bid shown
     {
       id: 'explain-alex-bid',
       playerDice: [3, 3, 5, 2, 6],
       opponentDice: [
         [4, 4, 2, 6, 2],
-        [5, 5, 3, 3, 4],
+        [5, 5, 3, 3, 6],
       ],
       requiredAction: { type: 'wait' },
       currentBid: { count: 4, value: 4 },
-      lastBidder: 0, // Alex
+      lastBidder: 0,
+      whisper: 'He bids four 4s.',
+      spotlight: 'bid-display',
+      highlightDice: { type: 'matching-value', value: 4, targets: [0] },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
       tooltip: {
-        content:
-          "Alex raised to 4x fours! He's betting there are at least four 4s on the table. He has two 4s himself, so he only needs two more to be right. Now it's Sam's turn.",
+        content: '',
         position: 'bottom',
         targetElement: 'bid-display',
         dismissMode: 'click',
       },
-      highlightDice: { type: 'matching-value', value: 4, targets: [0] },
     },
 
-    // Step 5: Sam bids
+    // Step 6: Sam bids (overbids!)
     {
       id: 'sam-bids',
       playerDice: [3, 3, 5, 2, 6],
       opponentDice: [
         [4, 4, 2, 6, 2],
-        [5, 5, 3, 3, 4],
+        [5, 5, 3, 3, 6],
       ],
       requiredAction: { type: 'wait' },
       scriptedAIMoves: [
         { type: 'bid', bid: { count: 5, value: 5 } },
       ],
       currentBid: { count: 4, value: 4 },
-      lastBidder: 0, // Alex
+      lastBidder: 0,
+      whisper: "Sam doesn't have any 4s, so he changes the bid to 5s.",
+      spotlight: 'opponent-dice',
+      highlightDice: { type: 'matching-value', value: 5, targets: [1] },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
       tooltip: {
-        content: 'Sam is thinking...',
+        content: '',
         position: 'bottom',
         targetElement: 'opponent-dice',
-        dismissMode: 'auto',
-        autoAdvanceDelay: 2000,
+        dismissMode: 'click',
       },
-      highlightDice: { type: 'matching-value', value: 5, targets: [1] },
     },
 
-    // Step 6: Explain Sam's bid and introduce DUDO
+    // Step 7: Sam's bid is suspicious
     {
       id: 'explain-dudo',
       playerDice: [3, 3, 5, 2, 6],
       opponentDice: [
         [4, 4, 2, 6, 2],
-        [5, 5, 3, 3, 4],
+        [5, 5, 3, 3, 6],
       ],
       requiredAction: { type: 'wait' },
       currentBid: { count: 5, value: 5 },
-      lastBidder: 1, // Sam
+      lastBidder: 1,
+      whisper: "Five 5s? You only have one. That's a lot to hope for...",
+      spotlight: 'bid-display',
+      highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
+      connection: { origin: 'player-dice', target: 'bid-display', lineCount: 1, color: 'rgba(239, 68, 68, 0.6)' },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
       tooltip: {
-        content:
-          "Sam raised to 5x fives! That seems risky... When you think someone's bid is WRONG, you call DUDO (\"I doubt it!\"). If you're right, THEY lose a die. If you're wrong, YOU lose one.",
+        content: '',
         position: 'bottom',
         targetElement: 'bid-display',
         dismissMode: 'click',
       },
-      highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
     },
 
-    // Step 7: Player calls Dudo
+    // Step 8: Call Dudo
     {
       id: 'player-dudo',
       playerDice: [3, 3, 5, 2, 6],
       opponentDice: [
         [4, 4, 2, 6, 2],
-        [5, 5, 3, 3, 4],
+        [5, 5, 3, 3, 6],
       ],
       requiredAction: { type: 'dudo' },
       currentBid: { count: 5, value: 5 },
-      lastBidder: 1, // Sam
+      lastBidder: 1,
+      whisper: "Let's call them out.",
+      spotlight: 'dudo-button',
+      highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
+      breathingButton: 'dudo',
+      shakeOnAction: true,
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
       tooltip: {
-        content:
-          "Let's count the 5s: You have 1. Alex has 0. Sam has 2. That's only 3 fives total - but Sam claimed 5! His bid is wrong. Call DUDO!",
+        content: '',
         position: 'top',
         targetElement: 'dudo-button',
         dismissMode: 'click',
       },
-      highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
-      highlightButton: 'dudo',
     },
 
-    // Step 8: Reveal
+    // Step 9: Reveal - Sam loses
     {
-      id: 'reveal',
+      id: 'reveal-1',
       playerDice: [3, 3, 5, 2, 6],
       opponentDice: [
         [4, 4, 2, 6, 2],
-        [5, 5, 3, 3, 4],
+        [5, 5, 3, 3, 6],
       ],
       requiredAction: { type: 'wait' },
       currentBid: { count: 5, value: 5 },
-      lastBidder: 1, // Sam
+      lastBidder: 1,
       highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
     },
 
     // ============================================
-    // ROUND 2: Teaching Wild Ones (1s count as any value)
+    // ROUND 2: Wrong Dudo - Player Loses
     // ============================================
-    // DICE VALUES:
-    // - Player: [1, 1, 5, 5, 3] = two wild 1s, two 5s, one 3
-    // - Alex:   [3, 3, 1, 6, 2] = two 3s, one wild 1, one 6, one 2
-    // - Sam:    [5, 4, 4, 2, 6] = one 5, two 4s, one 2, one 6
-    //
-    // Total 5s (including wilds): Player(2+2) + Alex(1) + Sam(1) = 6 fives
-    // So 5x fives is a safe bid (actually 6 exist)
 
-    // Step 9: Round 2 intro - explain wild ones
+    // Step 10: New round
     {
-      id: 'round2-roll',
-      playerDice: [1, 1, 5, 5, 3],
+      id: 'round2-intro',
+      playerDice: [6, 6, 4, 4, 2],
       opponentDice: [
-        [3, 3, 1, 6, 2], // Alex: one wild 1
-        [5, 4, 4, 2, 6], // Sam: one 5
+        [3, 6, 1, 5, 2], // Alex: one 3 + one joker = 2 threes
+        [3, 3, 1, 2],    // Sam (4 dice): two 3s + one joker = 3 threes
       ],
       requiredAction: { type: 'wait' },
       currentBid: null,
-      roundStarter: 'player',
+      roundStarter: 0,
+      whisper: 'New round. But be careful...',
+      spotlight: 'player-dice',
+      visibleUI: { playerDice: true, opponentDice: true },
       tooltip: {
-        content:
-          "New round! Notice the 1s in your hand - they're WILD! Ones count as any face value. Your two 1s can count as 5s, 3s, or whatever you need.",
+        content: '',
         position: 'top',
         targetElement: 'player-dice',
         dismissMode: 'click',
       },
-      highlightDice: { type: 'jokers', targets: ['player'] },
     },
 
-    // Step 10: Player bids using wild ones
+    // Step 11: Alex bids
     {
-      id: 'ones-bid',
-      playerDice: [1, 1, 5, 5, 3],
+      id: 'round2-alex-bids',
+      playerDice: [6, 6, 4, 4, 2],
       opponentDice: [
-        [3, 3, 1, 6, 2],
-        [5, 4, 4, 2, 6],
+        [3, 6, 1, 5, 2],
+        [3, 3, 1, 2],
       ],
-      requiredAction: { type: 'bid', bid: { count: 5, value: 5 } },
+      requiredAction: { type: 'wait' },
+      scriptedAIMoves: [{ type: 'bid', bid: { count: 3, value: 3 } }],
       currentBid: null,
-      roundStarter: 'player',
+      roundStarter: 0,
+      whisper: 'Alex bids three 3s.',
+      spotlight: 'opponent-dice',
+      highlightDice: { type: 'matching-value', value: 3, targets: [0] },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
       tooltip: {
-        content:
-          "You have two 5s + two wild 1s = four 5s in your hand alone! Sam has one more. Let's bid 5x fives.",
+        content: '',
+        position: 'bottom',
+        targetElement: 'opponent-dice',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 12: Sam raises
+    {
+      id: 'round2-sam-bids',
+      playerDice: [6, 6, 4, 4, 2],
+      opponentDice: [
+        [3, 6, 1, 5, 2],
+        [3, 3, 1, 2],
+      ],
+      requiredAction: { type: 'wait' },
+      scriptedAIMoves: [{ type: 'bid', bid: { count: 4, value: 3 } }],
+      currentBid: { count: 3, value: 3 },
+      lastBidder: 0,
+      whisper: 'Sam raises to four 3s.',
+      spotlight: 'bid-display',
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
+      tooltip: {
+        content: '',
+        position: 'bottom',
+        targetElement: 'bid-display',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 13: Looks suspicious
+    {
+      id: 'round2-suspicious',
+      playerDice: [6, 6, 4, 4, 2],
+      opponentDice: [
+        [3, 6, 1, 5, 2],
+        [3, 3, 1, 2],
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: { count: 4, value: 3 },
+      lastBidder: 1,
+      whisper: "Four 3s? You don't have any...",
+      spotlight: 'player-dice',
+      highlightDice: { type: 'matching-value', value: 3, targets: ['player'] },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
+      tooltip: {
+        content: '',
+        position: 'top',
+        targetElement: 'player-dice',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 14: Player calls Dudo (wrong!)
+    {
+      id: 'round2-wrong-dudo',
+      playerDice: [6, 6, 4, 4, 2],
+      opponentDice: [
+        [3, 6, 1, 5, 2],
+        [3, 3, 1, 2],
+      ],
+      requiredAction: { type: 'dudo' },
+      currentBid: { count: 4, value: 3 },
+      lastBidder: 1,
+      whisper: 'Call their bluff.',
+      spotlight: 'dudo-button',
+      breathingButton: 'dudo',
+      shakeOnAction: true,
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
+      tooltip: {
+        content: '',
+        position: 'top',
+        targetElement: 'dudo-button',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 15: Reveal - Player loses! (there are 5 threes with jokers)
+    {
+      id: 'reveal-2',
+      playerDice: [6, 6, 4, 4, 2],
+      opponentDice: [
+        [3, 6, 1, 5, 2],
+        [3, 3, 1, 2],
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: { count: 4, value: 3 },
+      lastBidder: 1,
+      highlightDice: { type: 'matching-value', value: 3, targets: ['player', 0, 1] },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
+    },
+
+    // ============================================
+    // ROUND 3: Bidding on Jokers (Half Count)
+    // ============================================
+
+    // Step 16: New round
+    {
+      id: 'round3-intro',
+      playerDice: [1, 1, 4, 3],  // Player has 4 dice
+      opponentDice: [
+        [6, 6, 6, 5, 2],  // Alex still has 5 dice
+        [6, 5, 5, 2],     // Sam has 4 dice
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: null,
+      roundStarter: 0,
+      whisper: 'Sometimes you need a different approach...',
+      spotlight: 'player-dice',
+      visibleUI: { playerDice: true, opponentDice: true },
+      tooltip: {
+        content: '',
+        position: 'top',
+        targetElement: 'player-dice',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 17: Alex bids on 6s
+    {
+      id: 'round3-alex-bids',
+      playerDice: [1, 1, 4, 3],
+      opponentDice: [
+        [6, 6, 6, 5, 2],
+        [6, 5, 5, 2],
+      ],
+      requiredAction: { type: 'wait' },
+      scriptedAIMoves: [{ type: 'bid', bid: { count: 4, value: 6 } }],
+      currentBid: null,
+      roundStarter: 0,
+      whisper: 'Alex bids four 6s.',
+      spotlight: 'opponent-dice',
+      highlightDice: { type: 'matching-value', value: 6, targets: [0] },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
+      tooltip: {
+        content: '',
+        position: 'bottom',
+        targetElement: 'opponent-dice',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 18: No 6s but jokers
+    {
+      id: 'round3-explain-joker-bid',
+      playerDice: [1, 1, 4, 3],
+      opponentDice: [
+        [6, 6, 6, 5, 2],
+        [6, 5, 5, 2],
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: { count: 4, value: 6 },
+      lastBidder: 0,
+      whisper: "You don't have any 6s, but we can bid on Jokers instead by halving the amount.",
+      spotlight: 'player-dice',
+      highlightDice: { type: 'jokers', targets: ['player'] },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
+      tooltip: {
+        content: '',
+        position: 'top',
+        targetElement: 'player-dice',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 19: Bid on jokers
+    {
+      id: 'round3-joker-bid',
+      playerDice: [1, 1, 4, 3],
+      opponentDice: [
+        [6, 6, 6, 5, 2],
+        [6, 5, 5, 2],
+      ],
+      requiredAction: { type: 'bid', bid: { count: 2, value: 1 } },
+      currentBid: { count: 4, value: 6 },
+      lastBidder: 0,
+      whisper: 'Two Jokers. Half of four.',
+      spotlight: 'bid-button',
+      highlightDice: { type: 'jokers', targets: ['player'] },
+      breathingButton: 'bid',
+      shakeOnAction: true,
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
+      tooltip: {
+        content: '',
         position: 'top',
         targetElement: 'bid-button',
         dismissMode: 'click',
       },
-      highlightDice: { type: 'matching-value', value: 5, targets: ['player', 1] },
-      highlightButton: 'bid',
     },
 
-    // Step 11: Alex calls Dudo (incorrectly - our bid is good)
+    // Step 20: Alex calls Dudo
     {
-      id: 'ones-ai-dudo',
-      playerDice: [1, 1, 5, 5, 3],
+      id: 'round3-alex-dudo',
+      playerDice: [1, 1, 4, 3],
       opponentDice: [
-        [3, 3, 1, 6, 2],
-        [5, 4, 4, 2, 6],
+        [6, 6, 6, 5, 2],
+        [6, 5, 5, 2],
       ],
       requiredAction: { type: 'wait' },
       scriptedAIMoves: [{ type: 'dudo' }],
-      currentBid: { count: 5, value: 5 },
+      currentBid: { count: 2, value: 1 },
       lastBidder: 'player',
+      whisper: 'Alex doubts your jokers...',
+      spotlight: 'opponent-dice',
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
       tooltip: {
-        content: "Alex calls Dudo! He doesn't believe there are five 5s...",
+        content: '',
         position: 'bottom',
         targetElement: 'bid-display',
-        dismissMode: 'auto',
-        autoAdvanceDelay: 2000,
+        dismissMode: 'click',
       },
     },
 
-    // Step 12: Reveal showing wild ones counting
+    // Step 21: Reveal - bid succeeds, Alex loses
     {
-      id: 'ones-reveal',
-      playerDice: [1, 1, 5, 5, 3],
+      id: 'reveal-3',
+      playerDice: [1, 1, 4, 3],
       opponentDice: [
-        [3, 3, 1, 6, 2],
-        [5, 4, 4, 2, 6],
+        [6, 6, 6, 5, 2],
+        [6, 5, 5, 2],
       ],
       requiredAction: { type: 'wait' },
-      currentBid: { count: 5, value: 5 },
+      currentBid: { count: 2, value: 1 },
       lastBidder: 'player',
-      highlightDice: { type: 'matching-value', value: 5, targets: ['player', 0, 1] },
-      // Reveal will show: Player(2 fives + 2 ones = 4) + Alex(1 one = 1) + Sam(1 five = 1) = 6 total
-      // 6 >= 5, so Alex loses a die for wrong Dudo call
+      highlightDice: { type: 'jokers', targets: ['player', 0, 1] },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
     },
 
     // ============================================
-    // ROUND 3: Teaching Calza (exact match challenge)
+    // ROUND 4: Calza
     // ============================================
-    // DICE VALUES (arranged for exactly 5x fours):
-    // - Player: [4, 4, 2, 6, 3] = two 4s
-    // - Alex:   [4, 1, 5, 5, 2] = one 4, one wild 1 (= 2 fours)
-    // - Sam:    [3, 3, 6, 6, 1] = one wild 1 (= 1 four)
-    //
-    // Total 4s (including wilds): Player(2) + Alex(2) + Sam(1) = 5 fours EXACTLY
-    // Perfect setup for Calza!
 
-    // Step 13: Round 3 setup
+    // Step 22: New round
     {
-      id: 'round3-roll',
-      playerDice: [4, 4, 2, 6, 3],
+      id: 'round4-intro',
+      playerDice: [4, 4, 2, 3],
       opponentDice: [
-        [4, 1, 5, 5, 2], // Alex: one 4, one wild 1
-        [3, 3, 6, 6, 1], // Sam: one wild 1
+        [4, 1, 5, 2],   // Alex now has 4 dice (lost one in Round 3)
+        [3, 3, 6, 1],   // Sam still has 4 dice
       ],
       requiredAction: { type: 'wait' },
       currentBid: null,
-      roundStarter: 0, // Alex starts this round
+      roundStarter: 0,
+      whisper: 'One more trick to learn...',
+      spotlight: 'center',
+      visibleUI: { playerDice: true, opponentDice: true },
       tooltip: {
-        content: 'Round 3! Watch what happens...',
+        content: '',
         position: 'bottom',
         targetElement: 'opponent-dice',
-        dismissMode: 'auto',
-        autoAdvanceDelay: 1500,
+        dismissMode: 'click',
       },
     },
 
-    // Step 14: Alex bids
+    // Step 23: Alex bids
     {
-      id: 'alex-bids-calza',
-      playerDice: [4, 4, 2, 6, 3],
+      id: 'round4-alex-bids',
+      playerDice: [4, 4, 2, 3],
       opponentDice: [
-        [4, 1, 5, 5, 2],
-        [3, 3, 6, 6, 1],
+        [4, 1, 5, 2],
+        [3, 3, 6, 1],
       ],
       requiredAction: { type: 'wait' },
       scriptedAIMoves: [{ type: 'bid', bid: { count: 3, value: 4 } }],
       currentBid: null,
       roundStarter: 0,
+      whisper: 'Alex bids three 4s.',
+      spotlight: 'opponent-dice',
+      highlightDice: { type: 'matching-value', value: 4, targets: [0] },
+      visibleUI: { playerDice: true, opponentDice: true, currentBid: true },
       tooltip: {
-        content: 'Alex is thinking...',
+        content: '',
         position: 'bottom',
         targetElement: 'opponent-dice',
-        dismissMode: 'auto',
-        autoAdvanceDelay: 2000,
+        dismissMode: 'click',
       },
-      highlightDice: { type: 'matching-value', value: 4, targets: [0] },
     },
 
-    // Step 15: Sam bids (reaches exactly 5x fours)
+    // Step 24: Sam raises to exactly 5
     {
-      id: 'sam-bids-calza',
-      playerDice: [4, 4, 2, 6, 3],
+      id: 'round4-sam-bids',
+      playerDice: [4, 4, 2, 3],
       opponentDice: [
-        [4, 1, 5, 5, 2],
-        [3, 3, 6, 6, 1],
+        [4, 1, 5, 2],
+        [3, 3, 6, 1],
       ],
       requiredAction: { type: 'wait' },
       scriptedAIMoves: [{ type: 'bid', bid: { count: 5, value: 4 } }],
       currentBid: { count: 3, value: 4 },
       lastBidder: 0,
+      whisper: 'Sam raises to five 4s.',
+      spotlight: 'bid-display',
+      visibleUI: { playerDice: true, opponentDice: true, currentBid: true },
       tooltip: {
-        content: 'Sam is thinking...',
-        position: 'bottom',
-        targetElement: 'opponent-dice',
-        dismissMode: 'auto',
-        autoAdvanceDelay: 2000,
-      },
-      highlightDice: { type: 'matching-value', value: 4, targets: [1] },
-    },
-
-    // Step 16: Introduce Calza concept
-    {
-      id: 'calza-intro',
-      playerDice: [4, 4, 2, 6, 3],
-      opponentDice: [
-        [4, 1, 5, 5, 2],
-        [3, 3, 6, 6, 1],
-      ],
-      requiredAction: { type: 'wait' },
-      currentBid: { count: 5, value: 4 },
-      lastBidder: 1,
-      tooltip: {
-        content:
-          "One more trick: CALZA! Call it when you think the bid is EXACTLY right. Get it right and you gain a die. Get it wrong and you lose one.",
+        content: '',
         position: 'bottom',
         targetElement: 'bid-display',
         dismissMode: 'click',
       },
     },
 
-    // Step 17: Player calls Calza
+    // Step 25: Count the 4s
     {
-      id: 'calza-call',
-      playerDice: [4, 4, 2, 6, 3],
+      id: 'calza-intro',
+      playerDice: [4, 4, 2, 3],
       opponentDice: [
-        [4, 1, 5, 5, 2],
-        [3, 3, 6, 6, 1],
+        [4, 1, 5, 2],
+        [3, 3, 6, 1],
       ],
-      requiredAction: { type: 'calza' },
+      requiredAction: { type: 'wait' },
       currentBid: { count: 5, value: 4 },
       lastBidder: 1,
+      whisper: "Five 4s. You have two, Alex has two with his joker, Sam has one joker...",
+      spotlight: 'bid-display',
+      highlightDice: { type: 'matching-value', value: 4, targets: ['player', 0, 1] },
+      connection: { origin: 'player-dice', target: 'bid-display', lineCount: 2, color: 'rgba(34, 197, 94, 0.7)' },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
       tooltip: {
-        content:
-          "Count the 4s (including wilds): You=2, Alex=2, Sam=1. Exactly 5! Call CALZA!",
+        content: '',
+        position: 'bottom',
+        targetElement: 'bid-display',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 27: Explain Calza
+    {
+      id: 'calza-explain',
+      playerDice: [4, 4, 2, 3],
+      opponentDice: [
+        [4, 1, 5, 2],
+        [3, 3, 6, 1],
+      ],
+      requiredAction: { type: 'wait' },
+      currentBid: { count: 5, value: 4 },
+      lastBidder: 1,
+      whisper: "Exactly five. If you're right, you get a die back.",
+      spotlight: 'calza-button',
+      highlightDice: { type: 'matching-value', value: 4, targets: ['player', 0, 1] },
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
+      tooltip: {
+        content: '',
         position: 'top',
         targetElement: 'calza-button',
         dismissMode: 'click',
       },
-      highlightDice: { type: 'matching-value', value: 4, targets: ['player', 0, 1] },
-      highlightButton: 'calza',
     },
 
-    // Step 18: Calza reveal (success)
+    // Step 28: Call Calza
+    {
+      id: 'calza-call',
+      playerDice: [4, 4, 2, 3],
+      opponentDice: [
+        [4, 1, 5, 2],
+        [3, 3, 6, 1],
+      ],
+      requiredAction: { type: 'calza' },
+      currentBid: { count: 5, value: 4 },
+      lastBidder: 1,
+      whisper: 'Claim it.',
+      spotlight: 'calza-button',
+      highlightDice: { type: 'matching-value', value: 4, targets: ['player', 0, 1] },
+      breathingButton: 'calza',
+      shakeOnAction: true,
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
+      tooltip: {
+        content: '',
+        position: 'top',
+        targetElement: 'calza-button',
+        dismissMode: 'click',
+      },
+    },
+
+    // Step 29: Calza reveal - player gains die
     {
       id: 'calza-reveal',
-      playerDice: [4, 4, 2, 6, 3],
+      playerDice: [4, 4, 2, 3],
       opponentDice: [
-        [4, 1, 5, 5, 2],
-        [3, 3, 6, 6, 1],
+        [4, 1, 5, 2],
+        [3, 3, 6, 1],
       ],
       requiredAction: { type: 'wait' },
       currentBid: { count: 5, value: 4 },
       lastBidder: 1,
       highlightDice: { type: 'matching-value', value: 4, targets: ['player', 0, 1] },
-      // Reveal will show: Player(2) + Alex(1 four + 1 one = 2) + Sam(1 one = 1) = 5 total
-      // Exactly 5 fours! Calza succeeds, player gains a die
+      visibleUI: { playerDice: true, bidPanel: true, currentBid: true, opponentDice: true },
     },
   ],
 };
