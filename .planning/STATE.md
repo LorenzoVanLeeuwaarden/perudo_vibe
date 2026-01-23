@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-21)
 
 **Core value:** Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction.
-**Current focus:** v3.1 Tutorial COMPLETE
+**Current focus:** v3.1 Tutorial SHIPPED
 
 ## Current Position
 
-Phase: 25 - Tutorial Content & Polish
-Plan: 2 of 2 complete
-Status: Complete (verified)
-Last activity: 2026-01-22 — Phase 25 verified, v3.1 Tutorial milestone complete
+Phase: None (between milestones)
+Plan: N/A
+Status: v3.1 milestone shipped and archived
+Last activity: 2026-01-23 — v3.1 Tutorial milestone shipped
 
-Progress: [████████████████████] 3/3 phases (v3.1 Tutorial milestone COMPLETE)
+Progress: [████████████████████] v3.1 milestone complete (archived)
 
 ## Production URLs
 
@@ -219,9 +219,8 @@ Resume file: None
 
 ## Next Steps
 
-1. Run `/gsd:audit-milestone` to verify cross-phase integration
-2. Run `/gsd:complete-milestone` to archive v3.1
-3. Start planning v3.2 or next milestone
+1. Run `/gsd:new-milestone` to start next milestone
+2. Potential ideas for v3.2+: Sound effects, additional game modes, multiplayer improvements
 
 ---
-*Updated: 2026-01-22 after Phase 25 verification (v3.1 Tutorial milestone complete)*
+*Updated: 2026-01-23 after v3.1 Tutorial milestone shipped and archived*

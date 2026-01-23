@@ -8,15 +8,17 @@ A browser-based Perudo (liar's dice) game with real-time multiplayer support. Pl
 
 Friends can instantly play Perudo together in their browsers without downloads, accounts, or friction — just share a link and play.
 
-## Current Milestone: v3.1 Tutorial
+## Last Completed Milestone: v3.1 Tutorial (shipped 2026-01-23)
 
-**Goal:** Guide new players through their first game with a scripted tutorial that teaches all core rules.
+**Delivered:** Interactive tutorial guiding new players through their first game with scripted rounds teaching bidding, Dudo, jokers, and Calza.
 
-**Target features:**
-- Tutorial option in main menu (always accessible, replayable)
-- Scripted 3-player game with predetermined dice rolls
-- Guided moves with inline tooltips explaining each concept
-- Teaches: bidding basics, calling Dudo, wild ones, Calza
+**Features delivered:**
+- 4-round scripted tutorial teaching basic bidding, challenging with Dudo, wild jokers, and Calza exact matches
+- Predetermined dice rolls with visible opponent hands (god mode for learning)
+- Guidance system with click-to-dismiss overlays, spotlights, and whisper-style messages
+- Constrained actions with disabled button tooltips explaining why options aren't available
+- Completion screen with confetti celebration and comprehensive rules modal
+- First-time visitor prompt encouraging new players to try the tutorial
 
 ## Requirements
 
@@ -66,13 +68,10 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - ✓ Achievement system for streak milestones (5, 10, 25, 50, 100) — v3.0
 - ✓ Hidden achievements for special conditions — v3.0
 - ✓ Achievement gallery accessible from Gauntlet — v3.0
-
-### Active
-
-- [ ] Tutorial mode accessible from main menu
-- [ ] Scripted game with predetermined dice
-- [ ] Constrained move selection with inline guidance
-- [ ] Covers bidding, Dudo, wild ones, and Calza rules
+- ✓ Tutorial mode accessible from main menu — v3.1
+- ✓ Scripted game with predetermined dice — v3.1
+- ✓ Constrained move selection with inline guidance — v3.1
+- ✓ Covers bidding, Dudo, wild ones, and Calza rules — v3.1
 
 ### Out of Scope
 
@@ -84,14 +83,14 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - Healing mechanics — once a die is lost, it's gone (pure endurance)
 - Cosmetic unlocks — defer to future milestone
 
-## Current State (v3.0 shipped 2026-01-21)
+## Current State (v3.1 shipped 2026-01-23)
 
 **Production URLs:**
 - Frontend: https://faroleo.pages.dev
 - Backend: perudo-vibe.lorenzovanleeuwaarden.partykit.dev
 
 **Codebase:**
-- ~19,100 lines of TypeScript across 100+ files
+- ~22,000 lines of TypeScript across 120+ files
 - Tech stack: Next.js 16, React 19, PartyKit, Zustand, Framer Motion, Tailwind CSS 4, Cloudflare D1
 - Server-authoritative multiplayer with WebSocket real-time sync
 - GPU-optimized animations with Firefox simplified mode
@@ -100,6 +99,7 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 - Sophisticated AI with 6 personalities, session memory, pattern recognition
 - Gauntlet mode with escalating AI difficulty and leaderboard
 - Achievement system with localStorage persistence
+- Interactive tutorial teaching all core rules
 
 **Known Issues:**
 - Sound files are placeholders (need download from royalty-free sources)
@@ -141,6 +141,9 @@ Friends can instantly play Perudo together in their browsers without downloads, 
 | Achievements in localStorage | No account needed, instant persistence, matches personal best pattern | ✓ Good |
 | Toast-only achievements | Cleaner UI per user preference, no progress clutter during gameplay | ✓ Good |
 | Gallery in Gauntlet section | Contextually appropriate, achievements only apply to Gauntlet | ✓ Good |
+| Scripted tutorial with god mode | Show all dice face-up so players can count and verify | ✓ Good |
+| Click-to-dismiss overlays | Simple interaction, no complex state tracking | ✓ Good |
+| Rules modal on completion | Players can review rules after learning, not before | ✓ Good |
 
 ---
-*Last updated: 2026-01-21 after v3.1 milestone started*
+*Last updated: 2026-01-23 after v3.1 milestone shipped*

@@ -1,5 +1,33 @@
 # Project Milestones: Perudo Vibe
 
+## v3.1 Tutorial (Shipped: 2026-01-23)
+
+**Delivered:** Interactive tutorial guiding new players through their first game with scripted rounds teaching bidding, Dudo, jokers, and Calza.
+
+**Phases completed:** 23-25 (8 plans total)
+
+**Key accomplishments:**
+
+- 4-round scripted tutorial teaching basic bidding, challenging with Dudo, wild jokers, and Calza exact matches
+- Predetermined dice rolls with visible opponent hands (god mode for learning)
+- Guidance system with click-to-dismiss overlays, spotlights, and whisper-style messages
+- Constrained actions with disabled button tooltips explaining why options aren't available
+- Completion screen with confetti celebration and comprehensive rules modal
+- First-time visitor prompt encouraging new players to try the tutorial
+
+**Stats:**
+
+- 21 files created/modified
+- ~3,000 lines of TypeScript added
+- 3 phases, 8 plans
+- 2 days from start to ship
+
+**Git range:** `832fce1` → `f2f74b5`
+
+**What's next:** Sound effects, additional game modes, or multiplayer improvements.
+
+---
+
 ## v3.0 The Gauntlet (Shipped: 2026-01-21)
 
 **Delivered:** Endless 1v1 survival mode with escalating AI difficulty, global leaderboard with daily reset, and achievement system for milestone streaks.
@@ -140,4 +168,4 @@
 ---
 
 *Milestones created: 2026-01-18*
-*Last updated: 2026-01-21 after v3.0 milestone*
+*Last updated: 2026-01-23 after v3.1 milestone*

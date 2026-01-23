@@ -6,8 +6,8 @@
 - [x] **v2.0 Cloudflare Deployment** - Phases 10-12 (shipped 2026-01-19) — [archive](milestones/v2.0-ROADMAP.md)
 - [x] **v2.1 Animation Performance** - Phases 13-15 (shipped 2026-01-20) — [archive](milestones/v2.1-ROADMAP.md)
 - [x] **v2.2 UI Unification & Tech Debt** - Phases 16-19 (shipped 2026-01-20) — [archive](milestones/v2.2-ROADMAP.md)
-- [x] **v3.0 The Gauntlet** - Phases 20-22 (shipped 2026-01-21)
-- [x] **v3.1 Tutorial** - Phases 23-25 (shipped 2026-01-22)
+- [x] **v3.0 The Gauntlet** - Phases 20-22 (shipped 2026-01-21) — [archive](milestones/v3.0-ROADMAP.md)
+- [x] **v3.1 Tutorial** - Phases 23-25 (shipped 2026-01-23) — [archive](milestones/v3.1-ROADMAP.md)
 
 ## Phases
 
@@ -278,4 +278,4 @@ v3.1 Tutorial milestone complete. Phases 23-25 all shipped.
 
 ---
 *Created: 2026-01-17 for v1.0 MVP milestone*
-*Last updated: 2026-01-22 after completing Phase 25 (v3.1 Tutorial milestone complete)*
+*Last updated: 2026-01-23 after archiving v3.1 Tutorial milestone*
