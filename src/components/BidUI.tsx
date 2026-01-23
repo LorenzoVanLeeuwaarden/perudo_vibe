@@ -7,6 +7,7 @@ import { AnimatePresence } from 'framer-motion';
 import { Bid, PlayerColor, PLAYER_COLORS } from '@/lib/types';
 import { isValidBid } from '@/lib/gameLogic';
 import { Dice } from './Dice';
+import { DisabledButtonWrapper } from './tutorial/DisabledButtonWrapper';
 
 interface BidUIProps {
   currentBid: Bid | null;
@@ -283,20 +284,30 @@ export function BidUI({
 
           <div className="flex flex-col gap-2 sm:gap-3">
             {/* BID button - always shown, full width */}
-            <motion.button
-              whileHover={validation.valid ? { scale: 1.02 } : {}}
-              whileTap={validation.valid ? { scale: 0.98 } : {}}
-              onClick={handleBid}
-              disabled={!validation.valid}
-              className={`
-                w-full retro-button retro-button-orange
-                flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base
-                ${!validation.valid ? 'opacity-50 cursor-not-allowed' : ''}
-              `}
-            >
-              <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-              BID
-            </motion.button>
+            {!validation.valid ? (
+              <DisabledButtonWrapper
+                tooltipText={validation.reason || 'Invalid bid'}
+                playerColor={playerColor}
+              >
+                <motion.button
+                  disabled
+                  className="w-full retro-button retro-button-orange flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base opacity-50 cursor-not-allowed"
+                >
+                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                  BID
+                </motion.button>
+              </DisabledButtonWrapper>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleBid}
+                className="w-full retro-button retro-button-orange flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
+              >
+                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                BID
+              </motion.button>
+            )}
 
             {/* Calza and Dudo row - only shown when there's a current bid */}
             {currentBid && (

@@ -213,7 +213,7 @@ export function isValidBid(
   if (biddingAces && !currentIsAces) {
     const minAceCount = Math.ceil(currentBid.count / 2);
     if (newBid.count < minAceCount) {
-      return { valid: false, reason: `Minimum ${minAceCount} aces required` };
+      return { valid: false, reason: `Minimum ${minAceCount} jokers required` };
     }
     return { valid: true };
   }
@@ -222,7 +222,7 @@ export function isValidBid(
   if (!biddingAces && currentIsAces) {
     const minCount = currentBid.count * 2 + 1;
     if (newBid.count < minCount) {
-      return { valid: false, reason: `Minimum ${minCount}× required after aces` };
+      return { valid: false, reason: `Minimum amount is ${minCount} after ${currentBid.count} jokers` };
     }
     return { valid: true };
   }
@@ -233,7 +233,7 @@ export function isValidBid(
 
   if (newBid.value < currentBid.value) {
     // Trying to decrease value without going to aces - NOT ALLOWED
-    return { valid: false, reason: `Cannot decrease value (only allowed when bidding aces)` };
+    return { valid: false, reason: `Cannot decrease value (only allowed when bidding jokers)` };
   }
 
   if (newBid.value > currentBid.value) {
@@ -249,7 +249,7 @@ export function isValidBid(
     return { valid: true };
   }
 
-  return { valid: false, reason: `Must bid higher than ${currentBid.count}× ${currentBid.value}s` };
+  return { valid: false, reason: 'A bid must either be a higher amount or a higher value' };
 }
 
 /**

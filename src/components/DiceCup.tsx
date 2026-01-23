@@ -453,7 +453,7 @@ export function DiceCup({
         onClick={handleSlam}
         className="relative rounded-2xl overflow-hidden select-none"
         style={{
-          width: 380,
+          width: 'clamp(280px, 85vw, 500px)',
           height: 180,
           cursor: phase === 'waiting' ? 'pointer' : 'default',
           background: 'linear-gradient(180deg, rgba(15, 46, 46, 0.85) 0%, rgba(3, 15, 15, 0.95) 100%)',
